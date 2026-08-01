@@ -1,0 +1,47 @@
+# 10 - Importers
+
+## Objetivo
+
+Definir o mecanismo de importacao baseado em Adapter + Factory para converter CSV de diferentes fontes FEM para o modelo interno.
+
+## Fontes Alvo
+
+- SAP2000
+- MIDAS Civil
+- SCIA Engineer
+
+## Formato de Entrada
+
+- CSV como formato inicial padrao.
+
+## Arquitetura
+
+- `ImporterAdapter` (porta): contrato unico de leitura/conversao.
+- `Sap2000CsvAdapter`, `MidasCsvAdapter`, `SciaCsvAdapter`: implementacoes.
+- `ImporterFactory`: escolhe adapter por metadado/perfil de importacao.
+
+## Responsabilidades
+
+- parsear tabelas de geometria, propriedades e resultados;
+- validar campos obrigatorios;
+- mapear para convencao interna 1D/2D;
+- reportar inconsistencias com erros tipados.
+
+## Restricoes
+
+- importador nao executa regra de verificacao/dimensionamento;
+- importador nao acessa GUI;
+- importador nao acopla tipos concretos do dominio alem dos contratos de entrada.
+
+## Conversao para Modelo Interno
+
+Mapeamentos devem obedecer [03 - Domain Model](03-domain-model.md), incluindo:
+
+- nomenclatura de elementos;
+- campos de espessura/secao/material;
+- representacao de resultados 1D/2D.
+
+## Ver Tambem
+
+- [03 - Domain Model](03-domain-model.md)
+- [18 - Error Handling](18-error-handling.md)

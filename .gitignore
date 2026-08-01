@@ -1,0 +1,54 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build and packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Test and coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# IDE and editor
+.vscode/
+.idea/
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local runtime data
+logs/
+*.log
+.tmp/
+tmp/
+
+# Plugin and user-local data
+plugins_internal/__pycache__/
+plugins_internal/*.pyc
+
+# Large/generated data samples
+*.parquet
+*.feather
+*.pkl
+*.sqlite
+*.db
+
+# Jupyter
+.ipynb_checkpoints/
