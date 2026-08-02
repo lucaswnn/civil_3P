@@ -1,0 +1,6 @@
+"Shell","N1","N2","N3","N4","Material","Thickness"
+"P1","N1","N2","N3",,"CONC",0.2
+"P2","N1","N3","N4",,"CONC",0.25
+"P3","N2","N5","N6","N3","CONC",0.2
+
+    

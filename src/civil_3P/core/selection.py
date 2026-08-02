@@ -13,6 +13,9 @@ class SelectionContext:
 
     @property
     def all_element_ids(self) -> tuple[str, ...]:
-        ordered = dict.fromkeys(
-            (*self.selected_element_ids, *self.adjacent_element_ids))
+        ordered = dict.fromkeys((
+            *self.selected_element_ids,
+            *self.adjacent_element_ids,
+        ))
+        
         return tuple(ordered.keys())

@@ -39,13 +39,16 @@ class TaskPlugin(ABC):
     def metadata(self) -> TaskMetadata:
         raise NotImplementedError
 
-    def supports(self, element_type: ElementType) -> bool:
+    def supports(self,
+                 element_type: ElementType) -> bool:
         return self.metadata.supported_element_type == element_type
 
     @abstractmethod
-    def validate_input(self, context: TaskContext) -> None:
+    def validate_input(self,
+                       context: TaskContext) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    def execute(self, context: TaskContext) -> TaskResult:
+    def execute(self,
+                context: TaskContext) -> TaskResult:
         raise NotImplementedError

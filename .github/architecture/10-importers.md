@@ -41,6 +41,10 @@ Mapeamentos devem obedecer [03 - Domain Model](03-domain-model.md), incluindo:
 - campos de espessura/secao/material;
 - representacao de resultados 1D/2D.
 
+## Pressupostos
+
+- Elementos 2D podem ter 3 nos ou 4 nos nos dados de origem. O programa deve levar isso em conta.
+
 ## Ver Tambem
 
 - [03 - Domain Model](03-domain-model.md)

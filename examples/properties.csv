@@ -1,0 +1,5 @@
+"EntityType","EntityId","PropertyName","PropertyValue"
+"element","B1","axial_capacity",20.0
+"element","P1","design_strength",10.0
+"element","P2","design_strength",20.0
+"element","P3","design_strength",20.0

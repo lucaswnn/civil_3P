@@ -23,7 +23,7 @@
 
 ## Regras de Fronteira
 
-- dominio sem Qt/PyVista/VTK;
+- dominio sem Qt/PyVista;
 - GUI sem regra de negocio;
 - importadores sem acoplamento indevido com dominio;
 - plugins sem acesso direto a widgets Qt.

@@ -50,5 +50,8 @@ plugins_internal/*.pyc
 *.sqlite
 *.db
 
+# Generated files
+*.egg-info/
+
 # Jupyter
 .ipynb_checkpoints/

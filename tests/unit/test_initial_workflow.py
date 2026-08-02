@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import pandas as pd
 
-from civil_3P.application.services import ImportModelService, ResultQueryService, TaskExecutionService
+from civil_3P.application.services import (
+    ImportModelService,
+    ResultQueryService,
+    TaskExecutionService,
+)
+
 from civil_3P.core.enums import ElementType, VisualizationMode
 from civil_3P.core.results import ResultAveragingPolicy, VisualizationCriteria
 from civil_3P.core.selection import SelectionContext
@@ -12,38 +17,69 @@ from civil_3P.tasks.design_example import ExampleShellDesignPlugin
 
 
 def test_import_and_example_tasks(tmp_path) -> None:
-    pd.DataFrame(
-        [
-            {"Joint": "N1", "X": 0.0, "Y": 0.0, "Z": 0.0},
-            {"Joint": "N2", "X": 1.0, "Y": 0.0, "Z": 0.0},
-            {"Joint": "N3", "X": 1.0, "Y": 1.0, "Z": 0.0},
-            {"Joint": "N4", "X": 0.0, "Y": 1.0, "Z": 0.0},
-        ]
+    pd.DataFrame([
+        {"Joint": "N1", "X": 0.0, "Y": 0.0, "Z": 0.0},
+        {"Joint": "N2", "X": 1.0, "Y": 0.0, "Z": 0.0},
+        {"Joint": "N3", "X": 1.0, "Y": 1.0, "Z": 0.0},
+        {"Joint": "N4", "X": 0.0, "Y": 1.0, "Z": 0.0},
+    ]
     ).to_csv(tmp_path / "nodes.csv", index=False)
-    pd.DataFrame(
-        [
-            {"Frame": "B1", "JointI": "N1", "JointJ": "N2",
-                "Material": "STEEL", "Section": "S1"},
-        ]
+
+    pd.DataFrame([
+        {
+            "Frame": "B1",
+            "JointI": "N1",
+            "JointJ": "N2",
+            "Material": "STEEL",
+            "Section": "S1",
+        },
+    ]
     ).to_csv(tmp_path / "elements_1d.csv", index=False)
-    pd.DataFrame(
-        [
-            {"Shell": "P1", "N1": "N1", "N2": "N2", "N3": "N3",
-                "N4": "N4", "Material": "CONC", "Thickness": 0.2},
-            {"Shell": "P2", "N1": "N2", "N2": "N3", "N3": "N4",
-                "N4": "N1", "Material": "CONC", "Thickness": 0.25},
-        ]
+
+    pd.DataFrame([
+        {
+            "Shell": "P1",
+            "N1": "N1",
+            "N2": "N2",
+            "N3": "N3",
+            "N4": "N4",
+            "Material": "CONC",
+            "Thickness": 0.2,
+        },
+        {
+            "Shell": "P2",
+            "N1": "N2",
+            "N2": "N3",
+            "N3": "N4",
+            "N4": "N1",
+            "Material": "CONC",
+            "Thickness": 0.25,
+        },
+    ]
     ).to_csv(tmp_path / "elements_2d.csv", index=False)
-    pd.DataFrame(
-        [
-            {"EntityType": "element", "EntityId": "B1",
-                "PropertyName": "axial_capacity", "PropertyValue": 20.0},
-            {"EntityType": "element", "EntityId": "P1",
-                "PropertyName": "design_strength", "PropertyValue": 10.0},
-            {"EntityType": "element", "EntityId": "P2",
-                "PropertyName": "design_strength", "PropertyValue": 20.0},
-        ]
+
+    pd.DataFrame([
+        {
+            "EntityType": "element",
+            "EntityId": "B1",
+            "PropertyName": "axial_capacity",
+            "PropertyValue": 20.0,
+        },
+        {
+            "EntityType": "element",
+            "EntityId": "P1",
+            "PropertyName": "design_strength",
+            "PropertyValue": 10.0,
+        },
+        {
+            "EntityType": "element",
+            "EntityId": "P2",
+            "PropertyName": "design_strength",
+            "PropertyValue": 20.0,
+        },
+    ]
     ).to_csv(tmp_path / "properties.csv", index=False)
+
     pd.DataFrame(
         [
             {
@@ -115,27 +151,32 @@ def test_import_and_example_tasks(tmp_path) -> None:
     task_service = TaskExecutionService()
     result_service = ResultQueryService()
 
-    bar_selection = SelectionContext(
-        element_type=ElementType.BAR_1D,
-        selected_element_ids=("B1",),
-    )
-    bar_result = task_service.execute(
-        ExampleBarCheckPlugin(), model, bar_selection, "LC1")
+    bar_selection = SelectionContext(element_type=ElementType.BAR_1D,
+                                     selected_element_ids=("B1",))
+
+    bar_result = task_service.execute(ExampleBarCheckPlugin(),
+                                      model,
+                                      bar_selection,
+                                      "LC1")
+
     bar_view = result_service.process(
         bar_result,
         VisualizationCriteria(result_name="utilization",
                               case_id="LC1", mode=VisualizationMode.ELEMENT),
         bar_selection,
     )
+
     assert bar_view.iloc[0]["value"] == 0.5
 
-    shell_selection = SelectionContext(
-        element_type=ElementType.SHELL_2D,
-        selected_element_ids=("P1",),
-        adjacent_element_ids=("P2",),
-    )
-    shell_result = task_service.execute(
-        ExampleShellDesignPlugin(), model, shell_selection, "LC1")
+    shell_selection = SelectionContext(element_type=ElementType.SHELL_2D,
+                                       selected_element_ids=("P1",),
+                                       adjacent_element_ids=("P2",))
+
+    shell_result = task_service.execute(ExampleShellDesignPlugin(),
+                                        model,
+                                        shell_selection,
+                                        "LC1")
+
     shell_view = result_service.process(
         shell_result,
         VisualizationCriteria(
@@ -147,7 +188,10 @@ def test_import_and_example_tasks(tmp_path) -> None:
         ),
         shell_selection,
     )
+
     averaged = dict(zip(shell_view["node_id"],
-                    shell_view["value"], strict=False))
+                    shell_view["value"],
+                    strict=False))
+
     assert averaged["N2"] == 1.1
     assert averaged["N3"] == 0.8

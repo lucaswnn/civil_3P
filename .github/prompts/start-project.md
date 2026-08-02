@@ -9,7 +9,7 @@ A plataforma alvo é windows;
 
 O toolkit de interface gráfica é PySide6;
 
-A biblioteca 3D usada será uma combinação de pyvista e VTK;
+A biblioteca 3D usada será pyvista;
 
 A api do plugin será por meio de uma classe abstrata, devendo o usuário implementar essa classe abstrata;
 
@@ -33,7 +33,7 @@ Seu papel é documentar todo o projeto nos arquivos criados na pasta github. O a
 - Convenções para entidades de elementos finitos.
 - Modelo interno unificado.
 - Sistema de importadores (Adapter + Factory).
-- Sistema de renderização (PyVista/VTK).
+- Sistema de renderização (PyVista).
 - Sistema de seleção e interação.
 - Sistema de resultados (nodal, por elementos, com média, sem média).
 - Sistema de overrides.

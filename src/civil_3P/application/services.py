@@ -13,24 +13,37 @@ from civil_3P.tasks.base import TaskContext, TaskPlugin, TaskResult
 
 
 class ImportModelService:
-    def __init__(self, registry: ImporterRegistry | None = None) -> None:
+    def __init__(self,
+                 registry: ImporterRegistry | None = None) -> None:
         self._registry = registry or ImporterRegistry()
 
-    def import_model(self, profile: CsvImportProfile, directory: str | Path) -> FEMModel:
+    def import_model(self,
+                     profile: CsvImportProfile,
+                     directory: str | Path) -> FEMModel:
         return self._registry.import_model(profile, directory)
 
 
 class TaskExecutionService:
-    def execute(self, plugin: TaskPlugin, model: FEMModel, selection: SelectionContext, case_id: str) -> TaskResult:
-        context = TaskContext(
-            model=model, selection=selection, case_id=case_id)
+    def execute(self,
+                plugin: TaskPlugin,
+                model: FEMModel,
+                selection: SelectionContext,
+                case_id: str) -> TaskResult:
+        context = TaskContext(model=model,
+                              selection=selection,
+                              case_id=case_id)
         plugin.validate_input(context)
+
         return plugin.execute(context)
 
 
 class ResultQueryService:
-    def __init__(self, processor: ResultProcessor | None = None) -> None:
+    def __init__(self, 
+                 processor: ResultProcessor | None = None) -> None:
         self._processor = processor or ResultProcessor()
 
-    def process(self, task_result: TaskResult, criteria: VisualizationCriteria, selection: SelectionContext) -> pd.DataFrame:
+    def process(self,
+                task_result: TaskResult,
+                criteria: VisualizationCriteria,
+                selection: SelectionContext) -> pd.DataFrame:
         return self._processor.process(task_result.results, selection, criteria)

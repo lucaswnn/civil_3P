@@ -15,7 +15,7 @@ Stack principal:
 - Python 3.13+
 - pandas, numpy (manipulacao de dados)
 - PySide6 (GUI)
-- PyVista + VTK (renderizacao 3D)
+- PyVista (renderizacao 3D)
 - pytest (testes)
 - tipagem estatica completa
 
@@ -56,7 +56,7 @@ Sempre:
 
 ## Fronteiras Arquiteturais
 
-- Dominio (`core`) nao depende de GUI, Qt, PyVista ou VTK.
+- Dominio (`core`) nao depende de GUI, Qt ou PyVista.
 - Importadores (`importers`) convertem dados externos para o modelo interno sem impor formatos ao dominio.
 - Aplicacao (`application`) orquestra casos de uso e integra adaptadores.
 - GUI (`gui`) apenas apresenta estado e encaminha intencoes do usuario.
@@ -71,7 +71,7 @@ Sempre:
 - [Modelo de Dominio](architecture/03-domain-model.md)
 - [Camada de Aplicacao](architecture/04-application-layer.md)
 - [GUI PySide6](architecture/05-gui.md)
-- [Renderizacao PyVista/VTK](architecture/06-rendering.md)
+- [Renderizacao PyVista](architecture/06-rendering.md)
 - [Selecao e Interacao](architecture/07-selection.md)
 - [Sistema de Resultados](architecture/08-results.md)
 - [Sistema de Overrides](architecture/09-overrides.md)

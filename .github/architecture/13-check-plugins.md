@@ -40,7 +40,7 @@ Observacao: o plugin consome o contexto entregue pela aplicacao. A regra de medi
 ## Restricoes
 
 - sem acesso a widgets Qt;
-- sem dependencia de PyVista/VTK;
+- sem dependencia de PyVista;
 - sem alteracao de dados originais importados.
 
 ## Ver Tambem

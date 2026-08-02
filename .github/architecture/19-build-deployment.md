@@ -21,7 +21,7 @@ Ferramenta recomendada: PyInstaller (ou equivalente) com:
 
 ## Itens de Runtime
 
-- garantir distribuicao de dependencias PySide6/PyVista/VTK;
+- garantir distribuicao de dependencias PySide6/PyVista;
 - validar path de plugins de usuario: `%APPDATA%/civil_3P/plugins`;
 - criar diretorio de dados de app quando ausente.
 

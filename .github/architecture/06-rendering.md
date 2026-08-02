@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Especificar o subsistema de renderizacao 3D com PyVista/VTK para exibir modelo, selecao e campos de resultados.
+Especificar o subsistema de renderizacao 3D com PyVista para exibir modelo, selecao e campos de resultados.
 
 ## Pipeline
 
@@ -24,7 +24,7 @@ Especificar o subsistema de renderizacao 3D com PyVista/VTK para exibir modelo, 
 
 ## Restricoes Arquiteturais
 
-- nenhum objeto PyVista/VTK pode entrar no dominio;
+- nenhum objeto PyVista pode entrar no dominio;
 - renderer recebe DTOs/adaptadores da camada de aplicacao;
 - estado visual (camera/tema) e separado de estado de negocio.
 
