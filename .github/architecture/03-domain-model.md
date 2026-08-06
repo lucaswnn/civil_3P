@@ -8,13 +8,18 @@ Este documento tambem concentra as convencoes FEM do projeto e a diretriz de pad
 
 ## Entidades Centrais
 
+As entidades sao gerenciadas por um banco de dados normalizado, com uso de dataframes da biblioteca pandas.
+
 - `Model`: agregado raiz contendo elementos, nos, materiais, casos de carga, combinacoes e resultados.
 - `Node`: coordenadas e metadados estruturais.
-- `Element1D`: barra/viga com conectividade, secao, material e outras propriedades.Resultados por pontos intervalados.
-- `Element2D`: placa/casca com geometria, espessura, material e outras propriedades. Resultados por pontos/nos.
+- `Element1D`: barra/viga com conectividade, secao, material e outras propriedades.
+- `Element2D`: placa/casca com geometria, espessura, material e outras propriedades.
 - `Material`: propriedades fisico-mecanicas.
-- `ResultField`: serie de resultados das tasks com caso/comb e tipo (nodal ou elemento).
+- `Section`: propriedades de secao para elementos 1D.
+- `OriginResults1D`: serie de resultados nos pontos intervalados dos elementos 1D vindos dos modelos importados, contendo esforcos, deslocamentos etc e com caso/comb.
+- `OriginResults2D`: serie de resultados nos nos dos elementos 2D vindos dos modelos importados, contendo esforcos, deslocamentos etc e com caso/comb.
 - `OverrideSet`: alteracoes locais nao destrutivas para calculos, mantendo dados importados de origem para historico.
+- `TaskResults`: serie de resultados das tarefas realizadas pelo pos-processamento, a partir dos dados importados de outro software e das alteracoes locais, sendo os resultados divididos em 1d e 2d.
 
 ## Modelo Interno Unificado
 
@@ -70,9 +75,13 @@ Importante: mesmo que os dados sejam tabulares, devem existir classes para acess
 - `nodes_df`: identificacao do no, coordenadas e metadados estruturais.
 - `elements_1d_df`: conectividade 1D, material, secao e orientacao.
 - `elements_2d_df`: conectividade 2D, material, espessura e orientacao.
-- `properties_df`: propriedades normalizadas por tipo e parametro.
-- `results_df`: resultados por caso/combinacao, elemento e, quando aplicavel, no.
+- `materials_df`: propriedades dos materiais.
+- `sections_df`: propriedades de secao dos elementos 1d.
+- `origin_results_1d_df`: resultados de elementos 1d importados por caso/combinacao, elemento e intervalo.
+- `origin_results_2d_df`: resultados de elementos 2d importados por caso/combinacao, elemento e no.
 - `overrides_df`: sobrescritas nao destrutivas aplicadas sobre entidades selecionadas.
+- `task_results_1d_df`: resultados das tarefas em elementos 1d.
+- `task_results_2d_df`: resultados das tarefas em elementos 2d.
 
 ### Regras de Normalizacao
 
