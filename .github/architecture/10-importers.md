@@ -12,7 +12,15 @@ Definir o mecanismo de importacao baseado em Adapter + Factory para converter CS
 
 ## Formato de Entrada
 
-- CSV como formato inicial padrao.
+- SAP2000: planilha Excel (xls)
+- demais softwares: CSV como formato inicial padrao.
+
+## Formato SAP2000
+
+- varias tabelas em um unico arquivo;
+- cada tabela possui um titulo (coluna 1, linha 1);
+- cada tabela possui colunas de atributos (linha 2);
+- para cada atributo, existe a unidade correspondente (linha 3) (Exemplo: unidade de força: tonf. Texto: text).
 
 ## Arquitetura
 
