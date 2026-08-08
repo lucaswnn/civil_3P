@@ -27,6 +27,8 @@ Definir o mecanismo de importacao baseado em Adapter + Factory para converter CS
 - Frame Section Assignments (Frame|AnalSect)
 - Frame Section Properties 01 - General (SectionName|Material|Area|I33|I22)
 - Joint Coordinates (Joint|GlobalX|GlobalY|GlobalZ)
+- Joint Displacements (Joint|OutputCase|CaseType|StepType|U1|U2|U3|R1|R2|R3)
+- Joint Reactions (Joint|OutputCase|CaseType|StepType|F1|F2|F3|M1|M2|M3)
 - Load Case Definitions (Case)
 - Material Properties 02 - Basic Mechanical Properties (Material|E1|G12|U12|A1)
 

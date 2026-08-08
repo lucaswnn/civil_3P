@@ -18,6 +18,7 @@ As entidades sao gerenciadas por um banco de dados normalizado, com uso de dataf
 - `Section`: propriedades de secao para elementos 1D.
 - `OriginResults1D`: serie de resultados nos pontos intervalados dos elementos 1D vindos dos modelos importados, contendo esforcos, deslocamentos etc e com caso/comb.
 - `OriginResults2D`: serie de resultados nos nos dos elementos 2D vindos dos modelos importados, contendo esforcos, deslocamentos etc e com caso/comb.
+- `OriginResultsNodes`: serie de resultados nos nos vidos dos modelos importados, contendo reacoes e deslocamentos com caso/comb.
 - `OverrideSet`: alteracoes locais nao destrutivas para calculos, mantendo dados importados de origem para historico.
 - `TaskResults`: serie de resultados das tarefas realizadas pelo pos-processamento, a partir dos dados importados de outro software e das alteracoes locais, sendo os resultados divididos em 1d e 2d.
 
@@ -79,6 +80,7 @@ Importante: mesmo que os dados sejam tabulares, devem existir classes para acess
 - `sections_df`: propriedades de secao dos elementos 1d.
 - `origin_results_1d_df`: resultados de elementos 1d importados por caso/combinacao, elemento e intervalo.
 - `origin_results_2d_df`: resultados de elementos 2d importados por caso/combinacao, elemento e no.
+- `origin_results_nodes`: resultados de nos por caso/combinacao, contendo deslocamentos e reacoes.
 - `overrides_df`: sobrescritas nao destrutivas aplicadas sobre entidades selecionadas.
 - `task_results_1d_df`: resultados das tarefas em elementos 1d.
 - `task_results_2d_df`: resultados das tarefas em elementos 2d.
