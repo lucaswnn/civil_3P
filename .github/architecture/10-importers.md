@@ -15,6 +15,21 @@ Definir o mecanismo de importacao baseado em Adapter + Factory para converter CS
 - SAP2000: planilha Excel (xls)
 - demais softwares: CSV como formato inicial padrao.
 
+## Tabelas SAP2000
+
+- Area Section Assignments (Area|Section)
+- Area Section Properties (Section|Material|Thickness)
+- Combination Definitions (ComboName|ComboType)
+- Connectivity - Area (Area|NumJoints|Joint1|Joint2|Joint3|Joint4)
+- Connectivity - Frame (Frame|JointI|JointJ)
+- Element Forces - Area Shells (Area|Joint|OutputCase|F11|F22|F12|M11|M22|M12|V13|V23)
+- Element Forces - Frames (Frame|Station|OutputCase|CaseType|P|V2|V3|T|M2|M3)
+- Frame Section Assignments (Frame|AnalSect)
+- Frame Section Properties 01 - General (SectionName|Material|Area|I33|I22)
+- Joint Coordinates (Joint|GlobalX|GlobalY|GlobalZ)
+- Load Case Definitions (Case)
+- Material Properties 02 - Basic Mechanical Properties (Material|E1|G12|U12|A1)
+
 ## Formato SAP2000
 
 - varias tabelas em um unico arquivo;
