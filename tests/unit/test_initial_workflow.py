@@ -11,7 +11,7 @@ from civil_3P.application.services import (
 from civil_3P.core.enums import ElementType, VisualizationMode
 from civil_3P.core.results import ResultAveragingPolicy, VisualizationCriteria
 from civil_3P.core.selection import SelectionContext
-from civil_3P.importers.csv_importers import CsvImportProfile
+from civil_3P.importers.importer_adapter import ImporterProfile
 from civil_3P.tasks.check_example import ExampleBarCheckPlugin
 from civil_3P.tasks.design_example import ExampleShellDesignPlugin
 
@@ -60,6 +60,33 @@ def test_import_and_example_tasks(tmp_path) -> None:
 
     pd.DataFrame([
         {
+            "Material": "STEEL",
+            "E1": 210000000000.0,
+            "G12": 80000000000.0,
+            "U12": 0.3,
+            "A1": 0.000012,
+        },
+        {
+            "Material": "CONC",
+            "E1": 30000000000.0,
+            "G12": 12000000000.0,
+            "U12": 0.2,
+            "A1": 0.00001,
+        },
+    ]).to_csv(tmp_path / "materials.csv", index=False)
+
+    pd.DataFrame([
+        {
+            "SectionName": "S1",
+            "Material": "STEEL",
+            "Area": 0.02,
+            "I22": 0.0001,
+            "I33": 0.0002,
+        },
+    ]).to_csv(tmp_path / "sections.csv", index=False)
+
+    pd.DataFrame([
+        {
             "EntityType": "element",
             "EntityId": "B1",
             "PropertyName": "axial_capacity",
@@ -77,8 +104,7 @@ def test_import_and_example_tasks(tmp_path) -> None:
             "PropertyName": "design_strength",
             "PropertyValue": 20.0,
         },
-    ]
-    ).to_csv(tmp_path / "properties.csv", index=False)
+    ]).to_csv(tmp_path / "overrides.csv", index=False)
 
     pd.DataFrame(
         [
@@ -102,6 +128,11 @@ def test_import_and_example_tasks(tmp_path) -> None:
                 "Value": 8.0,
                 "Location": "element",
             },
+        ]
+    ).to_csv(tmp_path / "origin_results_1d.csv", index=False)
+
+    pd.DataFrame(
+        [
             {
                 "Case": "LC1",
                 "ObjectType": "2D",
@@ -143,10 +174,14 @@ def test_import_and_example_tasks(tmp_path) -> None:
                 "Location": "node",
             },
         ]
-    ).to_csv(tmp_path / "results.csv", index=False)
+    ).to_csv(tmp_path / "origin_results_2d.csv", index=False)
+
+    pd.DataFrame(
+        columns=["Case", "Node", "Result", "Value", "Location"]
+    ).to_csv(tmp_path / "origin_results_nodes.csv", index=False)
 
     importer = ImportModelService()
-    model = importer.import_model(CsvImportProfile.SAP2000, tmp_path)
+    model = importer.import_model(ImporterProfile.SAP2000, tmp_path)
 
     task_service = TaskExecutionService()
     result_service = ResultQueryService()

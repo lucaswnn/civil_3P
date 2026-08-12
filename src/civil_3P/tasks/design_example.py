@@ -36,7 +36,7 @@ class ExampleShellDesignPlugin(TaskPlugin):
     def execute(self,
                 context: TaskContext) -> TaskResult:
         property_map = context.model.property_map("element")
-        base = context.model.results
+        base = context.model.origin_results_2d_df
         target_element_ids = context.selection.all_element_ids
         membrane = base[
             (base["case_id"] == context.case_id)

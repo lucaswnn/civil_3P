@@ -6,13 +6,15 @@ import numpy as np
 import pandas as pd
 
 from civil_3P.core.model import FEMModel
+from civil_3P.core import model_repr as rpr
 
 
 class VisualizationService:
     def build_scene(self, model: FEMModel) -> dict[str, dict[str, dict[str, Any]]]:
-        nodes = self._build_nodes(model.nodes)
-        bars = self._build_bars(model.elements_1d)
-        shells = self._build_shells(model.elements_2d)
+        nodes = self._build_nodes(model.tables_dict[rpr.ModelTables.NODES])
+        bars = self._build_bars(model.tables_dict[rpr.ModelTables.ELEMENTS_1D])
+        shells = self._build_shells(
+            model.tables_dict[rpr.ModelTables.ELEMENTS_2D])
 
         return {
             "nodes": nodes,
@@ -22,11 +24,11 @@ class VisualizationService:
 
     def _build_nodes(self, nodes: pd.DataFrame) -> dict[str, dict[str, Any]]:
         return {
-            str(row.node_id): 
+            str(getattr(row, rpr.NodesColumns.NODE)):
             {
-                "x": float(row.x),
-                "y": float(row.y),
-                "z": float(row.z),
+                "x": float(getattr(row, rpr.NodesColumns.X)),
+                "y": float(getattr(row, rpr.NodesColumns.Y)),
+                "z": float(getattr(row, rpr.NodesColumns.Z)),
             }
             for row in nodes.itertuples(index=False)
         }
@@ -36,9 +38,9 @@ class VisualizationService:
         elements_1d: pd.DataFrame,
     ) -> dict[str, dict[str, Any]]:
         return {
-            str(row.element_id): {
-                "start": str(row.node_i),
-                "end": str(row.node_j),
+            str(getattr(row, rpr.Elements1DColumns.ELEMENT)): {
+                "start": str(getattr(row, rpr.Elements1DColumns.NODE_I)),
+                "end": str(getattr(row, rpr.Elements1DColumns.NODE_J)),
             }
             for row in elements_1d.itertuples(index=False)
         }
@@ -48,14 +50,14 @@ class VisualizationService:
         elements_2d: pd.DataFrame,
     ) -> dict[str, dict[str, Any]]:
         return {
-            str(row.element_id): {
+            str(getattr(row, rpr.Elements2DColumns.ELEMENT)): {
                 "nodes": [
                     str(node_id)
                     for node_id in [
-                        getattr(row, "node_1", None),
-                        getattr(row, "node_2", None),
-                        getattr(row, "node_3", None),
-                        getattr(row, "node_4", None),
+                        getattr(row, rpr.Elements2DColumns.NODE_1, None),
+                        getattr(row, rpr.Elements2DColumns.NODE_2, None),
+                        getattr(row, rpr.Elements2DColumns.NODE_3, None),
+                        getattr(row, rpr.Elements2DColumns.NODE_4, None),
                     ]
                     if node_id not in (None, "", np.nan)
                 ],

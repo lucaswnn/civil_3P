@@ -2,7 +2,11 @@
 
 ## Objetivo
 
-Definir o mecanismo de importacao baseado em Adapter + Factory para converter CSV de diferentes fontes FEM para o modelo interno.
+Definir um pipeline de importacao extensivel para converter fontes heterogeneas (csv, xls, xlsx e futuras) no modelo interno, sem acoplar parser de origem ao dominio.
+
+Pipeline obrigatorio:
+
+1. fonte externa -> 2. representacao intermediaria -> 3. modelo central.
 
 ## Fontes Alvo
 
@@ -10,67 +14,118 @@ Definir o mecanismo de importacao baseado em Adapter + Factory para converter CS
 - MIDAS Civil
 - SCIA Engineer
 
-## Formato de Entrada
+## Principio de Extensibilidade
 
-- SAP2000: planilha Excel (xls)
-- demais softwares: CSV como formato inicial padrao.
+Cada nova fonte deve implementar apenas duas responsabilidades:
 
-## Tabelas SAP2000
+- ler/parsing da fonte para uma representacao intermediaria tipada;
+- mapeamento da representacao intermediaria para o contrato do modelo central.
 
-- Area Section Assignments (Area|Section)
-- Area Section Properties (Section|Material|Thickness)
-- Combination Definitions (ComboName|ComboType)
-- Connectivity - Area (Area|NumJoints|Joint1|Joint2|Joint3|Joint4)
-- Connectivity - Frame (Frame|JointI|JointJ)
-- Element Forces - Area Shells (Area|Joint|OutputCase|F11|F22|F12|M11|M22|M12|V13|V23)
-- Element Forces - Frames (Frame|Station|OutputCase|CaseType|P|V2|V3|T|M2|M3)
-- Frame Section Assignments (Frame|AnalSect)
-- Frame Section Properties 01 - General (SectionName|Material|Area|I33|I22)
-- Joint Coordinates (Joint|GlobalX|GlobalY|GlobalZ)
-- Joint Displacements (Joint|OutputCase|CaseType|StepType|U1|U2|U3|R1|R2|R3)
-- Joint Reactions (Joint|OutputCase|CaseType|StepType|F1|F2|F3|M1|M2|M3)
-- Load Case Definitions (Case)
-- Material Properties 02 - Basic Mechanical Properties (Material|E1|G12|U12|A1)
-
-## Formato SAP2000
-
-- varias tabelas em um unico arquivo;
-- cada tabela possui um titulo (coluna 1, linha 1);
-- cada tabela possui colunas de atributos (linha 2);
-- para cada atributo, existe a unidade correspondente (linha 3) (Exemplo: unidade de força: tonf. Texto: text).
+Com isso, a variacao de formato de origem (csv/xls/etc) fica encapsulada no importador da fonte.
 
 ## Arquitetura
 
-- `ImporterAdapter` (porta): contrato unico de leitura/conversao.
-- `Sap2000CsvAdapter`, `MidasCsvAdapter`, `SciaCsvAdapter`: implementacoes.
-- `ImporterFactory`: escolhe adapter por metadado/perfil de importacao.
+- ImporterAdapter: porta de entrada da importacao.
+- IntermediateRepresentation: contrato intermediario unificado entre parser de origem e modelo central.
+- BaseIntermediateImporter: utilitarios de mapeamento e orquestracao comum.
+- Source Importers:
+- Sap2000Importer
+- MidasImporter (futuro)
+- SciaImporter (futuro)
+- ImporterRegistry (factory): resolve o importador correto por perfil.
+
+## Fluxo de Dados
+
+1. ImporterRegistry seleciona o importador por perfil.
+2. Importador le a fonte externa e produz IntermediateRepresentation.
+3. Importador converte IntermediateRepresentation em FEMModel.
+4. Aplicacao usa apenas FEMModel, sem conhecer parser de origem.
+
+## SAP2000
+
+Entrada preferencial:
+
+- workbook de modelo: sap2000_model.xls ou sap2000_model.xlsx;
+- workbook de resultados: sap2000_results.xls ou sap2000_results.xlsx.
+
+Observacoes:
+
+- O export SAP2000 pode conter multiplas tabelas no mesmo sheet.
+- Cada tabela e detectada por bloco: titulo, cabecalho, linha de unidades e linhas de dados.
+- Em fase de transicao, pode existir fallback csv quando os workbooks nao estiverem presentes.
+
+## Tabelas SAP2000 (referencia)
+
+Modelo:
+
+- Joint Coordinates
+- Connectivity - Frame
+- Connectivity - Area
+- Frame Section Assignments
+- Frame Section Properties 01 - General
+- Area Section Assignments
+- Area Section Properties
+- Material Properties 02 - Basic Mechanical Properties
+
+Resultados:
+
+- Element Forces - Frames
+- Element Forces - Area Shells
+- Joint Displacements
+- Joint Reactions
 
 ## Responsabilidades
 
-- parsear tabelas de geometria, propriedades e resultados;
-- validar campos obrigatorios;
-- mapear para convencao interna 1D/2D;
-- reportar inconsistencias com erros tipados.
+- parser de origem:
+- isolar detalhes de formato (csv/xls/xlsx)
+- detectar e extrair tabelas
+- reportar inconsistencias de leitura
+
+- conversao para intermediario:
+- normalizar nomes de colunas de origem
+- preencher defaults minimos
+- preservar semantica de caso/combinacao e localizacao
+
+- conversao para modelo central:
+- montar tabelas exigidas pelo dominio
+- validar colunas obrigatorias
+- aplicar normalizacoes finais de tipo/localizacao
+
+Tabelas de saida devem seguir nomenclatura exata do dominio:
+
+- nodes_df
+- elements_1d_df
+- elements_2d_df
+- materials_df
+- sections_df
+- origin_1d_results_df
+- origin_2d_results_df
+- origin_node_displacements_df
+- origin_node_reactions_df
+- overrides_df
+- task_1d_results_df
+- task_2d_results_df
+- task_node_results_df
 
 ## Restricoes
 
-- importador nao executa regra de verificacao/dimensionamento;
+- importador nao executa regras de check/design;
 - importador nao acessa GUI;
-- importador nao acopla tipos concretos do dominio alem dos contratos de entrada.
+- importador nao acopla visualizacao;
+- importador nao manipula diretamente casos de uso de aplicacao.
 
-## Conversao para Modelo Interno
+## Tratamento de Erro
 
-Mapeamentos devem obedecer [03 - Domain Model](03-domain-model.md), incluindo:
+- erro de engine excel ausente deve ser explicito (ex.: xlrd/openpyxl);
+- erro de tabela obrigatoria ausente deve apontar nome da tabela;
+- erro de coluna obrigatoria ausente deve apontar coluna e tabela.
 
-- nomenclatura de elementos;
-- campos de espessura/secao/material;
-- representacao de resultados 1D/2D.
+## Contrato com o Dominio
 
-## Pressupostos
-
-- Elementos 2D podem ter 3 nos ou 4 nos nos dados de origem. O programa deve levar isso em conta.
+A saida do importador deve respeitar o esquema definido em [03 - Domain Model](03-domain-model.md), sem bypass de validacao do FEMModel.
 
 ## Ver Tambem
 
 - [03 - Domain Model](03-domain-model.md)
+- [04 - Application Layer](04-application-layer.md)
 - [18 - Error Handling](18-error-handling.md)

@@ -14,7 +14,8 @@ from civil_3P.core.enums import ElementType
 from civil_3P.core.model import FEMModel
 from civil_3P.core.results import ResultProcessor, VisualizationCriteria
 from civil_3P.core.selection import SelectionContext
-from civil_3P.importers.csv_importers import CsvImportProfile
+from civil_3P.importers.importer import ImporterProfile
+from civil_3P.file_service.file_service import ModelArchiveService
 from civil_3P.tasks.base import TaskResult
 from civil_3P.tasks.registry import BuiltinTaskRegistry
 
@@ -30,6 +31,7 @@ class AppController:
         task_service: TaskExecutionService | None = None,
         result_service: ResultQueryService | None = None,
         task_registry: BuiltinTaskRegistry | None = None,
+        archive_service: ModelArchiveService | None = None,
     ) -> None:
         self._import_service = import_service or ImportModelService()
         self._task_service = task_service or TaskExecutionService()
@@ -37,10 +39,11 @@ class AppController:
             processor=ResultProcessor()
         )
         self._task_registry = task_registry or BuiltinTaskRegistry()
+        self._archive_service = archive_service or ModelArchiveService()
 
     def import_model(
         self,
-        profile: CsvImportProfile,
+        profile: ImporterProfile,
         directory: str | Path,
     ) -> FEMModel:
         return self._import_service.import_model(profile, directory)
@@ -74,6 +77,19 @@ class AppController:
         task_result: TaskResult,
     ) -> pd.DataFrame:
         return self._result_service.process(task_result, criteria, selection)
+
+    def save_model(
+        self,
+        model: FEMModel,
+        path: str | Path,
+    ) -> None:
+        self._archive_service.save(model, path)
+
+    def load_model_archive(
+        self,
+        path: str | Path,
+    ) -> FEMModel:
+        return self._archive_service.load(path)
 
     def create_main_window(self) -> SupportsQtWindow:
         try:

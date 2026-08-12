@@ -35,7 +35,7 @@ class ExampleBarCheckPlugin(TaskPlugin):
     def execute(self,
                 context: TaskContext) -> TaskResult:
         property_map = context.model.property_map("element")
-        base = context.model.results
+        base = context.model.origin_results_1d_df
         axial = base[
             (base["case_id"] == context.case_id)
             & (base["result_name"] == "axial_force")
