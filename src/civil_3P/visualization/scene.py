@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Any
-import numpy as np
 
 import pandas as pd
 
@@ -13,8 +12,7 @@ class VisualizationService:
     def build_scene(self, model: FEMModel) -> dict[str, dict[str, dict[str, Any]]]:
         nodes = self._build_nodes(model.tables_dict[rpr.ModelTables.NODES])
         bars = self._build_bars(model.tables_dict[rpr.ModelTables.ELEMENTS_1D])
-        shells = self._build_shells(
-            model.tables_dict[rpr.ModelTables.ELEMENTS_2D])
+        shells = self._build_shells(model.tables_dict[rpr.ModelTables.ELEMENTS_2D])
 
         return {
             "nodes": nodes,
@@ -24,8 +22,7 @@ class VisualizationService:
 
     def _build_nodes(self, nodes: pd.DataFrame) -> dict[str, dict[str, Any]]:
         return {
-            str(getattr(row, rpr.NodesColumns.NODE)):
-            {
+            str(getattr(row, rpr.NodesColumns.NODE)): {
                 "x": float(getattr(row, rpr.NodesColumns.X)),
                 "y": float(getattr(row, rpr.NodesColumns.Y)),
                 "z": float(getattr(row, rpr.NodesColumns.Z)),
@@ -59,7 +56,7 @@ class VisualizationService:
                         getattr(row, rpr.Elements2DColumns.NODE_3, None),
                         getattr(row, rpr.Elements2DColumns.NODE_4, None),
                     ]
-                    if node_id not in (None, "", np.nan)
+                    if not pd.isna(node_id)
                 ],
             }
             for row in elements_2d.itertuples(index=False)
