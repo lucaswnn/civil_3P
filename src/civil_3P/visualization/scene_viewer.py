@@ -19,9 +19,9 @@ class SceneViewerConfig:
         self.element_2d_color = Colors.LIGHTGRAY
         self.edge_color = Colors.GRAY
         self.node_color = Colors.RED
-        self.element_1d_line_width = 4.0
+        self.element_1d_line_width = 2.0
         self.element_2d_line_width = 1.0
-        self.node_point_size = 5.0
+        self.node_point_size = 3.5
 
 
 class SceneViewer(QtInteractor):

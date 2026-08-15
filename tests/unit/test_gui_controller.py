@@ -6,7 +6,7 @@ from civil_3P.standard.model_components import ModelComponents
 from civil_3P.standard.result_components import VisualizationMode
 from civil_3P.core.results import VisualizationCriteria
 from civil_3P.gui.category_controllers import FileMenuController, TarefasController
-from civil_3P.importers.importer import ImporterProfile
+from civil_3P.importers.importer_registry import ImporterProfile
 
 
 def test_gui_controller_can_import_and_prepare_results(tmp_path) -> None:

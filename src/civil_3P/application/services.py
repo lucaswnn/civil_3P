@@ -9,10 +9,10 @@ import pandas as pd
 from civil_3P.core.model import FEMModel
 from civil_3P.core.results import ResultProcessor, VisualizationCriteria
 from civil_3P.core.selection import SelectionContext
-from civil_3P.importers.importer import ImporterRegistry
-from civil_3P.tasks.registry import TaskRegistry
+from civil_3P.importers.importer_registry import ImporterRegistry
+from civil_3P.tasks.task_registry import TaskRegistry
 from civil_3P.tasks.task_base import TaskContext, TaskPlugin, TaskResult
-from civil_3P.visualization.scene import VisualizationBuilder
+from civil_3P.visualization.scene_builder import SceneBuilder
 from civil_3P.standard.importer_profiles import ImporterProfiles
 
 
@@ -57,8 +57,8 @@ class ResultQueryService:
 
 
 class VisualizationService:
-    def __init__(self, builder: VisualizationBuilder | None = None) -> None:
-        self._builder = builder or VisualizationBuilder()
+    def __init__(self, builder: SceneBuilder | None = None) -> None:
+        self._builder = builder or SceneBuilder()
 
     def build_scene(self, model: FEMModel) -> dict[str, dict[str, dict[str, Any]]]:
         return self._builder.build_scene(model)

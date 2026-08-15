@@ -1,7 +1,7 @@
-from civil_3P.visualization.scene import VisualizationBuilder
+from civil_3P.visualization.scene_builder import SceneBuilder
 from civil_3P.visualization.widget import SceneWidget
 
 __all__ = [
-    "VisualizationBuilder",
+    "SceneBuilder",
     "SceneWidget",
 ]

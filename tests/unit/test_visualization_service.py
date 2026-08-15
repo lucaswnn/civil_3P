@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd
 
 from civil_3P.core.model import FEMModel
-from civil_3P.visualization.scene import VisualizationBuilder
+from civil_3P.visualization.scene_builder import SceneBuilder
 
 
 def test_visualization_service_builds_scene_data() -> None:
@@ -22,7 +22,7 @@ def test_visualization_service_builds_scene_data() -> None:
             "node_4": "N1", "material_id": "C", "thickness": 0.2},
     ])
 
-    scene = VisualizationBuilder().build_scene(model)
+    scene = SceneBuilder().build_scene(model)
 
     assert scene["nodes"]["N1"]["x"] == 0.0
     assert scene["bars"]["B1"]["start"] == "N1"
@@ -41,7 +41,7 @@ def test_visualization_service_handles_triangular_shells() -> None:
             "node_4": None, "material_id": "C", "thickness": 0.2},
     ])
 
-    scene = VisualizationBuilder().build_scene(model)
+    scene = SceneBuilder().build_scene(model)
 
     shell = scene["shells"]["T1"]
     assert shell["nodes"] == ["N1", "N2", "N3"]
