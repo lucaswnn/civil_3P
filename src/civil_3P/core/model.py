@@ -98,6 +98,10 @@ class FEMModel:
                     rpr.OriginNodeReactionsColumns.MY,
                     rpr.OriginNodeReactionsColumns.MZ,
                 ]),
+                rpr.ModelTables.LOAD_CASES: pd.DataFrame(columns=[
+                    rpr.LoadCasesColumns.CASE,
+                    rpr.LoadCasesColumns.DESCRIPTION,
+                ]),
                 rpr.ModelTables.TASK_1D_RESULTS: pd.DataFrame(columns=[
                     rpr.Task1DResultsColumns.ELEMENT,
                     rpr.Task1DResultsColumns.STATION,

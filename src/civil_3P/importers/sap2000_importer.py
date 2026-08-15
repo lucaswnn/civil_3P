@@ -140,6 +140,15 @@ SAP2000_SPEC = ImporterSpec(
             },
             defaults={},
         ),
+        rpr.ModelTables.LOAD_CASES: ColumnMapping(
+            rename={
+                "Case": rpr.LoadCasesColumns.CASE,
+                "Notes": rpr.LoadCasesColumns.DESCRIPTION,
+            },
+            defaults={
+                rpr.LoadCasesColumns.DESCRIPTION: "",
+            },
+        ),
     },
 )
 
@@ -219,7 +228,7 @@ class Sap2000Importer(ImporterAdapter):
                                                       dict[str, str]] | None = None,
     ) -> None:
         main_table, main_table_units_dict = self._get_table(main_table_name)
-        
+
         for key_table_name, merge_key in table_key_merge_mapping.items():
             key_table, key_table_units_dict = self._get_table(key_table_name)
             if (rename_other_tables_columns_mapping
@@ -255,6 +264,49 @@ class Sap2000Importer(ImporterAdapter):
         )
 
         self.intermediate.tables_dict[main_model_table] = main_table
+
+    def _process_load_cases(self) -> None:
+        load_case, load_case_units = self._get_table("Load Case Definitions")
+        pdUtils.keep_columns(
+            load_case,
+            [
+                "Case",
+                "Notes",
+            ],
+        )
+        combs, _ = self._get_table("Combination Definitions")
+        combs.dropna(subset=["ComboType"], inplace=True)
+
+        def concat_case_names(row):
+            if row["ComboType"] == "Envelope":
+                return [f"{row['ComboName']} - Max", f"{row['ComboName']} - Min"]
+
+            return [row['ComboName']]
+
+        combs["Case"] = combs.apply(concat_case_names, axis=1)
+
+        combs = combs.explode("Case")
+        pdUtils.keep_columns(
+            combs,
+            [
+                "Case",
+                "Notes",
+            ],
+        )
+        load_case = pd.concat(
+            [load_case, combs],
+            ignore_index=True,
+            sort=False,
+        ).drop_duplicates(subset=["Case"])
+        self.process_units(load_case, load_case_units)
+        self.map_dataframe(
+            load_case, self._spec.tables_mapping[rpr.ModelTables.LOAD_CASES])
+        pdUtils.ensure_columns(
+            load_case,
+            list(
+                self.intermediate.tables_dict[rpr.ModelTables.LOAD_CASES].columns),
+        )
+        self.intermediate.tables_dict[rpr.ModelTables.LOAD_CASES] = load_case
 
     def _build_intermediate(self) -> IntermediateRepresentation:
         print("Building intermediate representation from SAP2000 tables")
@@ -399,6 +451,8 @@ class Sap2000Importer(ImporterAdapter):
             model_table=rpr.ModelTables.ORIGIN_NODE_REACTIONS,
             concat_columns_on_first=["OutputCase", "StepType"],
         )
+
+        self._process_load_cases()
 
         return self.intermediate
 

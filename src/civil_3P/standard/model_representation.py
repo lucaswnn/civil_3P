@@ -11,9 +11,11 @@ class ModelTables(StrEnum):
     ORIGIN_2D_RESULTS = "origin_2d_results_df"
     ORIGIN_NODE_DISPLACEMENTS = "origin_node_displacements_df"
     ORIGIN_NODE_REACTIONS = "origin_node_reactions_df"
+    LOAD_CASES = "load_cases_df"
     TASK_1D_RESULTS = "task_1d_results_df"
     TASK_2D_RESULTS = "task_2d_results_df"
     TASK_NODE_RESULTS = "task_node_results_df"
+
 
 REQUIRED_TABLES = {table.value for table in ModelTables}
 
@@ -105,17 +107,25 @@ class OriginNodeReactionsColumns(StrEnum):
     MY = "my"
     MZ = "mz"
 
+
+class LoadCasesColumns(StrEnum):
+    CASE = "case"
+    DESCRIPTION = "description"
+
+
 class Task1DResultsColumns(StrEnum):
     ELEMENT = "element"
     STATION = "station"
     CASE = "case"
     VALUE = "value"
 
+
 class Task2DResultsColumns(StrEnum):
     ELEMENT = "element"
     NODE = "node"
     CASE = "case"
     VALUE = "value"
+
 
 class TaskNodeResultsColumns(StrEnum):
     NODE = "node"
