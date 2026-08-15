@@ -1,3 +1,3 @@
-from civil_3P.file_service.file_service import ModelArchiveService
+from civil_3P.file_service.file_service import FileService
 
-__all__ = ["ModelArchiveService"]
+__all__ = ["FileService"]

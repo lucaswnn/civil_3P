@@ -6,7 +6,7 @@ from civil_3P.standard import model_components as mc
 from civil_3P.standard.result_components import ResultLocation
 from civil_3P.standard.task_components import TaskType
 
-from civil_3P.tasks.base import (
+from civil_3P.tasks.task_base import (
     TaskContext,
     TaskMetadata,
     TaskPlugin,

@@ -1,45 +1,31 @@
 from __future__ import annotations
 
-from pathlib import Path
-from typing import TYPE_CHECKING
-
-import traceback
-
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QApplication,
-    QFileDialog,
-    QFormLayout,
+    QButtonGroup,
     QHBoxLayout,
-    QLabel,
-    QLineEdit,
     QMainWindow,
-    QMessageBox,
     QMenu,
-    QPushButton,
     QSplitter,
+    QStackedWidget,
+    QToolButton,
     QVBoxLayout,
     QWidget,
 )
 
-from civil_3P.standard import model_components as mc
-from civil_3P.standard.result_components import VisualizationMode
-from civil_3P.core.results import VisualizationCriteria
-from civil_3P.importers.importer import ImporterProfile
-from civil_3P.gui import AppController
-from civil_3P.visualization.scene import VisualizationService
+from civil_3P.gui.menu_categories import (
+    FileMenuCategory,
+    MenuCategoryRegistry,
+    TarefasMenuCategory,
+)
+from civil_3P.gui.tabs import ModeloViewTab, TabelaViewTab, ViewTabRegistry
 from civil_3P.visualization.widget import SceneWidget
-
-if TYPE_CHECKING:
-    from civil_3P.gui.controller import AppController
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, controller: "AppController") -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self._controller = controller
-        self._model = None
-        self._scene_service = VisualizationService()
         self._setup_ui()
 
     def _setup_ui(self) -> None:
@@ -53,200 +39,114 @@ class MainWindow(QMainWindow):
         root_layout.setContentsMargins(12, 12, 12, 12)
         root_layout.setSpacing(12)
 
-        left_panel = QWidget(self)
-        left_layout = QVBoxLayout(left_panel)
-        left_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.setSpacing(12)
-
-        file_button = QPushButton("arquivo")
-        file_menu = QMenu(self)
-        import_action = file_menu.addAction("Importar SAP2000")
-        import_action.triggered.connect(self._import_sap2000)
-        load_saved_action = file_menu.addAction("Carregar modelo")
-        load_saved_action.triggered.connect(self._load_saved_model)
-        save_action = file_menu.addAction("Salvar modelo")
-        save_action.triggered.connect(self._save_model)
-        file_button.setMenu(file_menu)
-        left_layout.addWidget(
-            file_button, alignment=Qt.AlignmentFlag.AlignLeft)
-
-        form_layout = QFormLayout()
-        form_layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
-        self._case_edit = QLineEdit("LC1")
-        self._element_edit = QLineEdit("B1")
-        self._task_combo = QLineEdit("example_bar_check")
-
-        form_layout.addRow(QLabel("Caso"), self._case_edit)
-        form_layout.addRow(QLabel("Elemento"), self._element_edit)
-        form_layout.addRow(QLabel("Tarefa"), self._task_combo)
-
-        run_button = QPushButton("Executar tarefa")
-        run_button.clicked.connect(self._run_task)
-        form_layout.addRow(run_button)
-
-        left_layout.addLayout(form_layout)
-        left_layout.addStretch()
-
-        self._scene_widget = SceneWidget(self)
-        self._scene_widget.setMinimumWidth(700)
-        self._scene_widget.setMinimumHeight(280)
+        # Right panel builds scene_widget, needed by the left panel's File category.
+        right_panel = self._build_right_panel()
+        left_panel = self._build_left_panel()
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.setChildrenCollapsible(False)
         splitter.addWidget(left_panel)
-        splitter.addWidget(self._scene_widget)
+        splitter.addWidget(right_panel)
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 3)
         splitter.setSizes([300, 900])
         root_layout.addWidget(splitter)
 
-    def _import_sap2000(self) -> None:
-        file_path, _ = QFileDialog.getOpenFileName(
-            self,
-            "Selecionar arquivo do SAP2000",
-            str(Path.cwd()),
-            "Arquivos Excel (*.xlsx);;Todos os Arquivos (*)",
-        )
+    def _build_left_panel(self) -> QWidget:
+        left_panel = QWidget(self)
+        left_layout = QVBoxLayout(left_panel)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.setSpacing(12)
 
-        if not file_path:
-            return
+        self._category_registry = MenuCategoryRegistry((
+            FileMenuCategory(self._scene_widget),
+            TarefasMenuCategory(),
+        ))
 
-        try:
-            self._model = self._controller.import_model(
-                ImporterProfile.SAP2000,
-                Path(file_path),
-            )
-            self._scene_widget.set_scene(
-                self._scene_service.build_scene(self._model)
-            )
-            QMessageBox.information(
-                self,
-                "civil_3P",
-                "Modelo carregado com sucesso.",
-            )
-        except Exception as exc:  # pragma: no cover - runtime feedback only
-            msgbox = QMessageBox()
-            msgbox.setIcon(QMessageBox.Critical)
-            msgbox.setWindowTitle("civil_3P")
-            msgbox.setText(f"Falha ao carregar o modelo: {exc}")
-            msgbox.setDetailedText(traceback.format_exc())
-            msgbox.exec()
+        self._category_stack = QStackedWidget(left_panel)
+        self._category_index: dict[str, int] = {}
+        for category in self._category_registry.all():
+            index = self._category_stack.addWidget(
+                category.build_panel(self._category_stack))
+            self._category_index[category.identifier] = index
 
-    def _load_saved_model(self) -> None:
-        model_path, _ = QFileDialog.getOpenFileName(
-            self,
-            "Carregar modelo civil_3P",
-            str(Path.cwd()),
-            "Arquivos civil_3P (*.c3p)",
-        )
+        self._category_button = QToolButton(left_panel)
+        self._category_button.setPopupMode(QToolButton.InstantPopup)
+        category_menu = QMenu(self._category_button)
+        for category in self._category_registry.all():
+            action = category_menu.addAction(category.display_name)
+            action.triggered.connect(
+                lambda _checked=False, identifier=category.identifier: self._select_category(identifier))
+        self._category_button.setMenu(category_menu)
 
-        if not model_path:
-            return
+        left_layout.addWidget(
+            self._category_button, alignment=Qt.AlignmentFlag.AlignHCenter)
+        left_layout.addWidget(self._category_stack)
 
-        try:
-            self._model = self._controller.load_model_archive(model_path)
-            self._scene_widget.set_scene(
-                self._scene_service.build_scene(self._model)
-            )
-            QMessageBox.information(
-                self,
-                "civil_3P",
-                "Modelo salvo carregado com sucesso.",
-            )
-        except Exception as exc:  # pragma: no cover - runtime feedback only
-            msgbox = QMessageBox()
-            msgbox.setIcon(QMessageBox.Critical)
-            msgbox.setWindowTitle("civil_3P")
-            msgbox.setText(f"Falha ao carregar o modelo salvo: {exc}")
-            msgbox.setDetailedText(traceback.format_exc())
-            msgbox.exec()
+        self._select_category(self._category_registry.all()[0].identifier)
 
-    def _save_model(self) -> None:
-        if self._model is None:
-            QMessageBox.warning(
-                self,
-                "civil_3P",
-                "Carregue um modelo antes de salvar.",
-            )
-            return
+        return left_panel
 
-        save_path, _ = QFileDialog.getSaveFileName(
-            self,
-            "Salvar modelo civil_3P",
-            str(Path.cwd()),
-            "Arquivos civil_3P (*.c3p)",
-        )
+    def _select_category(self, identifier: str) -> None:
+        category = self._category_registry.get(identifier)
+        self._category_button.setText(category.display_name)
+        self._category_stack.setCurrentIndex(self._category_index[identifier])
 
-        if not save_path:
-            return
+    def _build_right_panel(self) -> QWidget:
+        right_panel = QWidget(self)
+        right_layout = QVBoxLayout(right_panel)
+        right_layout.setContentsMargins(0, 0, 0, 0)
+        right_layout.setSpacing(4)
 
-        file_path = Path(save_path)
-        if file_path.suffix.lower() != ".c3p":
-            file_path = file_path.with_suffix(".c3p")
+        self._scene_widget = SceneWidget(right_panel)
+        self._scene_widget.setMinimumWidth(700)
+        self._scene_widget.setMinimumHeight(280)
 
-        try:
-            self._controller.save_model(self._model, file_path)
-            QMessageBox.information(
-                self,
-                "civil_3P",
-                f"Modelo salvo em: {file_path}",
-            )
-        except Exception as exc:  # pragma: no cover - runtime feedback only
-            QMessageBox.critical(
-                self,
-                "civil_3P",
-                f"Falha ao salvar o modelo: {exc}",
-            )
+        self._tab_registry = ViewTabRegistry((
+            ModeloViewTab(self._scene_widget),
+            TabelaViewTab(),
+        ))
 
-    def _run_task(self) -> None:
-        if self._model is None:
-            QMessageBox.warning(
-                self,
-                "civil_3P",
-                "Carregue um modelo antes de executar uma tarefa.",
-            )
-            return
+        self._view_stack = QStackedWidget(right_panel)
+        self._tab_index: dict[str, int] = {}
+        for tab in self._tab_registry.all():
+            index = self._view_stack.addWidget(
+                tab.build_content(self._view_stack))
+            self._tab_index[tab.identifier] = index
 
-        task_id = self._task_combo.text().strip()
-        case_id = self._case_edit.text().strip() or "LC1"
-        element_id = self._element_edit.text().strip() or "B1"
+        tab_bar = QWidget(right_panel)
+        tab_bar.setFixedHeight(28)
+        tab_bar_layout = QHBoxLayout(tab_bar)
+        tab_bar_layout.setContentsMargins(4, 0, 4, 0)
+        tab_bar_layout.setSpacing(4)
 
-        try:
-            selection = self._controller.create_selection(
-                ModelComponents.ELEMENTS_1D if task_id == "example_bar_check" else ModelComponents.ELEMENTS_2D,
-                (element_id,),
-            )
+        tab_group = QButtonGroup(tab_bar)
+        tab_group.setExclusive(True)
+        for tab in self._tab_registry.all():
+            tab_button = QToolButton(tab_bar)
+            tab_button.setText(tab.display_name)
+            tab_button.setCheckable(True)
+            tab_button.clicked.connect(
+                lambda _checked=False, identifier=tab.identifier: self._select_tab(identifier))
+            tab_group.addButton(tab_button)
+            tab_bar_layout.addWidget(tab_button)
+        tab_bar_layout.addStretch()
+        first_button = tab_group.buttons()[0]
+        first_button.setChecked(True)
 
-            task_result = self._controller.execute_task(
-                task_id,
-                self._model,
-                selection,
-                case_id,
-            )
+        right_layout.addWidget(tab_bar)
+        right_layout.addWidget(self._view_stack)
 
-            self._controller.build_result_view(
-                selection,
-                VisualizationCriteria(
-                    result_name="utilization"
-                    if task_id == "example_bar_check"
-                    else "required_thickness",
-                    case_id=case_id,
-                    mode=VisualizationMode.ELEMENT
-                    if task_id == "example_bar_check"
-                    else VisualizationMode.NODE_AVERAGED,
-                ),
-                task_result,
-            )
-        except Exception as exc:  # pragma: no cover - runtime feedback only
-            QMessageBox.critical(
-                self,
-                "civil_3P",
-                f"Falha ao executar a tarefa: {exc}",
-            )
+        self._select_tab(self._tab_registry.all()[0].identifier)
+
+        return right_panel
+
+    def _select_tab(self, identifier: str) -> None:
+        self._view_stack.setCurrentIndex(self._tab_index[identifier])
 
 
-def main() -> int:
+def show_gui() -> int:
     app = QApplication.instance() or QApplication([])
-    window = MainWindow(AppController())
+    window = MainWindow()
     window.show()
     return app.exec()

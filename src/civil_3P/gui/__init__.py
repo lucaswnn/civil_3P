@@ -1,3 +1,2 @@
-from civil_3P.gui.controller import AppController
+from __future__ import annotations
 
-__all__ = ["AppController"]

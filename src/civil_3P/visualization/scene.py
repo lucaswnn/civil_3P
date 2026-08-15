@@ -8,7 +8,7 @@ from civil_3P.standard import model_representation as rpr
 from civil_3P.standard import model_components as mc
 
 
-class VisualizationService:
+class VisualizationBuilder:
     def build_scene(self, model: FEMModel) -> dict[str, dict[str, dict[str, Any]]]:
         nodes = self._build_nodes(model.tables_dict[rpr.ModelTables.NODES])
         bars = self._build_bars(model.tables_dict[rpr.ModelTables.ELEMENTS_1D])

@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import pandas as pd
 
-from civil_3P.core.enums import ModelComponents, VisualizationMode
+from civil_3P.standard.model_components import ModelComponents
+from civil_3P.standard.result_components import VisualizationMode
 from civil_3P.core.results import VisualizationCriteria
-from civil_3P.gui.controller import AppController
-from civil_3P.importers.importer_adapter import ImporterProfile
+from civil_3P.gui.category_controllers import FileMenuController, TarefasController
+from civil_3P.importers.importer import ImporterProfile
 
 
 def test_gui_controller_can_import_and_prepare_results(tmp_path) -> None:
@@ -93,18 +94,20 @@ def test_gui_controller_can_import_and_prepare_results(tmp_path) -> None:
         columns=["Case", "Node", "Result", "Value", "Location"]
     ).to_csv(tmp_path / "origin_results_nodes.csv", index=False)
 
-    controller = AppController()
+    controller = FileMenuController()
     model = controller.import_model(ImporterProfile.SAP2000, tmp_path)
-    selection = controller.create_selection(
+
+    tarefas_controller = TarefasController()
+    selection = tarefas_controller.create_selection(
         ModelComponents.ELEMENTS_1D, ("B1",))
 
-    task_result = controller.execute_task(
+    task_result = tarefas_controller.execute_task(
         "example_bar_check",
         model,
         selection,
         "LC1",
     )
-    view = controller.build_result_view(
+    view = tarefas_controller.build_result_view(
         selection,
         VisualizationCriteria(
             result_name="utilization",

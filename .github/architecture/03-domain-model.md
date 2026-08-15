@@ -23,8 +23,9 @@ Definir o modelo interno unificado do civil_3P para elementos, materiais, result
 - OriginResults2D
 - OriginDisplacementsNodes
 - OriginReactionsNodes
+- LoadCases
+- TaskResults (1D e 2D e nodal)
 - OverrideSet
-- TaskResults (1D e 2D)
 
 ## Estrutura Tabular Obrigatoria
 
@@ -39,10 +40,10 @@ Tabelas exigidas no modelo central:
 - origin_2d_results_df
 - origin_node_displacements_df
 - origin_node_reactions_df
-- overrides_df
 - task_1d_results_df
 - task_2d_results_df
 - task_node_results_df
+- overrides_df
 
 ## Representacao Intermediaria de Importacao
 
