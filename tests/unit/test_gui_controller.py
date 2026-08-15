@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from civil_3P.core.enums import ElementType, VisualizationMode
+from civil_3P.core.enums import ModelComponents, VisualizationMode
 from civil_3P.core.results import VisualizationCriteria
 from civil_3P.gui.controller import AppController
 from civil_3P.importers.importer_adapter import ImporterProfile
@@ -95,7 +95,8 @@ def test_gui_controller_can_import_and_prepare_results(tmp_path) -> None:
 
     controller = AppController()
     model = controller.import_model(ImporterProfile.SAP2000, tmp_path)
-    selection = controller.create_selection(ElementType.BAR_1D, ("B1",))
+    selection = controller.create_selection(
+        ModelComponents.ELEMENTS_1D, ("B1",))
 
     task_result = controller.execute_task(
         "example_bar_check",

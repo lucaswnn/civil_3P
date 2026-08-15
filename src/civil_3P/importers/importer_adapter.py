@@ -7,8 +7,8 @@ from pathlib import Path
 import pandas as pd
 
 from civil_3P.core.model import FEMModel
-from civil_3P.core import units
-from civil_3P.core import model_repr as rpr
+from civil_3P.standard import units
+from civil_3P.standard import model_representation as rpr
 from civil_3P.utils.pandas_utils import PandasUtils as pdUtils
 
 

@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import pandas as pd
 
-from civil_3P.core.enums import (
-    ElementType,
-    ResultLocation,
-    TaskType,
-)
+from civil_3P.standard import model_components as mc
+from civil_3P.standard.result_components import ResultLocation
+from civil_3P.standard.task_components import TaskType
 
 from civil_3P.tasks.base import (
     TaskContext,
@@ -22,11 +20,11 @@ class ExampleShellDesignPlugin(TaskPlugin):
         return TaskMetadata(identifier="example_shell_design",
                             display_name="Example Shell Design",
                             task_type=TaskType.DESIGN,
-                            supported_element_type=ElementType.SHELL_2D)
+                            supported_element_type=mc.ModelComponents.ELEMENTS_2D)
 
     def validate_input(self,
                        context: TaskContext) -> None:
-        if context.selection.element_type != ElementType.SHELL_2D:
+        if context.selection.element_type != mc.ModelComponents.ELEMENTS_2D:
             raise ValueError(
                 "ExampleShellDesignPlugin only supports 2D shells")
 
@@ -52,7 +50,7 @@ class ExampleShellDesignPlugin(TaskPlugin):
 
         membrane["value"] = (membrane["value"].abs() /
                              membrane["design_strength"]).round(6)
-        
+
         membrane["result_name"] = "required_thickness"
         membrane["location"] = ResultLocation.NODE.value
         report = (
@@ -62,5 +60,5 @@ class ExampleShellDesignPlugin(TaskPlugin):
             .max()
             .rename(columns={"value": "required_thickness"})
         )
-        
+
         return TaskResult(metadata=self.metadata, results=membrane, report=report)

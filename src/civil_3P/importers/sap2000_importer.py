@@ -4,8 +4,9 @@ from pathlib import Path
 
 import pandas as pd
 
+from civil_3P.standard import model_representation as rpr
 from civil_3P.utils.pandas_utils import PandasUtils as pdUtils
-from civil_3P.core import model_repr as rpr, units
+from civil_3P.standard import units
 from civil_3P.importers.importer_adapter import (
     ImporterAdapter,
     ColumnMapping,

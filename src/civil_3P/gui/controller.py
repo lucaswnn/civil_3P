@@ -10,7 +10,7 @@ from civil_3P.application.services import (
     ResultQueryService,
     TaskExecutionService,
 )
-from civil_3P.core.enums import ElementType
+from civil_3P.standard import model_components as mc
 from civil_3P.core.model import FEMModel
 from civil_3P.core.results import ResultProcessor, VisualizationCriteria
 from civil_3P.core.selection import SelectionContext
@@ -50,7 +50,7 @@ class AppController:
 
     def create_selection(
         self,
-        element_type: ElementType,
+        element_type: mc.ModelComponents,
         selected_element_ids: tuple[str, ...] | list[str],
         adjacent_element_ids: tuple[str, ...] | list[str] | None = None,
     ) -> SelectionContext:

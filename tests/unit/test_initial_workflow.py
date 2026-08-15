@@ -8,7 +8,7 @@ from civil_3P.application.services import (
     TaskExecutionService,
 )
 
-from civil_3P.core.enums import ElementType, VisualizationMode
+from civil_3P.core.enums import ModelComponents, VisualizationMode
 from civil_3P.core.results import ResultAveragingPolicy, VisualizationCriteria
 from civil_3P.core.selection import SelectionContext
 from civil_3P.importers.importer_adapter import ImporterProfile
@@ -186,7 +186,7 @@ def test_import_and_example_tasks(tmp_path) -> None:
     task_service = TaskExecutionService()
     result_service = ResultQueryService()
 
-    bar_selection = SelectionContext(element_type=ElementType.BAR_1D,
+    bar_selection = SelectionContext(element_type=ModelComponents.ELEMENTS_1D,
                                      selected_element_ids=("B1",))
 
     bar_result = task_service.execute(ExampleBarCheckPlugin(),
@@ -203,7 +203,7 @@ def test_import_and_example_tasks(tmp_path) -> None:
 
     assert bar_view.iloc[0]["value"] == 0.5
 
-    shell_selection = SelectionContext(element_type=ElementType.SHELL_2D,
+    shell_selection = SelectionContext(element_type=ModelComponents.ELEMENTS_2D,
                                        selected_element_ids=("P1",),
                                        adjacent_element_ids=("P2",))
 

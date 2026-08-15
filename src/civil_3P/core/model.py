@@ -4,10 +4,9 @@ from dataclasses import dataclass
 from typing import Any
 
 import pandas as pd
-from numpy import nan as np_nan
 
-from civil_3P.core import model_repr as rpr
-from civil_3P.core.units import *
+from civil_3P.standard import model_representation as rpr
+from civil_3P.standard.units import *
 
 
 @dataclass(slots=True)

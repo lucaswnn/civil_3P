@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import pandas as pd
 
-from civil_3P.core.enums import (
-    ElementType,
-    ResultLocation,
-    TaskType,
-)
+from civil_3P.standard import model_components as mc
+from civil_3P.standard.result_components import ResultLocation
+from civil_3P.standard.task_components import TaskType
 
 from civil_3P.tasks.base import (
     TaskContext,
@@ -22,11 +20,11 @@ class ExampleBarCheckPlugin(TaskPlugin):
         return TaskMetadata(identifier="example_bar_check",
                             display_name="Example Bar Check",
                             task_type=TaskType.CHECK,
-                            supported_element_type=ElementType.BAR_1D)
+                            supported_element_type=mc.ModelComponents.ELEMENTS_1D)
 
     def validate_input(self,
                        context: TaskContext) -> None:
-        if context.selection.element_type != ElementType.BAR_1D:
+        if context.selection.element_type != mc.ModelComponents.ELEMENTS_1D:
             raise ValueError("ExampleBarCheckPlugin only supports 1D bars")
 
         if not context.selection.selected_element_ids:
@@ -56,5 +54,5 @@ class ExampleBarCheckPlugin(TaskPlugin):
             .max()
             .rename(columns={"value": "max_utilization"})
         )
-        
+
         return TaskResult(metadata=self.metadata, results=axial, report=report)

@@ -22,7 +22,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from civil_3P.core.enums import ElementType, VisualizationMode
+from civil_3P.standard import model_components as mc
+from civil_3P.standard.result_components import VisualizationMode
 from civil_3P.core.results import VisualizationCriteria
 from civil_3P.importers.importer import ImporterProfile
 from civil_3P.gui import AppController
@@ -212,7 +213,7 @@ class MainWindow(QMainWindow):
 
         try:
             selection = self._controller.create_selection(
-                ElementType.BAR_1D if task_id == "example_bar_check" else ElementType.SHELL_2D,
+                ModelComponents.ELEMENTS_1D if task_id == "example_bar_check" else ModelComponents.ELEMENTS_2D,
                 (element_id,),
             )
 

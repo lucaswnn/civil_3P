@@ -1,5 +1,0 @@
-"Case","ObjectType","ObjectId","Node","Station","Result","Value","Location"
-"LC1","1D","B1",,0.0,"axial_force",10.0,"element"
-"LC1","2D","P1","N2",,"membrane_force",12.0,"node"
-"LC1","2D","P1","N3",,"membrane_force",8.0,"node"
-"LC1","2D","P2","N3",,"membrane_force",9.0,"node"

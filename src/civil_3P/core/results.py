@@ -4,13 +4,12 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from civil_3P.core.enums import (
-    ElementType,
-    ResultLocation,
-    VisualizationMode,
-)
-
 from civil_3P.core.selection import SelectionContext
+from civil_3P.standard import model_components as mc
+from civil_3P.standard.result_components import (
+    VisualizationMode,
+    ResultLocation,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,7 +18,7 @@ class ResultAveragingPolicy:
 
     def target_element_ids(self,
                            selection: SelectionContext) -> tuple[str, ...]:
-        if selection.element_type != ElementType.SHELL_2D:
+        if selection.element_type != mc.ModelComponents.ELEMENTS_2D:
             return selection.selected_element_ids
 
         if self.include_adjacent_for_2d_average:
@@ -51,7 +50,7 @@ class ResultProcessor:
         if filtered.empty:
             return filtered
 
-        if selection.element_type == ElementType.BAR_1D:
+        if selection.element_type == mc.ModelComponents.ELEMENTS_1D:
             return self._process_1d(filtered, selection)
 
         return self._process_2d(filtered, selection, criteria)

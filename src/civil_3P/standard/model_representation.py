@@ -1,5 +1,6 @@
 from enum import StrEnum
 
+
 class ModelTables(StrEnum):
     NODES = "nodes_df"
     ELEMENTS_1D = "elements_1d_df"
