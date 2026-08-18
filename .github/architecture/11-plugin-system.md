@@ -29,6 +29,11 @@ Importante: a decisao de incluir ou nao adjacentes na media e responsabilidade d
 - usuario importa arquivo `.py` pela GUI;
 - aplicacao copia o arquivo para o diretorio interno de plugins;
 - loader escaneia, valida contrato e registra plugin disponivel.
+- a descoberta automatica usa `importlib.util` e ocorre ao abrir um arquivo salvo ou
+	ao definir uma nova pasta de plugins;
+- pasta inexistente ou sem arquivos `.py` e um estado valido e silencioso;
+- falhas de importacao, contrato invalido e IDs duplicados sao isoladas por modulo;
+	um plugin externo nao substitui um registro existente.
 
 ## Regras de Seguranca Minima
 
@@ -43,6 +48,17 @@ Importante: a decisao de incluir ou nao adjacentes na media e responsabilidade d
 3. Validar assinatura de contrato.
 4. Registrar no catalogo de tarefas.
 5. Executar por contexto de selecao.
+
+## Persistencia e Preferencias
+
+Arquivos `.c3p` atuais usam um envelope versionado contendo o `FEMModel` e um
+snapshot serializavel das preferencias do usuario, incluindo a pasta base de
+plugins e os valores de `SceneViewerConfig`. O servico de arquivos continua
+aceitando arquivos legados que contenham diretamente um `FEMModel`.
+
+A abertura do arquivo restaura as preferencias antes de descobrir plugins. O
+caminho da pasta nao e parte do dominio e plugins nao sao serializados no
+projeto: eles sao importados novamente a partir da pasta configurada.
 
 ## Fronteiras
 

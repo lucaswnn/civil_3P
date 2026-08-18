@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
 )
 
 from civil_3P.core.results import VisualizationCriteria
-from civil_3P.gui.category_controllers import FileMenuController, TarefasController
+from civil_3P.gui.category_controllers import FileMenuController, TaskController
 from civil_3P.standard import model_components as mc
 from civil_3P.standard.result_components import VisualizationMode
 from civil_3P.standard.importer_profiles import ImporterProfiles
@@ -55,10 +55,13 @@ class FileMenuCategory:
         load_button.clicked.connect(self._load_saved_model)
         save_button = QPushButton("Salvar modelo")
         save_button.clicked.connect(self._save_model)
+        plugins_button = QPushButton("Definir pasta de plugins")
+        plugins_button.clicked.connect(self._set_plugins_folder)
 
         layout.addWidget(import_button)
         layout.addWidget(load_button)
         layout.addWidget(save_button)
+        layout.addWidget(plugins_button)
         layout.addStretch()
 
         return panel
@@ -145,7 +148,7 @@ class FileMenuCategory:
             file_path = file_path.with_suffix(".c3p")
 
         try:
-            self._controller.save_model(model, file_path)
+            self._controller.save_model(file_path)
             QMessageBox.information(
                 self._panel,
                 "civil_3P",
@@ -158,13 +161,38 @@ class FileMenuCategory:
                 f"Falha ao salvar o modelo: {exc}",
             )
 
+    def _set_plugins_folder(self) -> None:
+        directory = QFileDialog.getExistingDirectory(
+            self._panel,
+            "Definir pasta de plugins",
+            str(self._controller.preferences.plugins_base_path),
+        )
+        if not directory:
+            return
 
-class TarefasMenuCategory:
+        try:
+            plugin_path = self._controller.set_plugins_base_path(directory)
+            loaded = self._controller.load_plugins()
+            QMessageBox.information(
+                self._panel,
+                "civil_3P",
+                f"Pasta de plugins definida: {plugin_path}\n"
+                f"Plugins carregados: {len(loaded)}",
+            )
+        except Exception as exc:  # pragma: no cover - runtime feedback only
+            QMessageBox.critical(
+                self._panel,
+                "civil_3P",
+                f"Falha ao definir a pasta de plugins: {exc}",
+            )
+
+
+class TaskMenuCategory:
     identifier = "tarefas"
     display_name = "Tarefas"
 
     def __init__(self) -> None:
-        self._controller = TarefasController()
+        self._controller = TaskController()
         # Populated by build_panel; read by _run_task after the panel is built.
         self.case_edit: QLineEdit | None = None
         self.element_edit: QLineEdit | None = None

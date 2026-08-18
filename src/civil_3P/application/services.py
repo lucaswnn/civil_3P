@@ -11,9 +11,11 @@ from civil_3P.core.results import ResultProcessor, VisualizationCriteria
 from civil_3P.core.selection import SelectionContext
 from civil_3P.importers.importer_registry import ImporterRegistry
 from civil_3P.tasks.task_registry import TaskRegistry
+from civil_3P.tasks.plugin_loader import PluginLoader
 from civil_3P.tasks.task_base import TaskContext, TaskPlugin, TaskResult
 from civil_3P.visualization.scene_builder import SceneBuilder
 from civil_3P.standard.importer_profiles import ImporterProfiles
+from civil_3P.application.preferences import UserPreferencesService
 
 
 class ImportModelService:
@@ -27,8 +29,13 @@ class ImportModelService:
 
 
 class TaskExecutionService:
-    def __init__(self, task_registry: TaskRegistry | None = None) -> None:
-        self._task_registry = task_registry or TaskRegistry()
+    def __init__(
+        self,
+        task_registry: TaskRegistry | None = None,
+        context: ApplicationContext | None = None,
+    ) -> None:
+        self._task_registry = task_registry or (
+            context or ApplicationContext()).task_registry
 
     def execute(self,
                 task_id: str,
@@ -75,3 +82,30 @@ class ModelService:
         return cls._instance
 
     model: FEMModel | None
+
+
+class ApplicationContext:
+    _instance: ApplicationContext | None = None
+
+    def __new__(
+        cls,
+        model_service: ModelService | None = None,
+        preferences: UserPreferencesService | None = None,
+    ) -> ApplicationContext:
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.model_service = model_service or ModelService()
+            cls._instance.preferences = preferences or UserPreferencesService()
+            cls._instance.task_registry = TaskRegistry()
+            cls._instance.plugin_loader = PluginLoader(
+                cls._instance.task_registry)
+        return cls._instance
+
+    model_service: ModelService
+    preferences: UserPreferencesService
+    task_registry: TaskRegistry
+    plugin_loader: PluginLoader
+
+    def load_plugins(self) -> tuple[str, ...]:
+        self.task_registry.clear_external()
+        return self.plugin_loader.load_from(self.preferences.plugins_base_path)

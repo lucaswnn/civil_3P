@@ -12,8 +12,8 @@ from civil_3P.core.enums import ModelComponents, VisualizationMode
 from civil_3P.core.results import ResultAveragingPolicy, VisualizationCriteria
 from civil_3P.core.selection import SelectionContext
 from civil_3P.importers.importer_adapter import ImporterProfile
-from civil_3P.tasks.check_example import ExampleBarCheckPlugin
-from civil_3P.tasks.design_example import ExampleShellDesignPlugin
+from task_examples.check_example import ExampleBarCheckPlugin
+from task_examples.design_example import ExampleShellDesignPlugin
 
 
 def test_import_and_example_tasks(tmp_path) -> None:

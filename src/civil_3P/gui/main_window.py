@@ -17,15 +17,17 @@ from PySide6.QtWidgets import (
 from civil_3P.gui.menu_categories import (
     FileMenuCategory,
     MenuCategoryRegistry,
-    TarefasMenuCategory,
+    TaskMenuCategory,
 )
 from civil_3P.gui.tabs import ModeloViewTab, TabelaViewTab, ViewTabRegistry
 from civil_3P.visualization.widget import SceneWidget
+from civil_3P.application.services import ApplicationContext
 
 
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
+        self._context = ApplicationContext()
         self._setup_ui()
 
     def _setup_ui(self) -> None:
@@ -60,7 +62,7 @@ class MainWindow(QMainWindow):
 
         self._category_registry = MenuCategoryRegistry((
             FileMenuCategory(self._scene_widget),
-            TarefasMenuCategory(),
+            TaskMenuCategory(),
         ))
 
         self._category_stack = QStackedWidget(left_panel)
@@ -98,7 +100,10 @@ class MainWindow(QMainWindow):
         right_layout.setContentsMargins(0, 0, 0, 0)
         right_layout.setSpacing(4)
 
-        self._scene_widget = SceneWidget(right_panel)
+        self._scene_widget = SceneWidget(
+            right_panel,
+            config=self._context.preferences.scene_viewer_config,
+        )
         self._scene_widget.setMinimumWidth(700)
         self._scene_widget.setMinimumHeight(280)
 

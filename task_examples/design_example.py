@@ -4,7 +4,6 @@ import pandas as pd
 
 from civil_3P.standard import model_components as mc
 from civil_3P.standard.result_components import ResultLocation
-from civil_3P.standard.task_components import TaskType
 
 from civil_3P.tasks.task_base import (
     TaskContext,
@@ -19,7 +18,6 @@ class ExampleShellDesignPlugin(TaskPlugin):
     def metadata(self) -> TaskMetadata:
         return TaskMetadata(identifier="example_shell_design",
                             display_name="Example Shell Design",
-                            task_type=TaskType.DESIGN,
                             supported_element_type=mc.ModelComponents.ELEMENTS_2D)
 
     def validate_input(self,

@@ -9,25 +9,17 @@ from PySide6.QtWidgets import QWidget
 import numpy as np
 
 from civil_3P.standard import model_components as mc
-from civil_3P.utils.colors import Colors
-
-
-class SceneViewerConfig:
-    def __init__(self) -> None:
-        self.background_color = Colors.BLACK
-        self.element_1d_color = Colors.BLUE
-        self.element_2d_color = Colors.LIGHTGRAY
-        self.edge_color = Colors.GRAY
-        self.node_color = Colors.RED
-        self.element_1d_line_width = 2.0
-        self.element_2d_line_width = 1.0
-        self.node_point_size = 3.5
+from civil_3P.visualization.config import SceneViewerConfig
 
 
 class SceneViewer(QtInteractor):
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(
+        self,
+        parent: QWidget | None = None,
+        config: SceneViewerConfig | None = None,
+    ) -> None:
         super().__init__(parent)
-        self._config = SceneViewerConfig()
+        self._config = config or SceneViewerConfig()
         self.set_background(self._config.background_color)
 
     def _get_node_map(self,

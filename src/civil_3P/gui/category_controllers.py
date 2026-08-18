@@ -6,12 +6,14 @@ from typing import Any
 import pandas as pd
 
 from civil_3P.application.services import (
+    ApplicationContext,
     ImportModelService,
     ModelService,
     ResultQueryService,
     TaskExecutionService,
     VisualizationService,
 )
+from civil_3P.application.preferences import UserPreferencesService
 from civil_3P.core.model import FEMModel
 from civil_3P.core.results import ResultProcessor, VisualizationCriteria
 from civil_3P.core.selection import SelectionContext
@@ -28,11 +30,13 @@ class FileMenuController:
         file_service: FileService | None = None,
         visualization_service: VisualizationService | None = None,
         model_service: ModelService | None = None,
+        context: ApplicationContext | None = None,
     ) -> None:
+        self._context = context or ApplicationContext()
         self._import_service = import_model_service or ImportModelService()
-        self._file_service = file_service or FileService()
+        self._file_service = file_service or FileService(context=self._context)
         self._visualization_service = visualization_service or VisualizationService()
-        self._model_service = model_service or ModelService()
+        self._model_service = model_service or self._context.model_service
 
     @property
     def current_model(self) -> FEMModel | None:
@@ -45,32 +49,47 @@ class FileMenuController:
     ) -> FEMModel:
         model = self._import_service.import_model(profile, directory)
         self._model_service.model = model
+        self._context.load_plugins()
         return model
 
     def load_model_file(self, path: str | Path) -> FEMModel:
         model = self._file_service.load(path)
         self._model_service.model = model
+        self._context.load_plugins()
         return model
 
-    def save_model(self, model: FEMModel, path: str | Path) -> None:
-        self._file_service.save(model, path)
+    def save_model(self, path: str | Path) -> None:
+        self._file_service.save(path)
+
+    @property
+    def preferences(self) -> UserPreferencesService:
+        return self._context.preferences
+
+    def set_plugins_base_path(self, path: str | Path) -> Path:
+        return self.preferences.set_plugins_base_path(path)
+
+    def load_plugins(self) -> tuple[str, ...]:
+        return self._context.load_plugins()
 
     def build_scene(self, model: FEMModel) -> dict[str, Any]:
         return self._visualization_service.build_scene(model)
 
 
-class TarefasController:
+class TaskController:
     def __init__(
         self,
         task_service: TaskExecutionService | None = None,
         result_service: ResultQueryService | None = None,
         session: ModelService | None = None,
+        context: ApplicationContext | None = None,
     ) -> None:
-        self._task_service = task_service or TaskExecutionService()
+        self._context = context or ApplicationContext()
+        self._task_service = task_service or TaskExecutionService(
+            context=self._context)
         self._result_service = result_service or ResultQueryService(
             processor=ResultProcessor()
         )
-        self._session = session or ModelService()
+        self._session = session or self._context.model_service
 
     @property
     def current_model(self) -> FEMModel | None:

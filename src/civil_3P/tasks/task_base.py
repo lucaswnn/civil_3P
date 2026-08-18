@@ -6,7 +6,6 @@ from dataclasses import dataclass
 import pandas as pd
 
 from civil_3P.standard import model_components as mc
-from civil_3P.standard.task_components import TaskType
 from civil_3P.core.model import FEMModel
 from civil_3P.core.selection import SelectionContext
 
@@ -15,7 +14,6 @@ from civil_3P.core.selection import SelectionContext
 class TaskMetadata:
     identifier: str
     display_name: str
-    task_type: TaskType
     supported_element_type: mc.ModelComponents
     version: str = "0.1.0"
 

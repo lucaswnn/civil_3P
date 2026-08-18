@@ -6,6 +6,7 @@ import pandas as pd
 
 from civil_3P.core.selection import SelectionContext
 from civil_3P.standard import model_components as mc
+from civil_3P.standard import model_representation as rpr
 from civil_3P.standard.result_components import (
     VisualizationMode,
     ResultLocation,
