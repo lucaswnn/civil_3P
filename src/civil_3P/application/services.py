@@ -100,6 +100,7 @@ class ApplicationContext:
             cls._instance.task_registry = TaskRegistry()
             cls._instance.plugin_loader = PluginLoader(
                 cls._instance.task_registry)
+            cls._instance.load_plugins()
         return cls._instance
 
     model_service: ModelService
