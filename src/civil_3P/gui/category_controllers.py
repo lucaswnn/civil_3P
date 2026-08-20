@@ -68,8 +68,11 @@ class FileMenuController:
     def set_plugins_base_path(self, path: str | Path) -> Path:
         return self.preferences.set_plugins_base_path(path)
 
-    def load_plugins(self) -> tuple[str, ...]:
+    def load_plugins(self) -> list[str]:
         return self._context.load_plugins()
+
+    def add_plugins(self, files: list[str] | list[Path]) -> list[str]:
+        return self._context.add_plugins(files)
 
     def build_scene(self, model: FEMModel) -> dict[str, Any]:
         return self._visualization_service.build_scene(model)
@@ -123,3 +126,9 @@ class TaskController:
         task_result: TaskResult,
     ) -> pd.DataFrame:
         return self._result_service.process(task_result, criteria, selection)
+
+    def get_task_identifiers(self) -> list[str]:
+        return self._context.get_task_identifiers()
+
+    def get_load_case_ids(self) -> list[str]:
+        return self._context.get_load_cases()

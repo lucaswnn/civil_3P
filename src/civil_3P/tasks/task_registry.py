@@ -29,3 +29,6 @@ class TaskRegistry:
 
     def all(self) -> tuple[TaskPlugin, ...]:
         return tuple(self._plugins.values())
+
+    def get_task_identifiers(self) -> list[str]:
+        return list(self._plugin_ids)

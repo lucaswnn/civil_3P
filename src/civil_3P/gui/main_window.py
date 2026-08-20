@@ -14,11 +14,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from civil_3P.gui.menu_categories import (
-    FileMenuCategory,
-    MenuCategoryRegistry,
-    TaskMenuCategory,
-)
+from civil_3P.gui.menu_categories import MenuCategoryRegistry
+from civil_3P.gui.task_menu_category import TaskMenuCategory
+from civil_3P.gui.file_menu_category import FileMenuCategory
 from civil_3P.gui.tabs import ModeloViewTab, TabelaViewTab, ViewTabRegistry
 from civil_3P.visualization.widget import SceneWidget
 from civil_3P.application.services import ApplicationContext
