@@ -5,34 +5,37 @@ from typing import Any
 
 import pandas as pd
 
+from civil_3P.core.selection import SelectionContext
+from civil_3P.standard import model_components as mc
 from civil_3P.standard import model_representation as rpr
+from civil_3P.standard.model_representation import ModelTables as mt
 from civil_3P.standard.units import *
 
 
 @dataclass(slots=True)
 class FEMModel:
-    tables_dict: dict[str, pd.DataFrame]
-    units_dict: dict[str, dict[str, str]]
+    tables: dict[str, pd.DataFrame]
+    units: dict[str, dict[str, str]]
 
     @classmethod
     def empty(cls) -> "FEMModel":
         return cls(
-            units_dict=DEFAULT_UNITS.copy(),
-            tables_dict={
-                rpr.ModelTables.NODES: pd.DataFrame(columns=[
+            units=DEFAULT_UNITS.copy(),
+            tables={
+                mt.NODES: pd.DataFrame(columns=[
                     rpr.NodesColumns.NODE,
                     rpr.NodesColumns.X,
                     rpr.NodesColumns.Y,
                     rpr.NodesColumns.Z,
                 ]),
-                rpr.ModelTables.ELEMENTS_1D: pd.DataFrame(columns=[
+                mt.ELEMENTS_1D: pd.DataFrame(columns=[
                     rpr.Elements1DColumns.ELEMENT,
                     rpr.Elements1DColumns.NODE_I,
                     rpr.Elements1DColumns.NODE_J,
                     rpr.Elements1DColumns.MATERIAL,
                     rpr.Elements1DColumns.SECTION,
                 ]),
-                rpr.ModelTables.ELEMENTS_2D: pd.DataFrame(columns=[
+                mt.ELEMENTS_2D: pd.DataFrame(columns=[
                     rpr.Elements2DColumns.ELEMENT,
                     rpr.Elements2DColumns.NODE_1,
                     rpr.Elements2DColumns.NODE_2,
@@ -41,20 +44,20 @@ class FEMModel:
                     rpr.Elements2DColumns.MATERIAL,
                     rpr.Elements2DColumns.THICKNESS,
                 ]),
-                rpr.ModelTables.MATERIALS: pd.DataFrame(columns=[
+                mt.MATERIALS: pd.DataFrame(columns=[
                     rpr.MaterialsColumns.MATERIAL,
                     rpr.MaterialsColumns.YOUNG_MODULUS,
                     rpr.MaterialsColumns.SHEAR_MODULUS,
                     rpr.MaterialsColumns.POISSON_RATIO,
                     rpr.MaterialsColumns.THERMAL_COEFF,
                 ]),
-                rpr.ModelTables.SECTIONS: pd.DataFrame(columns=[
+                mt.SECTIONS: pd.DataFrame(columns=[
                     rpr.SectionsColumns.SECTION,
                     rpr.SectionsColumns.AREA,
                     rpr.SectionsColumns.INERTIA_22,
                     rpr.SectionsColumns.INERTIA_33,
                 ]),
-                rpr.ModelTables.ORIGIN_1D_RESULTS: pd.DataFrame(columns=[
+                mt.ORIGIN_1D_RESULTS: pd.DataFrame(columns=[
                     rpr.Origin1DResultsColumns.ELEMENT,
                     rpr.Origin1DResultsColumns.STATION,
                     rpr.Origin1DResultsColumns.CASE,
@@ -65,7 +68,7 @@ class FEMModel:
                     rpr.Origin1DResultsColumns.BENDING_2,
                     rpr.Origin1DResultsColumns.BENDING_3,
                 ]),
-                rpr.ModelTables.ORIGIN_2D_RESULTS: pd.DataFrame(columns=[
+                mt.ORIGIN_2D_RESULTS: pd.DataFrame(columns=[
                     rpr.Elements2DColumns.ELEMENT,
                     rpr.Origin2DResultsColumns.NODE,
                     rpr.Origin2DResultsColumns.CASE,
@@ -78,7 +81,7 @@ class FEMModel:
                     rpr.Origin2DResultsColumns.SHEAR_13,
                     rpr.Origin2DResultsColumns.SHEAR_23,
                 ]),
-                rpr.ModelTables.ORIGIN_NODE_DISPLACEMENTS: pd.DataFrame(columns=[
+                mt.ORIGIN_NODE_DISPLACEMENTS: pd.DataFrame(columns=[
                     rpr.OriginNodeDisplacementsColumns.NODE,
                     rpr.OriginNodeDisplacementsColumns.CASE,
                     rpr.OriginNodeDisplacementsColumns.DX,
@@ -88,7 +91,7 @@ class FEMModel:
                     rpr.OriginNodeDisplacementsColumns.RY,
                     rpr.OriginNodeDisplacementsColumns.RZ,
                 ]),
-                rpr.ModelTables.ORIGIN_NODE_REACTIONS: pd.DataFrame(columns=[
+                mt.ORIGIN_NODE_REACTIONS: pd.DataFrame(columns=[
                     rpr.OriginNodeReactionsColumns.NODE,
                     rpr.OriginNodeReactionsColumns.CASE,
                     rpr.OriginNodeReactionsColumns.FX,
@@ -98,23 +101,23 @@ class FEMModel:
                     rpr.OriginNodeReactionsColumns.MY,
                     rpr.OriginNodeReactionsColumns.MZ,
                 ]),
-                rpr.ModelTables.LOAD_CASES: pd.DataFrame(columns=[
+                mt.LOAD_CASES: pd.DataFrame(columns=[
                     rpr.LoadCasesColumns.CASE,
                     rpr.LoadCasesColumns.DESCRIPTION,
                 ]),
-                rpr.ModelTables.TASK_1D_RESULTS: pd.DataFrame(columns=[
+                mt.TASK_1D_RESULTS: pd.DataFrame(columns=[
                     rpr.Task1DResultsColumns.ELEMENT,
                     rpr.Task1DResultsColumns.STATION,
                     rpr.Task1DResultsColumns.CASE,
                     rpr.Task1DResultsColumns.VALUE,
                 ]),
-                rpr.ModelTables.TASK_2D_RESULTS: pd.DataFrame(columns=[
+                mt.TASK_2D_RESULTS: pd.DataFrame(columns=[
                     rpr.Task2DResultsColumns.ELEMENT,
                     rpr.Task2DResultsColumns.NODE,
                     rpr.Task2DResultsColumns.CASE,
                     rpr.Task2DResultsColumns.VALUE,
                 ]),
-                rpr.ModelTables.TASK_NODE_RESULTS: pd.DataFrame(columns=[
+                mt.TASK_NODE_RESULTS: pd.DataFrame(columns=[
                     rpr.TaskNodeResultsColumns.NODE,
                     rpr.TaskNodeResultsColumns.CASE,
                     rpr.TaskNodeResultsColumns.VALUE,
@@ -131,35 +134,35 @@ class FEMModel:
         if missing:
             raise ValueError(f"Missing tables for FEMModel: {missing}")
 
-        model = cls(tables_dict={name: tables[name].copy()
+        model = cls(tables={name: tables[name].copy()
                                  for name in rpr.REQUIRED_TABLES},
-                    units_dict=units.copy())
+                    units=units.copy())
         model.validate_tables()
         model.validate_units()
 
         return model
 
     def validate_units(self) -> None:
-        quantities = set(self.units_dict.keys())
+        quantities = set(self.units.keys())
         required_quantities = set(DEFAULT_UNITS.keys())
 
         if not required_quantities.issubset(quantities):
             raise ValueError(
                 f"Missing units for quantities: {required_quantities - quantities}")
 
-        if self.units_dict[PhysicalQuantities.LENGTH] not in [LengthUnits.METER,
-                                                              LengthUnits.MILLIMETER,
-                                                              LengthUnits.CENTIMETER]:
+        if self.units[PhysicalQuantities.LENGTH] not in [LengthUnits.METER,
+                                                         LengthUnits.MILLIMETER,
+                                                         LengthUnits.CENTIMETER]:
             raise ValueError(
                 f"Length unit must be either "
                 f"'{LengthUnits.METER}', "
                 f"'{LengthUnits.MILLIMETER}', or "
                 f"'{LengthUnits.CENTIMETER}'")
 
-        if self.units_dict[PhysicalQuantities.FORCE] not in [ForceUnits.NEWTON,
-                                                             ForceUnits.KILONEWTON,
-                                                             ForceUnits.TON_FORCE,
-                                                             ForceUnits.KILOGRAM_FORCE]:
+        if self.units[PhysicalQuantities.FORCE] not in [ForceUnits.NEWTON,
+                                                        ForceUnits.KILONEWTON,
+                                                        ForceUnits.TON_FORCE,
+                                                        ForceUnits.KILOGRAM_FORCE]:
             raise ValueError(
                 f"Force unit must be either "
                 f"'{ForceUnits.NEWTON}', "
@@ -167,8 +170,8 @@ class FEMModel:
                 f"'{ForceUnits.TON_FORCE}', or "
                 f"'{ForceUnits.KILOGRAM_FORCE}'")
 
-        if self.units_dict[PhysicalQuantities.TEMPERATURE] not in [TemperatureUnits.CELSIUS,
-                                                                   TemperatureUnits.FAHRENHEIT]:
+        if self.units[PhysicalQuantities.TEMPERATURE] not in [TemperatureUnits.CELSIUS,
+                                                              TemperatureUnits.FAHRENHEIT]:
             raise ValueError(
                 f"Temperature unit must be either "
                 f"'{TemperatureUnits.CELSIUS}' or "
@@ -198,54 +201,54 @@ class FEMModel:
         required_task_node_results_columns = {
             col for col in rpr.TaskNodeResultsColumns}
 
-        if not required_nodes_columns.issubset(self.tables_dict[rpr.ModelTables.NODES].columns):
+        if not required_nodes_columns.issubset(self.tables[mt.NODES].columns):
             raise ValueError("nodes table is missing required columns")
 
-        if not required_elements_1d_columns.issubset(self.tables_dict[rpr.ModelTables.ELEMENTS_1D].columns):
+        if not required_elements_1d_columns.issubset(self.tables[mt.ELEMENTS_1D].columns):
             raise ValueError("elements_1d table is missing required columns")
 
-        if not required_elements_2d_columns.issubset(self.tables_dict[rpr.ModelTables.ELEMENTS_2D].columns):
+        if not required_elements_2d_columns.issubset(self.tables[mt.ELEMENTS_2D].columns):
             raise ValueError("elements_2d table is missing required columns")
 
-        if not required_materials_columns.issubset(self.tables_dict[rpr.ModelTables.MATERIALS].columns):
+        if not required_materials_columns.issubset(self.tables[mt.MATERIALS].columns):
             raise ValueError("materials table is missing required columns")
 
-        if not required_sections_columns.issubset(self.tables_dict[rpr.ModelTables.SECTIONS].columns):
+        if not required_sections_columns.issubset(self.tables[mt.SECTIONS].columns):
             raise ValueError("sections table is missing required columns")
 
         if not required_origin_1d_results_columns.issubset(
-            self.tables_dict[rpr.ModelTables.ORIGIN_1D_RESULTS].columns
+            self.tables[mt.ORIGIN_1D_RESULTS].columns
         ):
             raise ValueError(
                 "origin_1d_results table is missing required columns")
 
         if not required_origin_2d_results_columns.issubset(
-            self.tables_dict[rpr.ModelTables.ORIGIN_2D_RESULTS].columns
+            self.tables[mt.ORIGIN_2D_RESULTS].columns
         ):
             raise ValueError(
                 "origin_2d_results table is missing required columns")
 
         if not required_origin_node_displacements_columns.issubset(
-            self.tables_dict[rpr.ModelTables.ORIGIN_NODE_DISPLACEMENTS].columns
+            self.tables[mt.ORIGIN_NODE_DISPLACEMENTS].columns
         ):
             raise ValueError(
                 "origin_node_displacements table is missing required columns")
 
         if not required_origin_reactions_node_columns.issubset(
-            self.tables_dict[rpr.ModelTables.ORIGIN_NODE_REACTIONS].columns
+            self.tables[mt.ORIGIN_NODE_REACTIONS].columns
         ):
             raise ValueError(
                 "origin_node_reactions table is missing required columns")
 
-        if not required_task_1d_results_columns.issubset(self.tables_dict[rpr.ModelTables.TASK_1D_RESULTS].columns):
+        if not required_task_1d_results_columns.issubset(self.tables[mt.TASK_1D_RESULTS].columns):
             raise ValueError(
                 "task_1d_results table is missing required columns")
 
-        if not required_task_2d_results_columns.issubset(self.tables_dict[rpr.ModelTables.TASK_2D_RESULTS].columns):
+        if not required_task_2d_results_columns.issubset(self.tables[mt.TASK_2D_RESULTS].columns):
             raise ValueError(
                 "task_2d_results table is missing required columns")
 
-        if not required_task_node_results_columns.issubset(self.tables_dict[rpr.ModelTables.TASK_NODE_RESULTS].columns):
+        if not required_task_node_results_columns.issubset(self.tables[mt.TASK_NODE_RESULTS].columns):
             raise ValueError(
                 "task_node_results table is missing required columns")
 
@@ -259,3 +262,54 @@ class FEMModel:
             (str(row.entity_id), str(row.property_name)): row.property_value
             for row in filtered.itertuples(index=False)
         }
+
+    def copy(self) -> FEMModel:
+        return FEMModel(
+            tables={name: df.copy() for name, df in self.tables.items()},
+            units=self.units.copy(),
+        )
+
+    def filter_by_selection(self,
+                            selection: SelectionContext) -> FEMModel:
+        sel = self.copy()
+
+        def filter_table_by_element_type(element_drop_table: str,
+                                         result_drop_table: str,
+                                         element_filter_table: str,
+                                         result_filter_table: str) -> None:
+            sel.tables[element_drop_table] = pd.DataFrame(
+                columns=sel.tables[element_drop_table].columns)
+            sel.tables[result_drop_table] = pd.DataFrame(
+                columns=sel.tables[result_drop_table].columns)
+            sel.tables[element_filter_table] = (
+                sel.tables[element_filter_table]
+                [
+                    sel.tables[element_filter_table][rpr.Elements1DColumns.ELEMENT]
+                    .isin(selection.all_element_ids)
+                ]
+            )
+            sel.tables[result_filter_table] = (
+                sel.tables[result_filter_table]
+                [
+                    sel.tables[result_filter_table][rpr.Origin1DResultsColumns.ELEMENT]
+                    .isin(selection.all_element_ids)
+                ]
+            )
+
+        if selection.element_type == mc.ModelComponents.ELEMENTS_1D:
+            filter_table_by_element_type(
+                element_drop_table=mt.ELEMENTS_2D,
+                result_drop_table=mt.ORIGIN_2D_RESULTS,
+                element_filter_table=mt.ELEMENTS_1D,
+                result_filter_table=mt.ORIGIN_1D_RESULTS,
+            )
+
+        elif selection.element_type == mc.ModelComponents.ELEMENTS_2D:
+            filter_table_by_element_type(
+                element_drop_table=mt.ELEMENTS_1D,
+                result_drop_table=mt.ORIGIN_1D_RESULTS,
+                element_filter_table=mt.ELEMENTS_2D,
+                result_filter_table=mt.ORIGIN_2D_RESULTS,
+            )
+
+        return sel

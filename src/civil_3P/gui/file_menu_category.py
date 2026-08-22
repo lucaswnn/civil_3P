@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from civil_3P.gui.category_controllers import FileMenuController
+from civil_3P.gui.file_menu_controller import FileMenuController
 from civil_3P.standard.importer_profiles import ImporterProfiles
 from civil_3P.visualization.widget import SceneWidget
 

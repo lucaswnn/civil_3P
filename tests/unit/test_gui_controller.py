@@ -5,7 +5,7 @@ import pandas as pd
 from civil_3P.standard.model_components import ModelComponents
 from civil_3P.standard.result_components import VisualizationMode
 from civil_3P.core.results import VisualizationCriteria
-from civil_3P.gui.category_controllers import FileMenuController, TaskController
+from civil_3P.gui.file_menu_controller import FileMenuController, TaskMenuController
 from civil_3P.importers.importer_registry import ImporterProfile
 
 
@@ -97,7 +97,7 @@ def test_gui_controller_can_import_and_prepare_results(tmp_path) -> None:
     controller = FileMenuController()
     model = controller.import_model(ImporterProfile.SAP2000, tmp_path)
 
-    tarefas_controller = TaskController()
+    tarefas_controller = TaskMenuController()
     selection = tarefas_controller.create_selection(
         ModelComponents.ELEMENTS_1D, ("B1",))
 
@@ -107,7 +107,7 @@ def test_gui_controller_can_import_and_prepare_results(tmp_path) -> None:
         selection,
         "LC1",
     )
-    view = tarefas_controller.build_result_view(
+    view = tarefas_controller.build_and_show_result(
         selection,
         VisualizationCriteria(
             result_name="utilization",

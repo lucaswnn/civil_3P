@@ -12,7 +12,7 @@ from civil_3P.core.selection import SelectionContext
 from civil_3P.importers.importer_registry import ImporterRegistry
 from civil_3P.tasks.task_registry import TaskRegistry
 from civil_3P.tasks.plugin_loader import PluginLoader
-from civil_3P.tasks.task_base import TaskContext, TaskPlugin, TaskResult
+from civil_3P.tasks.task_base import TaskContext, TaskResult
 from civil_3P.visualization.scene_builder import SceneBuilder
 from civil_3P.standard import model_representation as rpr
 from civil_3P.standard.importer_profiles import ImporterProfiles
@@ -44,8 +44,9 @@ class TaskExecutionService:
                 selection: SelectionContext,
                 case_id: str) -> TaskResult:
         plugin = self._task_registry.get(task_id)
-        context = TaskContext(model=model,
-                              selection=selection,
+        selection_model = model.filter_by_selection(selection)
+        context = TaskContext(full_model=model.copy(),
+                              selection_model=selection_model,
                               case_id=case_id)
         plugin.validate_input(context)
 
@@ -70,6 +71,15 @@ class VisualizationService:
 
     def build_scene(self, model: FEMModel) -> dict[str, dict[str, dict[str, Any]]]:
         return self._builder.build_scene(model)
+
+    def build_result_scene(
+        self,
+        model: FEMModel,
+        results: pd.DataFrame,
+        criteria: VisualizationCriteria,
+        selection: SelectionContext,
+    ) -> dict[str, Any]:
+        return self._builder.build_result_scene(model, results, criteria, selection)
 
 
 class ModelService:
@@ -113,7 +123,6 @@ class ApplicationContext:
         return self.plugin_loader.load_from(self.preferences.plugins_base_path)
 
     def add_plugins(self, files: list[str] | list[Path]) -> list[str]:
-        # check if the plugins base path folder exists, if not create it
         if not Path(self.preferences.plugins_base_path).exists():
             Path(self.preferences.plugins_base_path).mkdir(
                 parents=True, exist_ok=True)
@@ -130,5 +139,5 @@ class ApplicationContext:
         model = self.model_service.model
         if model is None:
             return []
-        cases = model.tables_dict[rpr.ModelTables.LOAD_CASES][rpr.LoadCasesColumns.CASE]
+        cases = model.tables[rpr.ModelTables.LOAD_CASES][rpr.LoadCasesColumns.CASE]
         return list(dict.fromkeys(cases.astype(str)))

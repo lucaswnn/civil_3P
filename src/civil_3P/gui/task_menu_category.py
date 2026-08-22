@@ -1,4 +1,5 @@
 from __future__ import annotations
+import traceback
 
 
 from PySide6.QtWidgets import (
@@ -13,19 +14,20 @@ from PySide6.QtWidgets import (
 )
 
 from civil_3P.core.results import VisualizationCriteria
-from civil_3P.gui.category_controllers import TaskController
+from civil_3P.gui.task_menu_controller import TaskMenuController
 from civil_3P.standard import model_components as mc
 from civil_3P.standard import model_representation as rpr
 from civil_3P.standard.result_components import VisualizationMode
+from civil_3P.visualization.widget import SceneWidget
 
 
 class TaskMenuCategory:
     identifier = "tarefas"
     display_name = "Tarefas"
 
-    def __init__(self) -> None:
-        self._controller = TaskController()
-        # Populated by build_panel; read by _run_task after the panel is built.
+    def __init__(self, scene_widget: SceneWidget) -> None:
+        self._scene_widget = scene_widget
+        self._controller = TaskMenuController()
         self.case_button: QToolButton | None = None
         self.task_button: QToolButton | None = None
         self.apply_to_selection_button: QPushButton | None = None
@@ -123,12 +125,12 @@ class TaskMenuCategory:
             if task_id == "example_bar_check":
                 element_type = mc.ModelComponents.ELEMENTS_1D
                 element_ids = tuple(
-                    model.tables_dict[rpr.ModelTables.ELEMENTS_1D]
+                    model.tables[rpr.ModelTables.ELEMENTS_1D]
                     [rpr.Elements1DColumns.ELEMENT].astype(str))
             else:
                 element_type = mc.ModelComponents.ELEMENTS_2D
                 element_ids = tuple(
-                    model.tables_dict[rpr.ModelTables.ELEMENTS_2D]
+                    model.tables[rpr.ModelTables.ELEMENTS_2D]
                     [rpr.Elements2DColumns.ELEMENT].astype(str))
 
             selection = self._controller.create_selection(
@@ -143,7 +145,7 @@ class TaskMenuCategory:
                 case_id,
             )
 
-            self._controller.build_result_view(
+            scene = self._controller.build_result_scene(
                 selection,
                 VisualizationCriteria(
                     result_name="utilization"
@@ -156,9 +158,17 @@ class TaskMenuCategory:
                 ),
                 task_result,
             )
-        except Exception as exc:  # pragma: no cover - runtime feedback only
-            QMessageBox.critical(
+            self._scene_widget.set_result_scene(scene)
+            QMessageBox.information(
                 self._panel,
                 "civil_3P",
-                f"Falha ao executar a tarefa: {exc}",
+                "Tarefa executada com sucesso.",
             )
+
+        except Exception as exc:  # pragma: no cover - runtime feedback only
+            msgbox = QMessageBox()
+            msgbox.setIcon(QMessageBox.Critical)
+            msgbox.setWindowTitle("civil_3P")
+            msgbox.setText(f"Falha ao executar a tarefa: {exc}")
+            msgbox.setDetailedText(traceback.format_exc())
+            msgbox.exec()

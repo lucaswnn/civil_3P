@@ -4,21 +4,38 @@ from typing import Any
 import pandas as pd
 
 from civil_3P.core.model import FEMModel
+from civil_3P.core.results import VisualizationCriteria
+from civil_3P.core.selection import SelectionContext
 from civil_3P.standard import model_representation as rpr
 from civil_3P.standard import model_components as mc
+from civil_3P.standard.result_components import VisualizationContent
 
 
 class SceneBuilder:
     def build_scene(self, model: FEMModel) -> dict[str, dict[str, dict[str, Any]]]:
-        nodes = self._build_nodes(model.tables_dict[rpr.ModelTables.NODES])
-        bars = self._build_bars(model.tables_dict[rpr.ModelTables.ELEMENTS_1D])
+        nodes = self._build_nodes(model.tables[rpr.ModelTables.NODES])
+        bars = self._build_bars(model.tables[rpr.ModelTables.ELEMENTS_1D])
         shells = self._build_shells(
-            model.tables_dict[rpr.ModelTables.ELEMENTS_2D])
+            model.tables[rpr.ModelTables.ELEMENTS_2D])
 
         return {
             mc.ModelComponents.NODES: nodes,
             mc.ModelComponents.ELEMENTS_1D: bars,
             mc.ModelComponents.ELEMENTS_2D: shells,
+        }
+
+    def build_result_scene(self,
+                           model: FEMModel,
+                           results: pd.DataFrame,
+                           criteria: VisualizationCriteria,
+                           selection: SelectionContext) -> dict[str, Any]:
+        scene = self.build_scene(model)
+        content = VisualizationContent(mode=criteria.mode,
+                                       component=selection.element_type)
+
+        return {
+            **scene,
+            "visualization": content.build(results),
         }
 
     def _build_nodes(self, nodes: pd.DataFrame) -> dict[str, dict[str, Any]]:

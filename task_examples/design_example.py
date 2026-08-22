@@ -22,18 +22,18 @@ class ExampleShellDesignPlugin(TaskPlugin):
 
     def validate_input(self,
                        context: TaskContext) -> None:
-        if context.selection.element_type != mc.ModelComponents.ELEMENTS_2D:
+        if context.selection_model.element_type != mc.ModelComponents.ELEMENTS_2D:
             raise ValueError(
                 "ExampleShellDesignPlugin only supports 2D shells")
 
-        if not context.selection.selected_element_ids:
+        if not context.selection_model.selected_element_ids:
             raise ValueError("Selection cannot be empty")
 
     def execute(self,
                 context: TaskContext) -> TaskResult:
-        property_map = context.model.property_map("element")
-        base = context.model.origin_results_2d_df
-        target_element_ids = context.selection.all_element_ids
+        property_map = context.full_model.property_map("element")
+        base = context.full_model.origin_results_2d_df
+        target_element_ids = context.selection_model.all_element_ids
         membrane = base[
             (base["case_id"] == context.case_id)
             & (base["result_name"] == "membrane_force")
@@ -53,7 +53,7 @@ class ExampleShellDesignPlugin(TaskPlugin):
         membrane["location"] = ResultLocation.NODE.value
         report = (
             membrane[membrane["element_id"].isin(
-                context.selection.selected_element_ids)]
+                context.selection_model.selected_element_ids)]
             .groupby("element_id", as_index=False)["value"]
             .max()
             .rename(columns={"value": "required_thickness"})

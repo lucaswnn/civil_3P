@@ -8,6 +8,7 @@ import pandas as pd
 
 from civil_3P.core.model import FEMModel
 from civil_3P.standard import units
+from civil_3P.standard.model_representation import ModelTables as mt
 from civil_3P.standard import model_representation as rpr
 from civil_3P.utils.pandas_utils import PandasUtils as pdUtils
 
@@ -25,50 +26,50 @@ class ImporterSpec:
 
 @dataclass(slots=True)
 class IntermediateRepresentation:
-    tables_dict: dict[str, pd.DataFrame]
-    units_dict: dict[str, dict[str, str]]
+    tables: dict[str, pd.DataFrame]
+    units: dict[str, dict[str, str]]
 
     @classmethod
     def empty(cls) -> "IntermediateRepresentation":
         model = FEMModel.empty()
         return cls(
-            tables_dict={
-                rpr.ModelTables.NODES: model.tables_dict[rpr.ModelTables.NODES].copy(),
-                rpr.ModelTables.ELEMENTS_1D: model.tables_dict[rpr.ModelTables.ELEMENTS_1D].copy(),
-                rpr.ModelTables.ELEMENTS_2D: model.tables_dict[rpr.ModelTables.ELEMENTS_2D].copy(),
-                rpr.ModelTables.MATERIALS: model.tables_dict[rpr.ModelTables.MATERIALS].copy(),
-                rpr.ModelTables.SECTIONS: model.tables_dict[rpr.ModelTables.SECTIONS].copy(),
-                rpr.ModelTables.ORIGIN_1D_RESULTS: model.tables_dict[rpr.ModelTables.ORIGIN_1D_RESULTS].copy(),
-                rpr.ModelTables.ORIGIN_2D_RESULTS: model.tables_dict[rpr.ModelTables.ORIGIN_2D_RESULTS].copy(),
-                rpr.ModelTables.ORIGIN_NODE_DISPLACEMENTS: model.tables_dict[rpr.ModelTables.ORIGIN_NODE_DISPLACEMENTS].copy(),
-                rpr.ModelTables.ORIGIN_NODE_REACTIONS: model.tables_dict[rpr.ModelTables.ORIGIN_NODE_REACTIONS].copy(),
-                rpr.ModelTables.LOAD_CASES: model.tables_dict[rpr.ModelTables.LOAD_CASES].copy(),
-                rpr.ModelTables.TASK_1D_RESULTS: model.tables_dict[rpr.ModelTables.TASK_1D_RESULTS].copy(),
-                rpr.ModelTables.TASK_2D_RESULTS: model.tables_dict[rpr.ModelTables.TASK_2D_RESULTS].copy(),
-                rpr.ModelTables.TASK_NODE_RESULTS: model.tables_dict[rpr.ModelTables.TASK_NODE_RESULTS].copy(),
+            tables={
+                mt.NODES: model.tables[mt.NODES].copy(),
+                mt.ELEMENTS_1D: model.tables[mt.ELEMENTS_1D].copy(),
+                mt.ELEMENTS_2D: model.tables[mt.ELEMENTS_2D].copy(),
+                mt.MATERIALS: model.tables[mt.MATERIALS].copy(),
+                mt.SECTIONS: model.tables[mt.SECTIONS].copy(),
+                mt.ORIGIN_1D_RESULTS: model.tables[mt.ORIGIN_1D_RESULTS].copy(),
+                mt.ORIGIN_2D_RESULTS: model.tables[mt.ORIGIN_2D_RESULTS].copy(),
+                mt.ORIGIN_NODE_DISPLACEMENTS: model.tables[mt.ORIGIN_NODE_DISPLACEMENTS].copy(),
+                mt.ORIGIN_NODE_REACTIONS: model.tables[mt.ORIGIN_NODE_REACTIONS].copy(),
+                mt.LOAD_CASES: model.tables[mt.LOAD_CASES].copy(),
+                mt.TASK_1D_RESULTS: model.tables[mt.TASK_1D_RESULTS].copy(),
+                mt.TASK_2D_RESULTS: model.tables[mt.TASK_2D_RESULTS].copy(),
+                mt.TASK_NODE_RESULTS: model.tables[mt.TASK_NODE_RESULTS].copy(),
             },
-            units_dict=model.units_dict.copy(),
+            units=model.units.copy(),
         )
 
     def to_model(self) -> FEMModel:
         model = FEMModel.empty()
         return FEMModel.from_tables(
             tables={
-                rpr.ModelTables.NODES: self.tables_dict[rpr.ModelTables.NODES].copy(),
-                rpr.ModelTables.ELEMENTS_1D: self.tables_dict[rpr.ModelTables.ELEMENTS_1D].copy(),
-                rpr.ModelTables.ELEMENTS_2D: self.tables_dict[rpr.ModelTables.ELEMENTS_2D].copy(),
-                rpr.ModelTables.MATERIALS: self.tables_dict[rpr.ModelTables.MATERIALS].copy(),
-                rpr.ModelTables.SECTIONS: self.tables_dict[rpr.ModelTables.SECTIONS].copy(),
-                rpr.ModelTables.ORIGIN_1D_RESULTS: self.tables_dict[rpr.ModelTables.ORIGIN_1D_RESULTS].copy(),
-                rpr.ModelTables.ORIGIN_2D_RESULTS: self.tables_dict[rpr.ModelTables.ORIGIN_2D_RESULTS].copy(),
-                rpr.ModelTables.ORIGIN_NODE_DISPLACEMENTS: self.tables_dict[rpr.ModelTables.ORIGIN_NODE_DISPLACEMENTS].copy(),
-                rpr.ModelTables.ORIGIN_NODE_REACTIONS: self.tables_dict[rpr.ModelTables.ORIGIN_NODE_REACTIONS].copy(),
-                rpr.ModelTables.LOAD_CASES: self.tables_dict[rpr.ModelTables.LOAD_CASES].copy(),
-                rpr.ModelTables.TASK_1D_RESULTS: model.tables_dict[rpr.ModelTables.TASK_1D_RESULTS].copy(),
-                rpr.ModelTables.TASK_2D_RESULTS: model.tables_dict[rpr.ModelTables.TASK_2D_RESULTS].copy(),
-                rpr.ModelTables.TASK_NODE_RESULTS: model.tables_dict[rpr.ModelTables.TASK_NODE_RESULTS].copy(),
+                mt.NODES: self.tables[mt.NODES].copy(),
+                mt.ELEMENTS_1D: self.tables[mt.ELEMENTS_1D].copy(),
+                mt.ELEMENTS_2D: self.tables[mt.ELEMENTS_2D].copy(),
+                mt.MATERIALS: self.tables[mt.MATERIALS].copy(),
+                mt.SECTIONS: self.tables[mt.SECTIONS].copy(),
+                mt.ORIGIN_1D_RESULTS: self.tables[mt.ORIGIN_1D_RESULTS].copy(),
+                mt.ORIGIN_2D_RESULTS: self.tables[mt.ORIGIN_2D_RESULTS].copy(),
+                mt.ORIGIN_NODE_DISPLACEMENTS: self.tables[mt.ORIGIN_NODE_DISPLACEMENTS].copy(),
+                mt.ORIGIN_NODE_REACTIONS: self.tables[mt.ORIGIN_NODE_REACTIONS].copy(),
+                mt.LOAD_CASES: self.tables[mt.LOAD_CASES].copy(),
+                mt.TASK_1D_RESULTS: model.tables[mt.TASK_1D_RESULTS].copy(),
+                mt.TASK_2D_RESULTS: model.tables[mt.TASK_2D_RESULTS].copy(),
+                mt.TASK_NODE_RESULTS: model.tables[mt.TASK_NODE_RESULTS].copy(),
             },
-            units=self.units_dict,
+            units=self.units,
         )
 
 
@@ -125,10 +126,10 @@ class ImporterAdapter(ABC):
 
     def process_units(self,
                       table: pd.DataFrame,
-                      units_dict: dict[str, str],
+                      units: dict[str, str],
                       ) -> None:
         print(
             f"Processing units for table with columns: {table.columns.tolist()}")
-        for column, unit in units_dict.items():
+        for column, unit in units.items():
             if column in table.columns:
                 self.normalize_column_unit(table, column, unit)

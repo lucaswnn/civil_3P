@@ -20,3 +20,6 @@ class SceneWidget(QWidget):
 
     def set_scene(self, scene: dict[str, dict[str, dict[str, Any]]]) -> None:
         self._viewer.load_scene(scene)
+
+    def set_result_scene(self, scene: dict[str, Any]) -> None:
+        self._viewer.load_result_scene(scene)

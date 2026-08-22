@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
 
         self._category_registry = MenuCategoryRegistry((
             FileMenuCategory(self._scene_widget),
-            TaskMenuCategory(),
+            TaskMenuCategory(self._scene_widget),
         ))
 
         self._category_stack = QStackedWidget(left_panel)

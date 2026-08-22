@@ -20,8 +20,8 @@ class TaskMetadata:
 
 @dataclass(frozen=True, slots=True)
 class TaskContext:
-    model: FEMModel
-    selection: SelectionContext
+    full_model: FEMModel
+    selection_model: FEMModel
     case_id: str
 
 

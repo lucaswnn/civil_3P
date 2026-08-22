@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from civil_3P.core.model import FEMModel
 from civil_3P.application.services import ApplicationContext
-from civil_3P.gui.category_controllers import FileMenuController
+from civil_3P.gui.file_menu_controller import FileMenuController
 
 
 def test_app_controller_can_save_and_load_model(tmp_path) -> None:
@@ -15,8 +15,8 @@ def test_app_controller_can_save_and_load_model(tmp_path) -> None:
     loaded_model = controller.load_model_file(file_path)
 
     assert isinstance(loaded_model, FEMModel)
-    assert set(loaded_model.tables_dict) == set(model.tables_dict)
-    assert loaded_model.units_dict == model.units_dict
+    assert set(loaded_model.tables) == set(model.tables)
+    assert loaded_model.units == model.units
 
 
 def test_file_service_round_trips_user_preferences(tmp_path) -> None:

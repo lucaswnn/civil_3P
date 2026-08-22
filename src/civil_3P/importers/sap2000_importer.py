@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 from civil_3P.standard import model_representation as rpr
+from civil_3P.standard.model_representation import ModelTables as mt
 from civil_3P.utils.pandas_utils import PandasUtils as pdUtils
 from civil_3P.standard import units
 from civil_3P.importers.importer_adapter import (
@@ -18,7 +19,7 @@ from civil_3P.importers.importer_adapter import (
 SAP2000_SPEC = ImporterSpec(
 
     tables_mapping={
-        rpr.ModelTables.NODES: ColumnMapping(
+        mt.NODES: ColumnMapping(
             rename={
                 "Joint": rpr.NodesColumns.NODE,
                 "GlobalX": rpr.NodesColumns.X,
@@ -27,7 +28,7 @@ SAP2000_SPEC = ImporterSpec(
             },
             defaults={},
         ),
-        rpr.ModelTables.ELEMENTS_1D: ColumnMapping(
+        mt.ELEMENTS_1D: ColumnMapping(
             rename={
                 "Frame": rpr.Elements1DColumns.ELEMENT,
                 "JointI": rpr.Elements1DColumns.NODE_I,
@@ -40,7 +41,7 @@ SAP2000_SPEC = ImporterSpec(
                 rpr.Elements1DColumns.SECTION: None,
             },
         ),
-        rpr.ModelTables.ELEMENTS_2D: ColumnMapping(
+        mt.ELEMENTS_2D: ColumnMapping(
             rename={
                 "Area": rpr.Elements2DColumns.ELEMENT,
                 "Joint1": rpr.Elements2DColumns.NODE_1,
@@ -56,7 +57,7 @@ SAP2000_SPEC = ImporterSpec(
                 rpr.Elements2DColumns.THICKNESS: None,
             },
         ),
-        rpr.ModelTables.MATERIALS: ColumnMapping(
+        mt.MATERIALS: ColumnMapping(
             rename={
                 "Material": rpr.MaterialsColumns.MATERIAL,
                 "E1": rpr.MaterialsColumns.YOUNG_MODULUS,
@@ -71,7 +72,7 @@ SAP2000_SPEC = ImporterSpec(
                 rpr.MaterialsColumns.THERMAL_COEFF: 0.0,
             },
         ),
-        rpr.ModelTables.SECTIONS: ColumnMapping(
+        mt.SECTIONS: ColumnMapping(
             rename={
                 "SectionName": rpr.SectionsColumns.SECTION,
                 "Area": rpr.SectionsColumns.AREA,
@@ -84,7 +85,7 @@ SAP2000_SPEC = ImporterSpec(
                 rpr.SectionsColumns.INERTIA_33: 0.0,
             },
         ),
-        rpr.ModelTables.ORIGIN_1D_RESULTS: ColumnMapping(
+        mt.ORIGIN_1D_RESULTS: ColumnMapping(
             rename={
                 "OutputCase": rpr.Origin1DResultsColumns.CASE,
                 "Frame": rpr.Origin1DResultsColumns.ELEMENT,
@@ -98,7 +99,7 @@ SAP2000_SPEC = ImporterSpec(
             },
             defaults={},
         ),
-        rpr.ModelTables.ORIGIN_2D_RESULTS: ColumnMapping(
+        mt.ORIGIN_2D_RESULTS: ColumnMapping(
             rename={
                 "OutputCase": rpr.Origin2DResultsColumns.CASE,
                 "Area": rpr.Origin2DResultsColumns.ELEMENT,
@@ -114,7 +115,7 @@ SAP2000_SPEC = ImporterSpec(
             },
             defaults={},
         ),
-        rpr.ModelTables.ORIGIN_NODE_DISPLACEMENTS: ColumnMapping(
+        mt.ORIGIN_NODE_DISPLACEMENTS: ColumnMapping(
             rename={
                 "OutputCase": rpr.OriginNodeDisplacementsColumns.CASE,
                 "Joint": rpr.OriginNodeDisplacementsColumns.NODE,
@@ -127,7 +128,7 @@ SAP2000_SPEC = ImporterSpec(
             },
             defaults={},
         ),
-        rpr.ModelTables.ORIGIN_NODE_REACTIONS: ColumnMapping(
+        mt.ORIGIN_NODE_REACTIONS: ColumnMapping(
             rename={
                 "OutputCase": rpr.OriginNodeReactionsColumns.CASE,
                 "Joint": rpr.OriginNodeReactionsColumns.NODE,
@@ -140,7 +141,7 @@ SAP2000_SPEC = ImporterSpec(
             },
             defaults={},
         ),
-        rpr.ModelTables.LOAD_CASES: ColumnMapping(
+        mt.LOAD_CASES: ColumnMapping(
             rename={
                 "Case": rpr.LoadCasesColumns.CASE,
                 "Notes": rpr.LoadCasesColumns.DESCRIPTION,
@@ -197,7 +198,7 @@ class Sap2000Importer(ImporterAdapter):
             model_table: str,
             concat_columns_on_first: list[str] | None = None,
     ) -> None:
-        table, table_units_dict = self._get_table(table_name)
+        table, table_units = self._get_table(table_name)
         if concat_columns_on_first:
             table[concat_columns_on_first[0]] = (
                 table[concat_columns_on_first[0]] +
@@ -210,13 +211,13 @@ class Sap2000Importer(ImporterAdapter):
             table,
             keep_columns,
         )
-        self.process_units(table, table_units_dict)
+        self.process_units(table, table_units)
         self.map_dataframe(table, self._spec.tables_mapping[model_table])
         pdUtils.ensure_columns(
             table,
-            list(self.intermediate.tables_dict[model_table].columns),
+            list(self.intermediate.tables[model_table].columns),
         )
-        self.intermediate.tables_dict[model_table] = table
+        self.intermediate.tables[model_table] = table
 
     def _join_and_build_tables(
         self,
@@ -227,10 +228,10 @@ class Sap2000Importer(ImporterAdapter):
             rename_other_tables_columns_mapping: dict[str,
                                                       dict[str, str]] | None = None,
     ) -> None:
-        main_table, main_table_units_dict = self._get_table(main_table_name)
+        main_table, main_table_units = self._get_table(main_table_name)
 
         for key_table_name, merge_key in table_key_merge_mapping.items():
-            key_table, key_table_units_dict = self._get_table(key_table_name)
+            key_table, key_table_units = self._get_table(key_table_name)
             if (rename_other_tables_columns_mapping
                     and key_table_name in rename_other_tables_columns_mapping.keys()):
                 key_table = key_table.rename(
@@ -243,13 +244,13 @@ class Sap2000Importer(ImporterAdapter):
                     on=merge_key,
                     how="left",
                 )
-                main_table_units_dict.update(key_table_units_dict)
+                main_table_units.update(key_table_units)
 
         pdUtils.keep_columns(
             main_table,
             keep_columns,
         )
-        self.process_units(main_table, main_table_units_dict)
+        self.process_units(main_table, main_table_units)
         self.map_dataframe(
             main_table,
             self._spec.tables_mapping[main_model_table],
@@ -259,11 +260,11 @@ class Sap2000Importer(ImporterAdapter):
             list(
                 self
                 .intermediate
-                .tables_dict[main_model_table].columns
+                .tables[main_model_table].columns
             ),
         )
 
-        self.intermediate.tables_dict[main_model_table] = main_table
+        self.intermediate.tables[main_model_table] = main_table
 
     def _process_load_cases(self) -> None:
         load_case, load_case_units = self._get_table("Load Case Definitions")
@@ -300,13 +301,13 @@ class Sap2000Importer(ImporterAdapter):
         ).drop_duplicates(subset=["Case"])
         self.process_units(load_case, load_case_units)
         self.map_dataframe(
-            load_case, self._spec.tables_mapping[rpr.ModelTables.LOAD_CASES])
+            load_case, self._spec.tables_mapping[mt.LOAD_CASES])
         pdUtils.ensure_columns(
             load_case,
             list(
-                self.intermediate.tables_dict[rpr.ModelTables.LOAD_CASES].columns),
+                self.intermediate.tables[mt.LOAD_CASES].columns),
         )
-        self.intermediate.tables_dict[rpr.ModelTables.LOAD_CASES] = load_case
+        self.intermediate.tables[mt.LOAD_CASES] = load_case
 
     def _build_intermediate(self) -> IntermediateRepresentation:
         print("Building intermediate representation from SAP2000 tables")
@@ -319,7 +320,7 @@ class Sap2000Importer(ImporterAdapter):
                 "GlobalY",
                 "GlobalZ",
             ],
-            model_table=rpr.ModelTables.NODES,
+            model_table=mt.NODES,
         )
 
         self._build_table(
@@ -331,7 +332,7 @@ class Sap2000Importer(ImporterAdapter):
                 "U12",
                 "A1",
             ],
-            model_table=rpr.ModelTables.MATERIALS,
+            model_table=mt.MATERIALS,
         )
 
         self._build_table(
@@ -342,7 +343,7 @@ class Sap2000Importer(ImporterAdapter):
                 "I22",
                 "I33",
             ],
-            model_table=rpr.ModelTables.SECTIONS,
+            model_table=mt.SECTIONS,
         )
 
         self._join_and_build_tables(
@@ -358,7 +359,7 @@ class Sap2000Importer(ImporterAdapter):
                 "Material",
                 "AnalSect",
             ],
-            main_model_table=rpr.ModelTables.ELEMENTS_1D,
+            main_model_table=mt.ELEMENTS_1D,
             rename_other_tables_columns_mapping={
                 "Frame Props 01 - General": {
                     "SectionName": "AnalSect",
@@ -381,7 +382,7 @@ class Sap2000Importer(ImporterAdapter):
                 "Material",
                 "Thickness",
             ],
-            main_model_table=rpr.ModelTables.ELEMENTS_2D,
+            main_model_table=mt.ELEMENTS_2D,
         )
 
         self._build_table(
@@ -397,7 +398,7 @@ class Sap2000Importer(ImporterAdapter):
                 "M2",
                 "M3",
             ],
-            model_table=rpr.ModelTables.ORIGIN_1D_RESULTS,
+            model_table=mt.ORIGIN_1D_RESULTS,
             concat_columns_on_first=["OutputCase", "StepType"]
         )
 
@@ -416,7 +417,7 @@ class Sap2000Importer(ImporterAdapter):
                 "V13",
                 "V23",
             ],
-            model_table=rpr.ModelTables.ORIGIN_2D_RESULTS,
+            model_table=mt.ORIGIN_2D_RESULTS,
             concat_columns_on_first=["OutputCase", "StepType"],
         )
 
@@ -432,7 +433,7 @@ class Sap2000Importer(ImporterAdapter):
                 "R2",
                 "R3",
             ],
-            model_table=rpr.ModelTables.ORIGIN_NODE_DISPLACEMENTS,
+            model_table=mt.ORIGIN_NODE_DISPLACEMENTS,
             concat_columns_on_first=["OutputCase", "StepType"],
         )
 
@@ -448,7 +449,7 @@ class Sap2000Importer(ImporterAdapter):
                 "M2",
                 "M3",
             ],
-            model_table=rpr.ModelTables.ORIGIN_NODE_REACTIONS,
+            model_table=mt.ORIGIN_NODE_REACTIONS,
             concat_columns_on_first=["OutputCase", "StepType"],
         )
 
