@@ -96,3 +96,4 @@ python -m civil_3P
 - Ordenador da tabela
 - Filtrar FEMModel com seleção para a task e reduzir carga de cálculo
 - Criar importador Midas
+- Criar parametrização para plugins
