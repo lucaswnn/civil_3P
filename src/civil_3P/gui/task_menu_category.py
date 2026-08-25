@@ -158,6 +158,7 @@ class TaskMenuCategory:
                 ),
                 task_result,
             )
+
             self._scene_widget.set_result_scene(scene)
             QMessageBox.information(
                 self._panel,

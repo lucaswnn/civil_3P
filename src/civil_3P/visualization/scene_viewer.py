@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Any
-from enum import StrEnum
 
 import pyvista as pv
 from pyvistaqt import QtInteractor
@@ -136,26 +135,31 @@ class SceneViewer(QtInteractor):
         self.reset_camera()
 
     def load_result_scene(self, scene: dict[str, Any]) -> None:
-
         visualization: VisualizationData = scene["visualization"]
         node_map, points = self._get_node_map(scene)
-
+        
         self.clear()
-
-        # filter elements that are not present in the visualization data
+        print(f'tamanho NODES: {len(scene[mc.ModelComponents.NODES])}')
+        print(f'tamanho 1D: {len(scene[mc.ModelComponents.ELEMENTS_1D])}')
+        print(f'tamanho 2D: {len(scene[mc.ModelComponents.ELEMENTS_2D])}')
+        
         filtered_scene = {
             mc.ModelComponents.NODES: scene.get(mc.ModelComponents.NODES, {}),
             mc.ModelComponents.ELEMENTS_1D: {
                 k: v
                 for k, v in scene.get(mc.ModelComponents.ELEMENTS_1D, {}).items()
-                if k not in visualization.element_station_values.keys()
+                if k not in visualization.elements
             },
             mc.ModelComponents.ELEMENTS_2D: {
                 k: v
                 for k, v in scene.get(mc.ModelComponents.ELEMENTS_2D, {}).items()
-                if k not in visualization.element_values.keys()
+                if k not in visualization.elements
             },
         }
+        print(f'tamanho NODES: {len(filtered_scene[mc.ModelComponents.NODES])}')
+        print(f'tamanho 1D: {len(filtered_scene[mc.ModelComponents.ELEMENTS_1D])}')
+        print(f'tamanho 2D: {len(filtered_scene[mc.ModelComponents.ELEMENTS_2D])}')
+        
         self.load_scene(filtered_scene)
 
         if visualization.kind == VisualizationContentKind.NODE_POINTS:
@@ -278,33 +282,35 @@ class SceneViewer(QtInteractor):
         cells: list[int] = []
         celltypes: list[int] = []
         self._load_shells(scene, node_map, cells, celltypes)
-
+        
         if not cells:
             self.render()
             return
-
+        
         shell_grid = pv.UnstructuredGrid(
             np.array(cells), np.array(celltypes), points)
-
-        values = np.full(points.shape[0], np.nan)
+        
+        values = np.full(points.shape[0], 0.0)
+        
         for node_id, value in visualization.node_values.items():
             index = node_map.get(node_id)
             if index is not None:
                 values[index] = value
+                
         shell_grid.point_data["value"] = values
 
-        banded = shell_grid.extract_surface().contour_banded(
+        banded = shell_grid.extract_surface(algorithm=None).contour_banded(
             self._config.n_bands,
             rng=visualization.value_range,
             scalars="value",
             generate_contour_edges=False)
-
+        
         self.add_mesh(banded,
                       scalars="value",
                       cmap=self._config.colormap,
                       clim=visualization.value_range,
                       show_scalar_bar=True)
-
+        
     def _render_element_2d_isolated_nodes(self,
                                           scene: dict[str, Any],
                                           visualization: VisualizationData) -> None:

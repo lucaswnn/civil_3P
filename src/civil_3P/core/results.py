@@ -10,14 +10,14 @@ from civil_3P.standard.result_components import (
     VisualizationMode,
     ResultLocation,
 )
+from civil_3P.standard import model_representation as rpr
 
 
 @dataclass(frozen=True, slots=True)
 class ResultAveragingPolicy:
     include_adjacent_for_2d_average: bool = True
 
-    def target_element_ids(self,
-                           selection: SelectionContext) -> tuple[str, ...]:
+    def target_element_ids(self, selection: SelectionContext) -> tuple[str, ...]:
         if selection.element_type != mc.ModelComponents.ELEMENTS_2D:
             return selection.selected_element_ids
 
@@ -36,10 +36,12 @@ class VisualizationCriteria:
 
 
 class ResultProcessor:
-    def process(self,
-                task_results: pd.DataFrame,
-                selection: SelectionContext,
-                criteria: VisualizationCriteria) -> pd.DataFrame:
+    def process(
+        self,
+        task_results: pd.DataFrame,
+        selection: SelectionContext,
+        criteria: VisualizationCriteria,
+    ) -> pd.DataFrame:
         if selection.element_type == mc.ModelComponents.ELEMENTS_1D:
             return self._process_1d(task_results, criteria)
         elif selection.element_type == mc.ModelComponents.ELEMENTS_2D:
@@ -47,31 +49,35 @@ class ResultProcessor:
         elif selection.element_type == mc.ModelComponents.NODES:
             return self._process_node(task_results, criteria)
         else:
-            raise ValueError(
-                f"Unsupported element type: {selection.element_type}")
+            raise ValueError(f"Unsupported element type: {selection.element_type}")
 
-    def _process_1d(self,
-                    results: pd.DataFrame,
-                    criteria: VisualizationCriteria,
-                    ) -> pd.DataFrame:
+    def _process_1d(
+        self,
+        results: pd.DataFrame,
+        criteria: VisualizationCriteria,
+    ) -> pd.DataFrame:
         return results
 
-    def _process_node(self,
-                      results: pd.DataFrame,
-                      criteria: VisualizationCriteria,
-                      ) -> pd.DataFrame:
+    def _process_node(
+        self,
+        results: pd.DataFrame,
+        criteria: VisualizationCriteria,
+    ) -> pd.DataFrame:
         return results
 
-    def _process_2d(self,
-                    results: pd.DataFrame,
-                    criteria: VisualizationCriteria,
-                    ) -> pd.DataFrame:
+    def _process_2d(
+        self,
+        results: pd.DataFrame,
+        criteria: VisualizationCriteria,
+    ) -> pd.DataFrame:
         if criteria.mode == VisualizationMode.ELEMENT:
             return (
-                results.groupby([
-                    rpr.Task2DResultsColumns.ELEMENT,
-                ],
-                    as_index=False)[rpr.Task2DResultsColumns.VALUE]
+                results.groupby(
+                    [
+                        rpr.Task2DResultsColumns.ELEMENT,
+                    ],
+                    as_index=False,
+                )[rpr.Task2DResultsColumns.VALUE]
                 .mean()
                 .assign(location=ResultLocation.ELEMENT.value)
             )
@@ -80,12 +86,13 @@ class ResultProcessor:
             return results
 
         averaged = (
-            results.groupby([
-                "case_id",
-                "result_name",
-                "node_id",
-            ],
-                as_index=False)["value"]
+            results.groupby(
+                [
+                    rpr.Task2DResultsColumns.CASE,
+                    rpr.Task2DResultsColumns.NODE,
+                ],
+                as_index=False,
+            )[rpr.Task2DResultsColumns.VALUE]
             .mean()
             .assign(location=ResultLocation.NODE.value)
         )
