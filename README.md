@@ -52,3 +52,24 @@ python -m pip install -e .[dev]
 ```powershell
 python -m pytest -q
 ```
+
+## TODO
+
+### Refatoração
+
+- Refatorar enums, inspecionar serviços e controles e suas responsabilidades
+- Separar tabelas de task para outra classe, com colunas obrigatórias e com tipo de elemento e critério de exibição
+- Classe abstrata para critério de exibição, com 3 subclasses (nó, barra e placa)
+- Substituir dicts primitivos dos elementos e resultados a serem exibidos por uma classe para o pyvista
+
+### Funcionalidades
+
+- Criar exemplo de plugin de placa e de nós (1)
+- Criar seleção com o pyvista
+- Serviço de seleção
+- Listener de seleção
+- Controller de seleção (3D e tabela)
+- Tabela
+- Modos de exibição (habilitar/desabilitar elementos, cores, espessuras)
+- Realocar legenda e colocar em container (2)
+- Modos de exibição da legenda
