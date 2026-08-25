@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import pandas as pd
-
 from civil_3P.standard import model_components as mc
-from civil_3P.standard.result_components import ResultLocation
+from civil_3P.standard import model_representation as rpr
 
 from civil_3P.tasks.task_base import (
     TaskContext,
@@ -22,41 +20,16 @@ class ExampleShellDesignPlugin(TaskPlugin):
 
     def validate_input(self,
                        context: TaskContext) -> None:
-        if context.selection_model.element_type != mc.ModelComponents.ELEMENTS_2D:
-            raise ValueError(
-                "ExampleShellDesignPlugin only supports 2D shells")
-
-        if not context.selection_model.selected_element_ids:
-            raise ValueError("Selection cannot be empty")
+        if context.selection_model.tables[rpr.ModelTables.ELEMENTS_2D].empty:
+                    raise ValueError("No 2D elements selected for the task")
 
     def execute(self,
                 context: TaskContext) -> TaskResult:
-        property_map = context.full_model.property_map("element")
-        base = context.full_model.origin_results_2d_df
-        target_element_ids = context.selection_model.all_element_ids
-        membrane = base[
-            (base["case_id"] == context.case_id)
-            & (base["result_name"] == "membrane_force")
-            & (base["element_id"].isin(target_element_ids))
-        ].copy()
+        result_df = context.full_model.tables[rpr.ModelTables.TASK_2D_RESULTS]
+        my_df = context.full_model.tables[rpr.ModelTables.ORIGIN_2D_RESULTS]
+        result_df[rpr.Task2DResultsColumns.ELEMENT] = my_df[rpr.Origin2DResultsColumns.ELEMENT]
+        result_df[rpr.Task2DResultsColumns.CASE] = my_df[rpr.Origin2DResultsColumns.CASE]
+        result_df[rpr.Task2DResultsColumns.NODE] = my_df[rpr.Origin2DResultsColumns.NODE]
+        result_df[rpr.Task2DResultsColumns.VALUE] = my_df[rpr.Origin2DResultsColumns.BENDING_22]
 
-        membrane["design_strength"] = membrane["element_id"].map(
-            lambda element_id: float(property_map.get(
-                (str(element_id), "design_strength"),
-                1.0))
-        )
-
-        membrane["value"] = (membrane["value"].abs() /
-                             membrane["design_strength"]).round(6)
-
-        membrane["result_name"] = "required_thickness"
-        membrane["location"] = ResultLocation.NODE.value
-        report = (
-            membrane[membrane["element_id"].isin(
-                context.selection_model.selected_element_ids)]
-            .groupby("element_id", as_index=False)["value"]
-            .max()
-            .rename(columns={"value": "required_thickness"})
-        )
-
-        return TaskResult(metadata=self.metadata, results=membrane, report=report)
+        return TaskResult(metadata=self.metadata, results=result_df, report=result_df)
