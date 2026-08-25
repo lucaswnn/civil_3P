@@ -31,6 +31,10 @@ Runtime:
 - Python 3.13+
 - pandas
 - numpy
+- PySide6
+- pyvista
+- pyvistaqt
+- openpyxl
 
 Desenvolvimento:
 
@@ -53,7 +57,19 @@ python -m pip install -e .[dev]
 python -m pytest -q
 ```
 
+## Como executar o programa
+
+```powershell
+python -m civil_3P
+```
+
 ## TODO
+
+### Geral
+
+- Integrar github actions
+- Inspecionar testes e cobertura
+- Lançar primeira versão utilizável
 
 ### Refatoração
 
@@ -61,6 +77,7 @@ python -m pytest -q
 - Separar tabelas de task para outra classe, com colunas obrigatórias e com tipo de elemento e critério de exibição
 - Classe abstrata para critério de exibição, com 3 subclasses (nó, barra e placa)
 - Substituir dicts primitivos dos elementos e resultados a serem exibidos por uma classe para o pyvista
+- Rever testes
 
 ### Funcionalidades
 
@@ -73,3 +90,9 @@ python -m pytest -q
 - Modos de exibição (habilitar/desabilitar elementos, cores, espessuras)
 - Realocar legenda e colocar em container (2)
 - Modos de exibição da legenda
+- Botão de atualização com mais dados do modelo externo (aviso que assume que os dados sao consistentes) - dados são novos ou sobrescritos
+- Possibilitar carregar modelo incompleto e alertar que faltam dados básicos (tasks só funcionam com dados básicos)
+- Antes de executar task verificar dados básicos
+- Ordenador da tabela
+- Filtrar FEMModel com seleção para a task e reduzir carga de cálculo
+- Criar importador Midas
