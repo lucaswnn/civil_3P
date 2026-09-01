@@ -34,6 +34,7 @@ class VisualizationContentKind(StrEnum):
 class VisualizationData:
     kind: VisualizationContentKind
     elements: set[str]
+    nodes: set[str]
     value_range: tuple[float, float]
     node_values: dict[str, float] = field(default_factory=dict)
     element_values: dict[str, float] = field(default_factory=dict)
@@ -47,6 +48,7 @@ class VisualizationData:
 class Result:
     result_df: pd.DataFrame
     elements: Set[str]
+    nodes: Set[str]
 
 class VisualizationContent:
     def __init__(self, mode: VisualizationMode, component: mc.ModelComponents) -> None:
@@ -103,6 +105,7 @@ class VisualizationContent:
         return VisualizationData(
             kind=VisualizationContentKind.NODE_POINTS,
             elements=results.elements,
+            nodes=results.nodes,
             value_range=self._value_range(results.result_df[rpr.TaskNodeResultsColumns.VALUE]),
             node_values=node_values,
         )
@@ -131,6 +134,7 @@ class VisualizationContent:
         return VisualizationData(
             kind=VisualizationContentKind.ELEMENT_1D_PROFILE,
             elements=results.elements,
+            nodes=results.nodes,
             value_range=self._value_range(results.result_df[rpr.Task1DResultsColumns.VALUE]),
             element_station_values=element_station_values,
         )
@@ -154,6 +158,7 @@ class VisualizationContent:
         return VisualizationData(
             kind=VisualizationContentKind.ELEMENT_2D_UNIFORM,
             elements=results.elements,
+            nodes=results.nodes,
             value_range=self._value_range(results.result_df[rpr.Task2DResultsColumns.VALUE]),
             element_values=element_values,
         )
@@ -179,6 +184,7 @@ class VisualizationContent:
         return VisualizationData(
             kind=VisualizationContentKind.ELEMENT_2D_SHARED_NODES,
             elements=results.elements,
+            nodes=results.nodes,
             value_range=self._value_range(results.result_df[rpr.Task2DResultsColumns.VALUE]),
             element_node_values=node_values,
         )
@@ -208,6 +214,7 @@ class VisualizationContent:
         return VisualizationData(
             kind=VisualizationContentKind.ELEMENT_2D_ISOLATED_NODES,
             elements=results.elements,
+            nodes=results.nodes,
             value_range=self._value_range(results.result_df[rpr.Task2DResultsColumns.VALUE]),
             element_node_values=element_node_values,
         )
