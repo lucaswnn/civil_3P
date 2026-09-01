@@ -7,7 +7,6 @@ import pandas as pd
 
 from civil_3P.standard import model_components as mc
 from civil_3P.core.model import FEMModel
-from civil_3P.core.selection import SelectionContext
 
 
 @dataclass(frozen=True, slots=True)

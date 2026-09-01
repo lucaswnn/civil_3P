@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import StrEnum
+from typing import Set
 
 import pandas as pd
 
@@ -42,12 +43,17 @@ class VisualizationData:
     element_node_values: dict[str, dict[str, float]] = field(default_factory=dict)
 
 
+@dataclass(frozen=True, slots=True)
+class Result:
+    result_df: pd.DataFrame
+    elements: Set[str]
+
 class VisualizationContent:
     def __init__(self, mode: VisualizationMode, component: mc.ModelComponents) -> None:
         self._mode = mode
         self._component = component
 
-    def build(self, results: pd.DataFrame) -> VisualizationData:
+    def build(self, results: Result) -> VisualizationData:
         if self._component == mc.ModelComponents.NODES:
             return self._build_node_points(results)
 
@@ -80,9 +86,9 @@ class VisualizationContent:
             return (0.0, 0.0)
         return (float(values.min()), float(values.max()))
 
-    def _build_node_points(self, results: pd.DataFrame) -> VisualizationData:
+    def _build_node_points(self, results: Result) -> VisualizationData:
         self._require_columns(
-            results,
+            results.result_df,
             (
                 rpr.TaskNodeResultsColumns.NODE,
                 rpr.TaskNodeResultsColumns.VALUE,
@@ -91,19 +97,19 @@ class VisualizationContent:
 
         node_values = {
             str(node_id): float(value)
-            for node_id, value in zip(results[rpr.TaskNodeResultsColumns.NODE], results[rpr.TaskNodeResultsColumns.VALUE])
+            for node_id, value in zip(results.result_df[rpr.TaskNodeResultsColumns.NODE], results.result_df[rpr.TaskNodeResultsColumns.VALUE])
         }
 
         return VisualizationData(
             kind=VisualizationContentKind.NODE_POINTS,
-            elements={e for e in results[rpr.TaskNodeResultsColumns.NODE]},
-            value_range=self._value_range(results[rpr.TaskNodeResultsColumns.VALUE]),
+            elements=results.elements,
+            value_range=self._value_range(results.result_df[rpr.TaskNodeResultsColumns.VALUE]),
             node_values=node_values,
         )
 
-    def _build_element_1d_profile(self, results: pd.DataFrame) -> VisualizationData:
+    def _build_element_1d_profile(self, results: Result) -> VisualizationData:
         self._require_columns(
-            results,
+            results.result_df,
             (
                 rpr.Task1DResultsColumns.ELEMENT,
                 rpr.Task1DResultsColumns.STATION,
@@ -112,7 +118,7 @@ class VisualizationContent:
         )
 
         element_station_values: dict[str, list[tuple[float, float]]] = {}
-        grouped = results.groupby(rpr.Task1DResultsColumns.ELEMENT)
+        grouped = results.result_df.groupby(rpr.Task1DResultsColumns.ELEMENT)
         for element_id, group in grouped:
             ordered = group.sort_values(rpr.Task1DResultsColumns.STATION)
             element_station_values[str(element_id)] = list(
@@ -124,14 +130,14 @@ class VisualizationContent:
 
         return VisualizationData(
             kind=VisualizationContentKind.ELEMENT_1D_PROFILE,
-            elements={e for (e, _) in grouped},
-            value_range=self._value_range(results[rpr.Task1DResultsColumns.VALUE]),
+            elements=results.elements,
+            value_range=self._value_range(results.result_df[rpr.Task1DResultsColumns.VALUE]),
             element_station_values=element_station_values,
         )
 
-    def _build_element_2d_uniform(self, results: pd.DataFrame) -> VisualizationData:
+    def _build_element_2d_uniform(self, results: Result) -> VisualizationData:
         self._require_columns(
-            results,
+            results.result_df,
             (
                 rpr.Task2DResultsColumns.ELEMENT,
                 rpr.Task2DResultsColumns.VALUE,
@@ -141,22 +147,22 @@ class VisualizationContent:
         element_values = {
             str(element_id): float(value)
             for element_id, value in zip(
-                results[rpr.Task2DResultsColumns.ELEMENT], results[rpr.Task2DResultsColumns.VALUE]
+                results.result_df[rpr.Task2DResultsColumns.ELEMENT], results.result_df[rpr.Task2DResultsColumns.VALUE]
             )
         }
 
         return VisualizationData(
             kind=VisualizationContentKind.ELEMENT_2D_UNIFORM,
-            elements={e for e in results[rpr.Task2DResultsColumns.ELEMENT]},
-            value_range=self._value_range(results[rpr.Task2DResultsColumns.VALUE]),
+            elements=results.elements,
+            value_range=self._value_range(results.result_df[rpr.Task2DResultsColumns.VALUE]),
             element_values=element_values,
         )
 
     def _build_element_2d_shared_nodes(
-        self, results: pd.DataFrame
+        self, results: Result
     ) -> VisualizationData:
         self._require_columns(
-            results,
+            results.result_df,
             (
                 rpr.Task2DResultsColumns.NODE,
                 rpr.Task2DResultsColumns.VALUE,
@@ -166,22 +172,22 @@ class VisualizationContent:
         node_values = {
             str(node_id): float(value)
             for node_id, value in zip(
-                results[rpr.Task2DResultsColumns.NODE], results[rpr.Task2DResultsColumns.VALUE]
+                results.result_df[rpr.Task2DResultsColumns.NODE], results.result_df[rpr.Task2DResultsColumns.VALUE]
             )
         }
 
         return VisualizationData(
             kind=VisualizationContentKind.ELEMENT_2D_SHARED_NODES,
-            elements={e for e in results[rpr.Task2DResultsColumns.ELEMENT]},
-            value_range=self._value_range(results[rpr.Task2DResultsColumns.VALUE]),
+            elements=results.elements,
+            value_range=self._value_range(results.result_df[rpr.Task2DResultsColumns.VALUE]),
             element_node_values=node_values,
         )
 
     def _build_element_2d_isolated_nodes(
-        self, results: pd.DataFrame
+        self, results: Result
     ) -> VisualizationData:
         self._require_columns(
-            results,
+            results.result_df,
             (
                 rpr.Task2DResultsColumns.ELEMENT,
                 rpr.Task2DResultsColumns.NODE,
@@ -190,7 +196,7 @@ class VisualizationContent:
         )
 
         element_node_values: dict[str, dict[str, float]] = {}
-        grouped = results.groupby(rpr.Task2DResultsColumns.ELEMENT)
+        grouped = results.result_df.groupby(rpr.Task2DResultsColumns.ELEMENT)
         for element_id, group in grouped:
             element_node_values[str(element_id)] = {
                 str(node_id): float(value)
@@ -201,7 +207,7 @@ class VisualizationContent:
 
         return VisualizationData(
             kind=VisualizationContentKind.ELEMENT_2D_ISOLATED_NODES,
-            elements={e for (e, _) in grouped},
-            value_range=self._value_range(results[rpr.Task2DResultsColumns.VALUE]),
+            elements=results.elements,
+            value_range=self._value_range(results.result_df[rpr.Task2DResultsColumns.VALUE]),
             element_node_values=element_node_values,
         )

@@ -8,7 +8,7 @@ from civil_3P.core.results import VisualizationCriteria
 from civil_3P.core.selection import SelectionContext
 from civil_3P.standard import model_representation as rpr
 from civil_3P.standard import model_components as mc
-from civil_3P.standard.result_components import VisualizationContent
+from civil_3P.standard.result_components import VisualizationContent, Result
 
 
 class SceneBuilder:
@@ -26,7 +26,7 @@ class SceneBuilder:
 
     def build_result_scene(self,
                            model: FEMModel,
-                           results: pd.DataFrame,
+                           results: Result,
                            criteria: VisualizationCriteria,
                            selection: SelectionContext) -> dict[str, Any]:
         scene = self.build_scene(model)

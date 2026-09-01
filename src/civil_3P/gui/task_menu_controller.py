@@ -57,11 +57,11 @@ class TaskMenuController:
         criteria: VisualizationCriteria,
         task_result: TaskResult,
     ) -> dict[str, Any]:
-        result_df = self._result_service.process(
+        result = self._result_service.process(
             task_result, criteria, selection)
         return self._visualization_service.build_result_scene(
             self._session.model,
-            result_df,
+            result,
             criteria,
             selection,
         )

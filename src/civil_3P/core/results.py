@@ -9,6 +9,7 @@ from civil_3P.standard import model_components as mc
 from civil_3P.standard.result_components import (
     VisualizationMode,
     ResultLocation,
+    Result
 )
 from civil_3P.standard import model_representation as rpr
 
@@ -35,55 +36,66 @@ class VisualizationCriteria:
     averaging_policy: ResultAveragingPolicy = ResultAveragingPolicy()
 
 
+
 class ResultProcessor:
     def process(
         self,
         task_results: pd.DataFrame,
         selection: SelectionContext,
         criteria: VisualizationCriteria,
-    ) -> pd.DataFrame:
+    ) -> Result:
         if selection.element_type == mc.ModelComponents.ELEMENTS_1D:
             return self._process_1d(task_results, criteria)
         elif selection.element_type == mc.ModelComponents.ELEMENTS_2D:
             return self._process_2d(task_results, criteria)
         elif selection.element_type == mc.ModelComponents.NODES:
             return self._process_node(task_results, criteria)
-        else:
-            raise ValueError(f"Unsupported element type: {selection.element_type}")
+
+        raise ValueError(f"Unsupported element type: {selection.element_type}")
 
     def _process_1d(
         self,
         results: pd.DataFrame,
         criteria: VisualizationCriteria,
-    ) -> pd.DataFrame:
-        return results
+    ) -> Result:
+        return Result(
+            result_df=results,
+            elements=set(results[rpr.Task1DResultsColumns.ELEMENT].to_list()),
+        )
 
     def _process_node(
         self,
         results: pd.DataFrame,
         criteria: VisualizationCriteria,
-    ) -> pd.DataFrame:
-        return results
+    ) -> Result:
+        return Result(
+            result_df=results,
+            elements=set(results[rpr.TaskNodeResultsColumns.NODE].to_list()),
+        )
 
     def _process_2d(
         self,
         results: pd.DataFrame,
         criteria: VisualizationCriteria,
-    ) -> pd.DataFrame:
+    ) -> Result:
         if criteria.mode == VisualizationMode.ELEMENT:
-            return (
-                results.groupby(
+            return Result(
+                result_df=results.groupby(
                     [
                         rpr.Task2DResultsColumns.ELEMENT,
                     ],
                     as_index=False,
                 )[rpr.Task2DResultsColumns.VALUE]
                 .mean()
-                .assign(location=ResultLocation.ELEMENT.value)
+                .assign(location=ResultLocation.ELEMENT.value),
+                elements=set(results[rpr.Task2DResultsColumns.ELEMENT].to_list()),
             )
 
         if criteria.mode == VisualizationMode.NODE_RAW:
-            return results
+            return Result(
+                result_df=results,
+                elements=set(results[rpr.Task2DResultsColumns.ELEMENT].to_list()),
+            )
 
         averaged = (
             results.groupby(
@@ -97,4 +109,7 @@ class ResultProcessor:
             .assign(location=ResultLocation.NODE.value)
         )
 
-        return averaged
+        return Result(
+            result_df=averaged,
+            elements=set(results[rpr.Task2DResultsColumns.ELEMENT].to_list()),
+        )

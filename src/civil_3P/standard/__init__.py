@@ -1,5 +1,5 @@
 from civil_3P.standard import model_components
-from civil_3P.standard.result_components import ResultLocation, VisualizationMode
+from civil_3P.standard.result_components import ResultLocation, VisualizationMode, Result
 from civil_3P.standard import model_representation
 from civil_3P.standard.model_representation import ModelTables
 from civil_3P.standard import units
@@ -15,4 +15,5 @@ __all__ = [
     "ProjectComponents",
     "ImporterProfiles",
     "ModelTables",
+    "Result",
 ]

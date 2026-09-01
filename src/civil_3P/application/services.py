@@ -16,6 +16,7 @@ from civil_3P.tasks.task_base import TaskContext, TaskResult
 from civil_3P.visualization.scene_builder import SceneBuilder
 from civil_3P.standard import model_representation as rpr
 from civil_3P.standard.importer_profiles import ImporterProfiles
+from civil_3P.standard.result_components import Result
 from civil_3P.application.preferences import UserPreferencesService
 
 
@@ -61,7 +62,7 @@ class ResultQueryService:
     def process(self,
                 task_result: TaskResult,
                 criteria: VisualizationCriteria,
-                selection: SelectionContext) -> pd.DataFrame:
+                selection: SelectionContext) -> Result:
         return self._processor.process(task_result.results, selection, criteria)
 
 
@@ -75,7 +76,7 @@ class VisualizationService:
     def build_result_scene(
         self,
         model: FEMModel,
-        results: pd.DataFrame,
+        results: Result,
         criteria: VisualizationCriteria,
         selection: SelectionContext,
     ) -> dict[str, Any]:
