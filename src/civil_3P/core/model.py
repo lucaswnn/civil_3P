@@ -135,7 +135,7 @@ class FEMModel:
             raise ValueError(f"Missing tables for FEMModel: {missing}")
 
         model = cls(tables={name: tables[name].copy()
-                                 for name in rpr.REQUIRED_TABLES},
+                            for name in rpr.REQUIRED_TABLES},
                     units=units.copy())
         model.validate_tables()
         model.validate_units()
@@ -311,5 +311,27 @@ class FEMModel:
                 element_filter_table=mt.ELEMENTS_2D,
                 result_filter_table=mt.ORIGIN_2D_RESULTS,
             )
+
+        return sel
+
+    def filter_by_load_case(self, load_case_id: str) -> FEMModel:
+        print(load_case_id)
+        sel = self.copy()
+
+        df_1d = sel.tables[mt.ORIGIN_1D_RESULTS]
+        df_2d = sel.tables[mt.ORIGIN_2D_RESULTS]
+        df_node_d = sel.tables[mt.ORIGIN_NODE_DISPLACEMENTS]
+        df_node_r = sel.tables[mt.ORIGIN_NODE_REACTIONS]
+        df_1d = df_1d[df_1d[rpr.Task1DResultsColumns.CASE] == load_case_id]
+        df_2d = df_2d[df_2d[rpr.Task2DResultsColumns.CASE] == load_case_id]
+        df_node_d = df_node_d[df_node_d[rpr.TaskNodeResultsColumns.CASE]
+                              == load_case_id]
+        df_node_r = df_node_r[df_node_r[rpr.TaskNodeResultsColumns.CASE]
+                              == load_case_id]
+
+        sel.tables[mt.ORIGIN_1D_RESULTS] = df_1d
+        sel.tables[mt.ORIGIN_2D_RESULTS] = df_2d
+        sel.tables[mt.ORIGIN_NODE_DISPLACEMENTS] = df_node_d
+        sel.tables[mt.ORIGIN_NODE_REACTIONS] = df_node_r
 
         return sel

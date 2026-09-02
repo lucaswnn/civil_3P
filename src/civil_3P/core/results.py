@@ -124,7 +124,7 @@ class ResultProcessor:
                 elements=elements,
                 nodes=nodes,
             )
-
+        
         averaged = (
             results.groupby(
                 [

@@ -335,14 +335,14 @@ class SceneViewer(QtInteractor):
 
         values = np.full(points.shape[0], 0.0)
 
-        for node_id, value in visualization.node_values.items():
+        for node_id, value in visualization.element_node_values.items():
             index = node_map.get(node_id)
             if index is not None:
                 values[index] = value
 
         shell_grid.point_data["value"] = values
-
-        banded = shell_grid.extract_surface(algorithm=None).contour_banded(
+        mesh = shell_grid.extract_surface(algorithm=None)
+        banded = mesh.contour_banded(
             self._config.n_bands,
             rng=visualization.value_range,
             scalars="value",
@@ -355,6 +355,13 @@ class SceneViewer(QtInteractor):
             cmap=self._config.colormap,
             clim=visualization.value_range,
             show_scalar_bar=True,
+        )
+
+        contour = mesh.contour(isosurfaces=self._config.n_bands)
+        self.add_mesh(
+            contour,
+            color="black",
+            line_width=2.0,
         )
 
     def _render_element_2d_isolated_nodes(

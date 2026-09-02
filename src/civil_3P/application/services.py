@@ -45,6 +45,7 @@ class TaskExecutionService:
     ) -> TaskResult:
         plugin = self._task_registry.get(task_id)
         selection_model = model.filter_by_selection(selection)
+        selection_model = selection_model.filter_by_load_case(case_id)
         context = TaskContext(
             full_model=model.copy(), selection_model=selection_model, case_id=case_id
         )
