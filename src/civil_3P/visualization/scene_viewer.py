@@ -342,7 +342,9 @@ class SceneViewer(QtInteractor):
 
         shell_grid.point_data["value"] = values
         mesh = shell_grid.extract_surface(algorithm=None)
-        banded = mesh.contour_banded(
+        mesh = mesh.triangulate()
+        refined_mesh = mesh.subdivide(nsub=3, subfilter="butterfly")
+        banded = refined_mesh.contour_banded(
             self._config.n_bands,
             rng=visualization.value_range,
             scalars="value",
@@ -357,7 +359,7 @@ class SceneViewer(QtInteractor):
             show_scalar_bar=True,
         )
 
-        contour = mesh.contour(isosurfaces=self._config.n_bands)
+        contour = refined_mesh.contour(isosurfaces=self._config.n_bands)
         self.add_mesh(
             contour,
             color="black",
