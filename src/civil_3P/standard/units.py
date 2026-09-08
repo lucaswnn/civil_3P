@@ -141,6 +141,83 @@ class Unitless(StrEnum):
     NONE = "none"
 
 
+UNITS_SCHEME = {
+    PhysicalQuantities.LENGTH: [
+        LengthUnits.METER,
+        LengthUnits.MILLIMETER,
+        LengthUnits.CENTIMETER,
+    ],
+    PhysicalQuantities.FORCE: [
+        ForceUnits.NEWTON,
+        ForceUnits.KILONEWTON,
+        ForceUnits.TON_FORCE,
+        ForceUnits.KILOGRAM_FORCE,
+    ],
+    PhysicalQuantities.TEMPERATURE: [
+        TemperatureUnits.CELSIUS,
+        TemperatureUnits.FAHRENHEIT,
+    ],
+    PhysicalQuantities.FORCE_PER_LENGTH: [
+        ForcePerLengthUnits.NEWTON_PER_METER,
+        ForcePerLengthUnits.KILONEWTON_PER_METER,
+        ForcePerLengthUnits.TON_FORCE_PER_METER,
+        ForcePerLengthUnits.KILOGRAM_FORCE_PER_METER,
+    ],
+    PhysicalQuantities.MOMENT: [
+        MomentUnits.NEWTON_METER,
+        MomentUnits.KILONEWTON_METER,
+        MomentUnits.TON_FORCE_METER,
+        MomentUnits.KILOGRAM_FORCE_METER,
+    ],
+    PhysicalQuantities.MOMENT_PER_LENGTH: [
+        MomentPerLengthUnits.NEWTON_METER_PER_METER,
+        MomentPerLengthUnits.KILONEWTON_METER_PER_METER,
+        MomentPerLengthUnits.TON_FORCE_METER_PER_METER,
+        MomentPerLengthUnits.KILOGRAM_FORCE_METER_PER_METER,
+    ],
+    PhysicalQuantities.UNITLESS: [
+        Unitless.UNITLESS,
+        Unitless.NONE,
+    ],
+    PhysicalQuantities.ANGLE: [
+        AngleUnits.DEGREE,
+        AngleUnits.RADIAN,
+    ],
+    PhysicalQuantities.AREA: [
+        AreaUnits.SQUARE_METER,
+        AreaUnits.SQUARE_MILLIMETER,
+        AreaUnits.SQUARE_CENTIMETER,
+    ],
+    PhysicalQuantities.VOLUME: [
+        VolumeUnits.CUBIC_METER,
+        VolumeUnits.CUBIC_MILLIMETER,
+        VolumeUnits.CUBIC_CENTIMETER,
+    ],
+    PhysicalQuantities.INERTIA: [
+        InertiaUnits.METER_FOURTH,
+        InertiaUnits.MILLIMETER_FOURTH,
+        InertiaUnits.CENTIMETER_FOURTH,
+    ],
+    PhysicalQuantities.STRESS: [
+        StressUnits.NEWTON_PER_SQUARE_METER,
+        StressUnits.NEWTON_PER_SQUARE_MILLIMETER,
+        StressUnits.NEWTON_PER_SQUARE_CENTIMETER,
+        StressUnits.KILONEWTON_PER_SQUARE_METER,
+        StressUnits.KILONEWTON_PER_SQUARE_MILLIMETER,
+        StressUnits.KILONEWTON_PER_SQUARE_CENTIMETER,
+        StressUnits.TON_FORCE_PER_SQUARE_METER,
+        StressUnits.TON_FORCE_PER_SQUARE_MILLIMETER,
+        StressUnits.TON_FORCE_PER_SQUARE_CENTIMETER,
+        StressUnits.KILOGRAM_FORCE_PER_SQUARE_METER,
+        StressUnits.KILOGRAM_FORCE_PER_SQUARE_MILLIMETER,
+        StressUnits.KILOGRAM_FORCE_PER_SQUARE_CENTIMETER,
+    ],
+    PhysicalQuantities.LINEAR_THERMAL_EXPANSION: [
+        LinearThermalExpansionUnits.PER_CELSIUS,
+        LinearThermalExpansionUnits.PER_FAHRENHEIT,
+    ],
+}
+
 DEFAULT_UNITS = {
     PhysicalQuantities.LENGTH: LengthUnits.METER,
     PhysicalQuantities.FORCE: ForceUnits.TON_FORCE,

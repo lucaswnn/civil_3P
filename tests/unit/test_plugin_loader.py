@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from civil_3P.tasks.plugin_loader import PluginLoader
+from civil_3P.application.plugin_loader_service import PluginLoaderService
 from civil_3P.tasks.task_base import TaskMetadata
 from civil_3P.tasks.task_registry import TaskRegistry
 from civil_3P.standard.model_components import ModelComponents
@@ -9,7 +9,7 @@ from civil_3P.standard.model_components import ModelComponents
 def test_plugin_loader_ignores_missing_directory(tmp_path) -> None:
     registry = TaskRegistry()
 
-    loaded = PluginLoader(registry).load_from(tmp_path / "missing")
+    loaded = PluginLoaderService(registry).load_from(tmp_path / "missing")
 
     assert loaded == ()
 
@@ -39,7 +39,7 @@ class UserPlugin(TaskPlugin):
     )
     registry = TaskRegistry()
 
-    loaded = PluginLoader(registry).load_from(tmp_path)
+    loaded = PluginLoaderService(registry).load_from(tmp_path)
 
     assert loaded == ("user_plugin",)
     assert registry.get("user_plugin").metadata.identifier == "user_plugin"

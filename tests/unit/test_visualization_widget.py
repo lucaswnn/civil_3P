@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from PySide6.QtWidgets import QApplication
 
-from civil_3P.visualization.widget import SceneWidget
+from civil_3P.gui.scene_widget import SceneWidget
 
 
 def test_scene_widget_hosts_a_widget_for_the_viewer() -> None:

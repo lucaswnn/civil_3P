@@ -2,20 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from civil_3P.standard import model_components as mc
-
 
 @dataclass(frozen=True, slots=True)
 class SelectionContext:
-    element_type: mc.ModelComponents
-    selected_element_ids: tuple[str, ...]
-    adjacent_element_ids: tuple[str, ...] = field(default_factory=tuple)
+    node_ids: set[str]
+    element_1d_ids: set[str]
+    element_2d_ids: set[str]
+    adjacent_element_2d_ids: set[str] = field(default_factory=set)
 
     @property
-    def all_element_ids(self) -> tuple[str, ...]:
-        ordered = dict.fromkeys((
-            *self.selected_element_ids,
-            *self.adjacent_element_ids,
-        ))
-
-        return tuple(ordered.keys())
+    def all_element_2d_ids(self) -> set[str]:
+        return self.element_2d_ids | self.adjacent_element_2d_ids

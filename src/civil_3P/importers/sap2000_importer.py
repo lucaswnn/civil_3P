@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import logging
 import pandas as pd
 
 from civil_3P.standard import model_representation as rpr
@@ -15,6 +16,7 @@ from civil_3P.importers.importer_adapter import (
     IntermediateRepresentation,
 )
 
+logger = logging.getLogger(__name__)
 
 SAP2000_SPEC = ImporterSpec(
 
@@ -180,7 +182,7 @@ class Sap2000Importer(ImporterAdapter):
         self.original_tables: dict[str, pd.DataFrame] = {}
 
     def read_intermediate(self, source: str | Path) -> IntermediateRepresentation:
-        print("Reading SAP2000 model from workbook")
+        logger.info("Reading SAP2000 model from workbook")
         source_path = Path(source)
 
         if source_path.is_dir():
@@ -310,7 +312,7 @@ class Sap2000Importer(ImporterAdapter):
         self.intermediate.tables[mt.LOAD_CASES] = load_case
 
     def _build_intermediate(self) -> IntermediateRepresentation:
-        print("Building intermediate representation from SAP2000 tables")
+        logger.info("Building intermediate representation from SAP2000 tables")
 
         self._build_table(
             table_name="Joint Coordinates",
@@ -469,7 +471,7 @@ class Sap2000Importer(ImporterAdapter):
                 dtype=object,
                 decimal=",",
             )
-            print(f"Successfully read {len(sheets)} sheets from workbook")
+            logger.info(f"Successfully read {len(sheets)} sheets from workbook")
             self.original_tables = sheets
         except ImportError as exc:
             raise RuntimeError(
@@ -480,7 +482,7 @@ class Sap2000Importer(ImporterAdapter):
         self,
         name: str,
     ) -> tuple[pd.DataFrame, dict[str, str]]:
-        print(f"Retrieving table '{name}' from SAP2000 tables")
+        logger.info(f"Retrieving table '{name}' from SAP2000 tables")
         table = self.original_tables.get(name).copy()
         if table is None:
             raise ValueError(

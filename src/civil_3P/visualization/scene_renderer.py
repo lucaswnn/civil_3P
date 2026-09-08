@@ -9,13 +9,33 @@ import numpy as np
 
 from civil_3P.standard import model_components as mc
 from civil_3P.standard.result_components import (
-    VisualizationContentKind,
-    VisualizationData,
+    ViewContentKind,
+    ResultVisualizationData,
 )
 from civil_3P.visualization.config import SceneViewerConfig
 
 
-class SceneViewer(QtInteractor):
+class SceneRenderer(QtInteractor):
+    def __init__(
+        self,
+        parent: QWidget | None = None,
+        config: SceneViewerConfig | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self._config = config or SceneViewerConfig()
+        self.set_background(self._config.background_color)
+
+    def load_scene(self):
+        pass
+
+    def load_result_scene(self):
+        pass
+
+    def _node_map(self):
+        pass
+
+
+class SceneRenderers(QtInteractor):
     def __init__(
         self,
         parent: QWidget | None = None,
@@ -105,8 +125,10 @@ class SceneViewer(QtInteractor):
 
         element_1d_cells, element_2d_cells = [], []
         element_1d_celltypes, element_2d_celltypes = [], []
-        self._load_bars(scene, node_map, element_1d_cells, element_1d_celltypes)
-        self._load_shells(scene, node_map, element_2d_cells, element_2d_celltypes)
+        self._load_bars(scene, node_map, element_1d_cells,
+                        element_1d_celltypes)
+        self._load_shells(scene, node_map, element_2d_cells,
+                          element_2d_celltypes)
 
         bar_grid = pv.UnstructuredGrid(
             np.array(element_1d_cells), np.array(element_1d_celltypes), points
@@ -142,7 +164,7 @@ class SceneViewer(QtInteractor):
         self.reset_camera()
 
     def load_result_scene(self, scene: dict[str, Any]) -> None:
-        visualization: VisualizationData = scene["visualization"]
+        visualization: ResultVisualizationData = scene["visualization"]
 
         self.clear()
 
@@ -185,24 +207,26 @@ class SceneViewer(QtInteractor):
 
         self.load_scene(idle_scene)
 
-        if visualization.kind == VisualizationContentKind.NODE_POINTS:
-            self._render_node_points(result_points, result_node_map, visualization)
-        elif visualization.kind == VisualizationContentKind.ELEMENT_1D_PROFILE:
+        if visualization.kind == ViewContentKind.NODE_POINTS:
+            self._render_node_points(
+                result_points, result_node_map, visualization)
+        elif visualization.kind == ViewContentKind.ELEMENT_1D_PROFILE:
             self._render_element_1d_profile(
                 result_scene, result_node_map, result_points, visualization
             )
-        elif visualization.kind == VisualizationContentKind.ELEMENT_2D_UNIFORM:
+        elif visualization.kind == ViewContentKind.ELEMENT_2D_UNIFORM:
             self._render_element_2d_uniform(
                 result_scene, result_node_map, result_points, visualization
             )
-        elif visualization.kind == VisualizationContentKind.ELEMENT_2D_SHARED_NODES:
+        elif visualization.kind == ViewContentKind.ELEMENT_2D_SHARED_NODES:
             self._render_element_2d_shared_nodes(
                 result_scene, result_node_map, result_points, visualization
             )
-        elif visualization.kind == VisualizationContentKind.ELEMENT_2D_ISOLATED_NODES:
+        elif visualization.kind == ViewContentKind.ELEMENT_2D_ISOLATED_NODES:
             self._render_element_2d_isolated_nodes(result_scene, visualization)
         else:
-            raise ValueError(f"Unsupported visualization kind: {visualization.kind}")
+            raise ValueError(
+                f"Unsupported visualization kind: {visualization.kind}")
 
         self.reset_camera()
 
@@ -210,7 +234,7 @@ class SceneViewer(QtInteractor):
         self,
         points: np.ndarray,
         node_map: dict[str, int],
-        visualization: VisualizationData,
+        visualization: ResultVisualizationData,
     ) -> None:
         if not node_map:
             self.render()
@@ -237,7 +261,7 @@ class SceneViewer(QtInteractor):
         scene: dict[str, Any],
         node_map: dict[str, int],
         points: np.ndarray,
-        visualization: VisualizationData,
+        visualization: ResultVisualizationData,
     ) -> None:
         bars = scene.get(mc.ModelComponents.ELEMENTS_1D, {})
 
@@ -258,7 +282,8 @@ class SceneViewer(QtInteractor):
 
             line = [len(profile)]
             for station, value in profile:
-                fraction = 0.0 if length == 0 else min(max(station / length, 0.0), 1.0)
+                fraction = 0.0 if length == 0 else min(
+                    max(station / length, 0.0), 1.0)
                 profile_points.append(start + fraction * (end - start))
                 profile_values.append(value)
                 line.append(len(profile_points) - 1)
@@ -287,7 +312,7 @@ class SceneViewer(QtInteractor):
         scene: dict[str, Any],
         node_map: dict[str, int],
         points: np.ndarray,
-        visualization: VisualizationData,
+        visualization: ResultVisualizationData,
     ) -> None:
         cells: list[int] = []
         celltypes: list[int] = []
@@ -298,7 +323,8 @@ class SceneViewer(QtInteractor):
             self.render()
             return
 
-        shell_grid = pv.UnstructuredGrid(np.array(cells), np.array(celltypes), points)
+        shell_grid = pv.UnstructuredGrid(
+            np.array(cells), np.array(celltypes), points)
         shell_grid.cell_data["value"] = np.array(
             [
                 visualization.element_values.get(element_id, np.nan)
@@ -321,7 +347,7 @@ class SceneViewer(QtInteractor):
         scene: dict[str, Any],
         node_map: dict[str, int],
         points: np.ndarray,
-        visualization: VisualizationData,
+        visualization: ResultVisualizationData,
     ) -> None:
         cells: list[int] = []
         celltypes: list[int] = []
@@ -331,7 +357,8 @@ class SceneViewer(QtInteractor):
             self.render()
             return
 
-        shell_grid = pv.UnstructuredGrid(np.array(cells), np.array(celltypes), points)
+        shell_grid = pv.UnstructuredGrid(
+            np.array(cells), np.array(celltypes), points)
 
         values = np.full(points.shape[0], 0.0)
 
@@ -367,7 +394,7 @@ class SceneViewer(QtInteractor):
         )
 
     def _render_element_2d_isolated_nodes(
-        self, scene: dict[str, Any], visualization: VisualizationData
+        self, scene: dict[str, Any], visualization: ResultVisualizationData
     ) -> None:
         shells = scene.get(mc.ModelComponents.ELEMENTS_2D, {})
         nodes = scene.get(mc.ModelComponents.NODES, {})

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Protocol, Sequence
+from typing import Protocol
 
 from PySide6.QtWidgets import QWidget
 
@@ -16,7 +16,7 @@ class MenuCategory(Protocol):
 
 
 class MenuCategoryRegistry:
-    def __init__(self, categories: Sequence[MenuCategory]) -> None:
+    def __init__(self, categories: list[MenuCategory]) -> None:
         self._categories: dict[str, MenuCategory] = {
             category.identifier: category for category in categories
         }

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from civil_3P.core.model import FEMModel
-from civil_3P.application.services import ApplicationContext
+from civil_3P.application.application_context import ApplicationContext
 from civil_3P.gui.file_menu_controller import FileMenuController
 
 
@@ -10,7 +10,7 @@ def test_app_controller_can_save_and_load_model(tmp_path) -> None:
     file_path = tmp_path / "project.c3p"
 
     controller = FileMenuController()
-    ApplicationContext().model_service.model = model
+    ApplicationContext()._model_service.model = model
     controller.save_model(file_path)
     loaded_model = controller.load_model_file(file_path)
 
@@ -21,16 +21,16 @@ def test_app_controller_can_save_and_load_model(tmp_path) -> None:
 
 def test_file_service_round_trips_user_preferences(tmp_path) -> None:
     context = ApplicationContext()
-    context.model_service.model = FEMModel.empty()
-    context.preferences.scene_viewer_config.node_point_size = 7.0
-    context.preferences.set_plugins_base_path(tmp_path)
+    context._model_service.model = FEMModel.empty()
+    context._preferences_service.scene_viewer_config.node_point_size = 7.0
+    context._preferences_service.set_plugins_base_path(tmp_path)
     file_path = tmp_path / "preferences.c3p"
 
-    from civil_3P.file_service.file_service import FileService
+    from civil_3P.application.file_service import FileService
 
     FileService(context).save(file_path)
-    context.preferences.scene_viewer_config.node_point_size = 1.0
+    context._preferences_service.scene_viewer_config.node_point_size = 1.0
     FileService(context).load(file_path)
 
-    assert context.preferences.scene_viewer_config.node_point_size == 7.0
-    assert context.preferences.plugins_base_path == tmp_path.resolve()
+    assert context._preferences_service.scene_viewer_config.node_point_size == 7.0
+    assert context._preferences_service.plugins_base_path == tmp_path.resolve()

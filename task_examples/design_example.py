@@ -4,7 +4,7 @@ from civil_3P.standard import model_components as mc
 from civil_3P.standard import model_representation as rpr
 
 from civil_3P.tasks.task_base import (
-    TaskContext,
+    TaskInputContext,
     TaskMetadata,
     TaskPlugin,
     TaskResult,
@@ -19,12 +19,12 @@ class ExampleShellDesignPlugin(TaskPlugin):
                             supported_element_type=mc.ModelComponents.ELEMENTS_2D)
 
     def validate_input(self,
-                       context: TaskContext) -> None:
+                       context: TaskInputContext) -> None:
         if context.selection_model.tables[rpr.ModelTables.ELEMENTS_2D].empty:
             raise ValueError("No 2D elements selected for the task")
 
     def execute(self,
-                context: TaskContext) -> TaskResult:
+                context: TaskInputContext) -> TaskResult:
         result_df = context.selection_model.tables[rpr.ModelTables.TASK_2D_RESULTS]
         my_df = context.selection_model.tables[rpr.ModelTables.ORIGIN_2D_RESULTS]
         result_df[rpr.Task2DResultsColumns.ELEMENT] = my_df[rpr.Origin2DResultsColumns.ELEMENT]
@@ -32,4 +32,4 @@ class ExampleShellDesignPlugin(TaskPlugin):
         result_df[rpr.Task2DResultsColumns.NODE] = my_df[rpr.Origin2DResultsColumns.NODE]
         result_df[rpr.Task2DResultsColumns.VALUE] = my_df[rpr.Origin2DResultsColumns.BENDING_22]
 
-        return TaskResult(metadata=self.metadata, results=result_df, report=result_df)
+        return TaskResult(metadata=self.metadata, results=result_df)

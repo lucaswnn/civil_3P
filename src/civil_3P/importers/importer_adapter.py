@@ -3,20 +3,22 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
+import logging
 import pandas as pd
 
 from civil_3P.core.model import FEMModel
 from civil_3P.standard import units
 from civil_3P.standard.model_representation import ModelTables as mt
-from civil_3P.standard import model_representation as rpr
 from civil_3P.utils.pandas_utils import PandasUtils as pdUtils
 
+logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True, slots=True)
 class ColumnMapping:
     rename: dict[str, str]
-    defaults: dict[str, object]
+    defaults: dict[str, Any]
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,6 +34,7 @@ class IntermediateRepresentation:
     @classmethod
     def empty(cls) -> "IntermediateRepresentation":
         model = FEMModel.empty()
+
         return cls(
             tables={
                 mt.NODES: model.tables[mt.NODES].copy(),
@@ -44,15 +47,11 @@ class IntermediateRepresentation:
                 mt.ORIGIN_NODE_DISPLACEMENTS: model.tables[mt.ORIGIN_NODE_DISPLACEMENTS].copy(),
                 mt.ORIGIN_NODE_REACTIONS: model.tables[mt.ORIGIN_NODE_REACTIONS].copy(),
                 mt.LOAD_CASES: model.tables[mt.LOAD_CASES].copy(),
-                mt.TASK_1D_RESULTS: model.tables[mt.TASK_1D_RESULTS].copy(),
-                mt.TASK_2D_RESULTS: model.tables[mt.TASK_2D_RESULTS].copy(),
-                mt.TASK_NODE_RESULTS: model.tables[mt.TASK_NODE_RESULTS].copy(),
             },
             units=model.units.copy(),
         )
 
     def to_model(self) -> FEMModel:
-        model = FEMModel.empty()
         return FEMModel.from_tables(
             tables={
                 mt.NODES: self.tables[mt.NODES].copy(),
@@ -65,9 +64,6 @@ class IntermediateRepresentation:
                 mt.ORIGIN_NODE_DISPLACEMENTS: self.tables[mt.ORIGIN_NODE_DISPLACEMENTS].copy(),
                 mt.ORIGIN_NODE_REACTIONS: self.tables[mt.ORIGIN_NODE_REACTIONS].copy(),
                 mt.LOAD_CASES: self.tables[mt.LOAD_CASES].copy(),
-                mt.TASK_1D_RESULTS: model.tables[mt.TASK_1D_RESULTS].copy(),
-                mt.TASK_2D_RESULTS: model.tables[mt.TASK_2D_RESULTS].copy(),
-                mt.TASK_NODE_RESULTS: model.tables[mt.TASK_NODE_RESULTS].copy(),
             },
             units=self.units,
         )
@@ -83,6 +79,7 @@ class ImporterAdapter(ABC):
 
     def import_model(self, source: str | Path) -> FEMModel:
         intermediate = self.read_intermediate(source)
+
         return intermediate.to_model()
 
     @abstractmethod
@@ -90,7 +87,7 @@ class ImporterAdapter(ABC):
         raise NotImplementedError
 
     def map_dataframe(self, df: pd.DataFrame, mapping: ColumnMapping) -> None:
-        print(f"Mapping dataframe columns:\n"
+        logger.info(f"Mapping dataframe columns:\n"
               f"{df.columns.tolist()} ->"
               f"\n{[f'{k} -> {v.value}' for k, v in mapping.rename.items()]}")
 
@@ -111,13 +108,13 @@ class ImporterAdapter(ABC):
 
         physicalquantity = units.UnitConverter.get_physical_quantity(unit)
         if unit == units.Unitless.NONE:
-            print(f"Column '{column}' is not number, skipping normalization")
+            logger.info(f"Column '{column}' is not number, skipping normalization")
             frame[column] = frame[column].astype(str)
             return
 
         frame[column] = frame[column].astype(float)
         if unit == units.Unitless.UNITLESS:
-            print(f"Column '{column}' is unitless, skipping normalization")
+            logger.info(f"Column '{column}' is unitless, skipping normalization")
             return
 
         normalized_unit = units.DEFAULT_UNITS[physicalquantity]
@@ -128,7 +125,7 @@ class ImporterAdapter(ABC):
                       table: pd.DataFrame,
                       units: dict[str, str],
                       ) -> None:
-        print(
+        logger.info(
             f"Processing units for table with columns: {table.columns.tolist()}")
         for column, unit in units.items():
             if column in table.columns:

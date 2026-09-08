@@ -4,7 +4,7 @@ from civil_3P.standard import model_components as mc
 from civil_3P.standard import model_representation as rpr
 
 from civil_3P.tasks.task_base import (
-    TaskContext,
+    TaskInputContext,
     TaskMetadata,
     TaskPlugin,
     TaskResult,
@@ -19,12 +19,12 @@ class ExampleBarCheckPlugin(TaskPlugin):
                             supported_element_type=mc.ModelComponents.ELEMENTS_1D)
 
     def validate_input(self,
-                       context: TaskContext) -> None:
+                       context: TaskInputContext) -> None:
         if context.selection_model.tables[rpr.ModelTables.ELEMENTS_1D].empty:
             raise ValueError("No 1D elements selected for the task")
 
     def execute(self,
-                context: TaskContext) -> TaskResult:
+                context: TaskInputContext) -> TaskResult:
         result_df = context.full_model.tables[rpr.ModelTables.TASK_1D_RESULTS]
         my_df = context.full_model.tables[rpr.ModelTables.ORIGIN_1D_RESULTS]
         result_df[rpr.Task1DResultsColumns.ELEMENT] = my_df[rpr.Origin1DResultsColumns.ELEMENT]
@@ -32,4 +32,4 @@ class ExampleBarCheckPlugin(TaskPlugin):
         result_df[rpr.Task1DResultsColumns.STATION] = my_df[rpr.Origin1DResultsColumns.STATION]
         result_df[rpr.Task1DResultsColumns.VALUE] = my_df[rpr.Origin1DResultsColumns.BENDING_3]
 
-        return TaskResult(metadata=self.metadata, results=result_df, report=result_df)
+        return TaskResult(metadata=self.metadata, results=result_df)
