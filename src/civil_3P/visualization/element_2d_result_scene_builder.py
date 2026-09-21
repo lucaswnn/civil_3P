@@ -7,9 +7,16 @@ from civil_3P.core.model import FEMModel
 from civil_3P.core.result_builder import Visualization2DMode
 from civil_3P.standard import model_components as mc
 from civil_3P.core.result_data import ResultData
+from civil_3P.visualization.result_view_data import (
+    ResultViewData,
+    ResultElementViewData,
+)
+from civil_3P.standard.result_components import ViewContentKind
 from civil_3P.core.selection import SelectionContext
 from civil_3P.visualization.scene import Scene
-from civil_3P.standard.task_result_representation import Task2DResultsColumns as task_rpr_2d
+from civil_3P.standard.task_result_representation import (
+    Task2DResultsColumns as task_rpr_2d,
+)
 import pyvista as pv
 from civil_3P.standard.model_representation import ModelTables as mt
 from civil_3P.standard.model_representation import Elements2DColumns as rpr_2d
@@ -28,7 +35,6 @@ class Element2DResultSceneBuilder(SceneBuilder):
             node_ids={},
             element_1d_ids={},
             element_2d_ids=results.elements,
-
         )
         idle_model = self._model_service.model_without_elements(
             model,
@@ -43,26 +49,42 @@ class Element2DResultSceneBuilder(SceneBuilder):
         node_map, points = self.get_node_map(res_model)
 
         if criteria == Visualization2DMode.ELEMENT:
-            return self._render_element_2d_uniform(
+            result_view = self._render_element_2d_uniform(
                 res_model=res_model,
                 node_map=node_map,
                 points=points,
                 results=results,
             )
         elif criteria == Visualization2DMode.NODE_AVERAGED:
-            return self._render_element_2d_shared_nodes()
+            result_view = self._render_element_2d_shared_nodes(
+                res_model=res_model,
+                node_map=node_map,
+                points=points,
+                results=results,
+            )
         elif criteria == Visualization2DMode.NODE_ISOLATED:
-            return self._render_element_2d_isolated_nodes()
+            result_view = self._render_element_2d_isolated_nodes(
+                res_model=res_model,
+                node_map=node_map,
+                points=points,
+                results=results,
+            )
         else:
             raise ValueError(f"Unsupported visualization criteria: {criteria}")
+
+        return Scene(
+            node_map=node_map,
+            model_view=model_scene.model_view,
+            result_view=result_view,
+        )
 
     def _render_element_2d_uniform(
         self,
         res_model: FEMModel,
         node_map: dict[str, int],
         points: np.ndarray,
-        results: ResultData,
-    ) -> None:
+        results: ResultViewData,
+    ) -> Scene:
         result_df = results.result_df
 
         elements_values: dict[str, float] = dict()
@@ -97,36 +119,27 @@ class Element2DResultSceneBuilder(SceneBuilder):
         values: list[float] = []
         for element_id, nodes in elements_topology.items():
             if len(nodes) == 3:
-                ids = [
-                    node_map[p]
-                    for p in nodes
-                ]
+                ids = [node_map[p] for p in nodes]
 
                 cells.extend([3, *ids])
                 celltypes.append(pv.CellType.TRIANGLE)
 
             elif len(nodes) == 4:
-                ids = [
-                    node_map[p]
-                    for p in nodes
-                ]
+                ids = [node_map[p] for p in nodes]
 
                 cells.extend([4, *ids])
                 celltypes.append(pv.CellType.QUAD)
             values.append(elements_values[element_id])
 
-        shell_grid = pv.UnstructuredGrid(
-            np.array(cells), np.array(celltypes), points)
-        shell_grid.cell_data["value"] = np.array(values)
-
-        self.add_mesh(
-            shell_grid,
-            scalars="value",
-            show_edges=True,
-            edge_color=self._config.edge_color,
-            cmap=self._config.colormap,
-            clim=(min(values), max(values)) if values else (0.0, 0.0),
-            show_scalar_bar=True,
+        return ResultViewData(
+            kind=ViewContentKind.ELEMENT_2D_UNIFORM,
+            value_range=(min(values), max(values)) if values else (0.0, 0.0),
+            data=ResultElementViewData(
+                nodes=points,
+                values=np.array(values),
+                connection=np.array(cells),
+                element_type=np.array(celltypes),
+            ),
         )
 
     def _render_element_2d_shared_nodes(
@@ -135,7 +148,7 @@ class Element2DResultSceneBuilder(SceneBuilder):
         node_map: dict[str, int],
         points: np.ndarray,
         results: ResultData,
-    ) -> None:
+    ) -> ResultViewData:
         result_df = results.result_df
 
         node_values: dict[str, float] = dict()
@@ -162,10 +175,7 @@ class Element2DResultSceneBuilder(SceneBuilder):
         cells: list[int] = []
         celltypes: list[int] = []
         for _, nodes in elements_topology.items():
-            ids = [
-                node_map[p]
-                for p in nodes
-            ]
+            ids = [node_map[p] for p in nodes]
             if len(nodes) == 3:
                 cells.extend([3, *ids])
                 celltypes.append(pv.CellType.TRIANGLE)
@@ -180,35 +190,15 @@ class Element2DResultSceneBuilder(SceneBuilder):
             if index is not None:
                 values[index] = value
 
-        shell_grid = pv.UnstructuredGrid(
-            np.array(cells), np.array(celltypes), points)
-
-        shell_grid.point_data["value"] = values
-        mesh = shell_grid.extract_surface(algorithm=None)
-        mesh = mesh.triangulate()
-        refined_mesh = mesh.subdivide(nsub=3, subfilter="butterfly")
-        value_range = (values.min(), values.max()
-                       ) if values.size > 0 else (0.0, 0.0)
-        banded = refined_mesh.contour_banded(
-            self._config.n_bands,
-            rng=value_range,
-            scalars="value",
-            generate_contour_edges=False,
-        )
-
-        self.add_mesh(
-            banded,
-            scalars="value",
-            cmap=self._config.colormap,
-            clim=value_range,
-            show_scalar_bar=True,
-        )
-
-        contour = refined_mesh.contour(isosurfaces=self._config.n_bands)
-        self.add_mesh(
-            contour,
-            color="black",
-            line_width=2.0,
+        return ResultViewData(
+            kind=ViewContentKind.ELEMENT_2D_SHARED_NODES,
+            value_range=(min(values), max(values)) if values else (0.0, 0.0),
+            data=ResultElementViewData(
+                nodes=points,
+                values=np.array(values),
+                connection=np.array(cells),
+                element_type=np.array(celltypes),
+            ),
         )
 
     def _render_element_2d_isolated_nodes(
@@ -217,7 +207,7 @@ class Element2DResultSceneBuilder(SceneBuilder):
         node_map: dict[str, int],
         points: np.ndarray,
         results: ResultData,
-    ) -> None:
+    ) -> ResultViewData:
         result_df = results.result_df
 
         elements_values: dict[str, dict[str, float]] = dict()
@@ -230,52 +220,43 @@ class Element2DResultSceneBuilder(SceneBuilder):
                 elements_values[element_id] = dict()
             elements_values[element_id][node_id] = value
 
-        shells = scene.get(mc.ModelComponents.ELEMENTS_2D, {})
-        nodes = scene.get(mc.ModelComponents.NODES, {})
+        elements_topology: dict[str, list[str]] = dict()
+        element_2d_df = res_model.tables[mt.ELEMENTS_2D]
 
+        for row in element_2d_df.itertuples(index=False):
+            element_id = getattr(row, rpr_2d.ELEMENT)
+            node1 = getattr(row, rpr_2d.NODE_1)
+            node2 = getattr(row, rpr_2d.NODE_2)
+            node3 = getattr(row, rpr_2d.NODE_3)
+            node4 = getattr(row, rpr_2d.NODE_4, None)
+            if node4 is not None:
+                elements_topology[element_id] = [node1, node2, node3, node4]
+            else:
+                elements_topology[element_id] = [node1, node2, node3]
+
+        blocks: list[tuple[np.ndarray, list[int], np.ndarray]] = []
         blocks = pv.MultiBlock()
-        for element_id, node_values in elements_values                                                  .items():
-            shell = shells.get(element_id)
-            if shell is None:
-                continue
+        min_max = [0.0, 0.0]
+        for element_id, node_values in elements_values.items():
 
-            node_ids = shell[mc.ModelElement2DComponents.ELEMENT_2D_NODES]
+            model_node_ids = list(elements_topology[element_id])
+            scene_node_ids = [node_map[p] for p in model_node_ids]
             local_points = np.array(
-                [
-                    (
-                        nodes[node_id][mc.ModelNodeComponents.NODE_X],
-                        nodes[node_id][mc.ModelNodeComponents.NODE_Y],
-                        nodes[node_id][mc.ModelNodeComponents.NODE_Z],
-                    )
-                    for node_id in node_ids
-                ],
+                [points[node_id] for node_id in scene_node_ids],
                 dtype=float,
             )
-            values = np.array(
-                [node_values.get(node_id, np.nan) for node_id in node_ids]
-            )
 
-            face = pv.PolyData(
-                local_points, faces=[len(node_ids), *range(len(node_ids))]
-            )
-            face["value"] = values
+            values = np.array([node_values[node_id] for node_id in model_node_ids])
+            faces = [len(scene_node_ids), *range(len(scene_node_ids))]
+            min_max[0] = min(min(values), min_max[0])
+            min_max[1] = max(max(values), min_max[1])
+            blocks.append((local_points, faces, values))
 
-            banded = face.contour_banded(
-                self._config.n_bands,
-                rng=visualization.value_range,
-                scalars="value",
-                generate_contour_edges=False,
-            )
-            blocks.append(banded)
-
-        if len(blocks) == 0:
-            self.render()
-            return
-
-        self.add_mesh(
-            blocks,
-            scalars="value",
-            cmap=self._config.colormap,
-            clim=visualization.value_range,
-            show_scalar_bar=True,
+        return ResultViewData(
+            kind=ViewContentKind.ELEMENT_2D_ISOLATED_NODES,
+            value_range=(min_max[0], min_max[1]),
+            data=ResultElementViewData(
+                nodes=points,
+                block_data=blocks,
+            ),
         )
