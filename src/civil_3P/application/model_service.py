@@ -55,3 +55,10 @@ class ModelService:
         selection: SelectionContext,
     ) -> FEMModel:
         return model.remove_elements(selection)
+
+    @staticmethod
+    def model_with_elements(
+        model: FEMModel,
+        selection: SelectionContext,
+    ) -> FEMModel:
+        return model.filter_by_selection(selection)

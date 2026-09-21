@@ -200,11 +200,12 @@ class ResultBuilder:
                 element_type=mc.ELEMENTS_2D,
                 result_df=results
                 .groupby(
-                    [task_2d_rpr.ELEMENT],
+                    [
+                        task_2d_rpr.ELEMENT,
+                    ],
                     as_index=False,
                 )[task_2d_rpr.VALUE]
-                .mean()
-                .assign(location=ResultLocation.ELEMENT),
+                .mean(),
                 elements=elements,
                 nodes=nodes,
             )
@@ -222,13 +223,11 @@ class ResultBuilder:
             result_df=results
             .groupby(
                 [
-                    task_2d_rpr.CASE,
                     task_2d_rpr.NODE,
                 ],
                 as_index=False,
             )[task_2d_rpr.VALUE]
-            .mean()
-            .assign(location=ResultLocation.NODE),
+            .mean(),
             elements=elements,
             nodes=nodes,
         )

@@ -38,13 +38,17 @@ class TaskPlugin(ABC):
     def metadata(self) -> TaskMetadata:
         raise NotImplementedError
 
-    def supports(self,
-                 element_type: mc.ModelComponents) -> bool:
+    def supports(
+        self,
+        element_type: mc.ModelComponents,
+    ) -> bool:
         return self.metadata.supported_element_type == element_type
 
     @abstractmethod
-    def validate_input(self,
-                       context: TaskInputContext) -> None:
+    def validate_input(
+        self,
+        context: TaskInputContext,
+    ) -> None:
         raise NotImplementedError
 
     @abstractmethod
@@ -54,37 +58,34 @@ class TaskPlugin(ABC):
     ) -> TaskResult:
         raise NotImplementedError
 
-    def validade_output(self, result: TaskResult) -> None:
+    def validate_output(self, result: TaskResult) -> None:
         if self.supports(mc.ModelComponents.NODES):
-            PandasUtils.ensure_columns(
+            PandasUtils.ensure_strict_columns(
                 result.results,
-                [
+                {
                     rpr_task.TaskNodeResultsColumns.NODE,
-                    rpr_task.TaskNodeResultsColumns.CASE,
                     rpr_task.TaskNodeResultsColumns.VALUE,
-                ],
+                },
             )
 
         elif self.supports(mc.ModelComponents.ELEMENTS_1D):
-            PandasUtils.ensure_columns(
+            PandasUtils.ensure_strict_columns(
                 result.results,
-                [
+                {
                     rpr_task.Task1DResultsColumns.ELEMENT,
                     rpr_task.Task1DResultsColumns.STATION,
-                    rpr_task.Task1DResultsColumns.CASE,
                     rpr_task.Task1DResultsColumns.VALUE,
-                ],
+                },
             )
 
         elif self.supports(mc.ModelComponents.ELEMENTS_2D):
-            PandasUtils.ensure_columns(
+            PandasUtils.ensure_strict_columns(
                 result.results,
-                [
+                {
                     rpr_task.Task2DResultsColumns.ELEMENT,
                     rpr_task.Task2DResultsColumns.NODE,
-                    rpr_task.Task2DResultsColumns.CASE,
                     rpr_task.Task2DResultsColumns.VALUE,
-                ],
+                },
             )
 
         else:
@@ -96,5 +97,5 @@ class TaskPlugin(ABC):
         context: TaskInputContext,
     ) -> TaskResult:
         result = self.execute(context)
-        self.validade_output(result)
+        self.validate_output(result)
         return result
