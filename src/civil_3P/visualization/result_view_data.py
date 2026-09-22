@@ -9,7 +9,7 @@ class ResultElementViewData:
     values: np.ndarray
     connection: np.ndarray | None = None
     element_type: np.ndarray | None = None
-    block_data: list[tuple[np.ndarray, list[int], np.ndarray]]
+    block_data: list[tuple[np.ndarray, list[int], np.ndarray]] | None = None
 
 
 @dataclass(frozen=True, slots=True)

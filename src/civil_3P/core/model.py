@@ -151,7 +151,7 @@ class FEMModel:
 
         nodes: set[str] = set()
 
-        element_1d_cols = [rpr_1d.NODE_I, rpr_1d.NODE_j]
+        element_1d_cols = [rpr_1d.NODE_I, rpr_1d.NODE_J]
         nodes.update(
             set(np.unique(element_1d_df[element_1d_cols]))
         )
@@ -163,7 +163,8 @@ class FEMModel:
             rpr_2d.NODE_4,
         ]
         nodes.update(
-            set(np.unique(element_2d_df[element_2d_cols]))
+            element_2d_df[element_2d_cols]
+            .stack().dropna().unique()
         )
 
         nodes.update(selection.node_ids)
@@ -223,7 +224,7 @@ class FEMModel:
 
         nodes = set(np.unique(nodes_df[rpr_node.NODE]))
 
-        element_1d_cols = [rpr_1d.NODE_I, rpr_1d.NODE_j]
+        element_1d_cols = [rpr_1d.NODE_I, rpr_1d.NODE_J]
         nodes.update(
             set(np.unique(element_1d_df[element_1d_cols]))
         )
@@ -300,7 +301,7 @@ class FEMModel:
             .isin(selection.all_element_2d_ids)
         ]
         nodes = set(np.unique(model.tables[mt.ELEMENTS_1D][rpr_1d.NODE_I]))
-        nodes.update(np.unique(model.tables[mt.ELEMENTS_1D][rpr_1d.NODE_j]))
+        nodes.update(np.unique(model.tables[mt.ELEMENTS_1D][rpr_1d.NODE_J]))
         nodes.update(np.unique(model.tables[mt.ELEMENTS_2D][rpr_2d.NODE_1]))
         nodes.update(np.unique(model.tables[mt.ELEMENTS_2D][rpr_2d.NODE_2]))
         nodes.update(np.unique(model.tables[mt.ELEMENTS_2D][rpr_2d.NODE_3]))

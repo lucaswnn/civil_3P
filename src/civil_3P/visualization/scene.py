@@ -1,4 +1,4 @@
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 
 from civil_3P.visualization.result_view_data import ResultViewData
 from civil_3P.visualization.model_view_data import ModelViewData

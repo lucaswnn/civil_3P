@@ -139,6 +139,7 @@ class FileMenu:
                 return
 
             res = self._controller.load_model_file(model_path)
+            self._scene_widget.set_scene()
             res.display_message(self._panel)
 
         except Exception as exc:  # pragma: no cover - runtime feedback only

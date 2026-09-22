@@ -1,35 +1,38 @@
 from __future__ import annotations
 
 from PySide6.QtWidgets import QVBoxLayout, QWidget
-from typing import Any
-from civil_3P.application.visualization_service import VisualizationService
 
-from civil_3P.application.application_context import ApplicationContext
-from civil_3P.visualization.config import SceneViewerConfig
-from civil_3P.visualization.scene_renderer import SceneViewer
+from civil_3P.gui.scene_widget_controller import SceneWidgetController
+from civil_3P.visualization.scene import Scene
+from civil_3P.visualization.scene_renderer import SceneRenderer
 
 
 class SceneWidget(QWidget):
     def __init__(
         self,
-        parent: QWidget,
-        config: SceneViewerConfig,
-        visualization_service: VisualizationService,
-        context: ApplicationContext,
+        controller: SceneWidgetController,
+        renderer: SceneRenderer,
+        parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
-        self._viewer = SceneViewer(self, config=config)
-        self._layout = QVBoxLayout(self)
-        self._layout.addWidget(self._viewer)
-        self._visualization_service = visualization_service
-        self._context = context
+        self._controller = controller
+        self._renderer = renderer
+        layout = QVBoxLayout(self)
+        layout.addWidget(renderer)
 
-    def set_scene(self) -> None:
-        model = self._context.current_model
-        scene = self._visualization_service.build_scene(model)
-        self._viewer.load_scene(scene)
+        controller.scene_ready.connect(self._render_scene)
 
-    def set_result_scene(self) -> None:
-        model = self._context.current_model
-        scene = self._visualization_service.build_result_scene(model)
-        self._viewer.load_result_scene(scene)
+    def set_scene(self, scene: Scene | None = None) -> None:
+        if scene is None:
+            self._controller.build_model_scene()
+        else:
+            self._render_scene(scene)
+
+    def set_result_scene(self, scene: Scene) -> None:
+        self._render_scene(scene)
+
+    def _render_scene(self, scene: Scene) -> None:
+        if scene.result_view is None:
+            self._renderer.load_scene(scene)
+        else:
+            self._renderer.load_result_scene(scene)

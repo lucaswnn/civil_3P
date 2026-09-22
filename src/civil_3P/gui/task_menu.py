@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from civil_3P.core.result_builder import Visualization2DMode
+from civil_3P.core.result_builder import ResultVisualization2DCriteria
 from civil_3P.standard.gui_components import GuiMenuComponents
 from civil_3P.gui.task_menu_controller import TaskMenuController
 from civil_3P.standard import model_components as mc
@@ -23,9 +23,13 @@ from civil_3P.gui.scene_widget import SceneWidget
 
 
 class TaskMenu:
-    def __init__(self, scene_widget: SceneWidget) -> None:
+    def __init__(
+        self,
+        scene_widget: SceneWidget,
+        controller: TaskMenuController,
+    ) -> None:
         self._scene_widget = scene_widget
-        self._controller = TaskMenuController()
+        self._controller = controller
         self.case_button: QToolButton | None = None
         self.task_button: QToolButton | None = None
         self.apply_to_selection_button: QPushButton | None = None
@@ -36,11 +40,11 @@ class TaskMenu:
     @property
     def identifier(self) -> str:
         return GuiMenuComponents.TASK_MENU
-    
+
     @property
     def display_name(self) -> str:
         return GuiMenuComponents.TASK_MENU_NAME
-    
+
     def build_panel(self, parent: QWidget) -> QWidget:
         panel = QWidget(parent)
         self._panel = panel
@@ -146,23 +150,18 @@ class TaskMenu:
 
             task_result = self._controller.execute_task(
                 task_id,
-                model,
                 selection,
                 case_id,
             )
 
             scene = self._controller.build_result_scene(
-                selection,
-                Visualization2DMode(
-                    result_name="utilization"
-                    if task_id == "example_bar_check"
-                    else "required_thickness",
-                    case_id=case_id,
+                selection=selection,
+                task_result=task_result,
+                criteria=ResultVisualization2DCriteria(
                     mode=Visualization2DMode.ELEMENT
                     if task_id == "example_bar_check"
                     else Visualization2DMode.NODE_AVERAGED,
                 ),
-                task_result,
             )
 
             self._scene_widget.set_result_scene(scene)

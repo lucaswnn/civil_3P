@@ -16,15 +16,10 @@ from PySide6.QtWidgets import (
 
 from civil_3P.gui.main_window_controller import MainWindowController
 from civil_3P.gui.menu_categories import MenuCategoryRegistry
-from civil_3P.gui.task_menu import TaskMenuCategory
-from civil_3P.gui.file_menu import FileMenuCategory
 from civil_3P.gui.tabs import (
-    ModeloViewTab,
-    TabelaViewTab,
     ViewTabRegistry,
 )
 from civil_3P.gui.scene_widget import SceneWidget
-from civil_3P.application.preferences_service import UserPreferencesService
 
 
 class MainWindow(QMainWindow):
@@ -69,19 +64,10 @@ class MainWindow(QMainWindow):
         right_layout.setContentsMargins(0, 0, 0, 0)
         right_layout.setSpacing(4)
 
-        self._scene_widget = SceneWidget(
-            right_panel,
-            config=self._preferences_service.get_scene_viewer_config(),
-        )
         self._scene_widget.setMinimumWidth(700)
         self._scene_widget.setMinimumHeight(280)
 
-        self._tab_registry = ViewTabRegistry(
-            (
-                ModeloViewTab(self._scene_widget),
-                TabelaViewTab(),
-            )
-        )
+        self._tab_registry = self._view_tab_registry
 
         self._view_stack = QStackedWidget(right_panel)
         self._tab_index: dict[str, int] = {}
@@ -129,12 +115,7 @@ class MainWindow(QMainWindow):
         left_layout.setContentsMargins(0, 0, 0, 0)
         left_layout.setSpacing(12)
 
-        self._category_registry = MenuCategoryRegistry(
-            (
-                FileMenuCategory(self._scene_widget),
-                TaskMenuCategory(self._scene_widget),
-            )
-        )
+        self._category_registry = self._menu_registry
 
         self._category_stack = QStackedWidget(left_panel)
         self._category_index: dict[str, int] = {}

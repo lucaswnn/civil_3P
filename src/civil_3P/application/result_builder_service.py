@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from civil_3P.application.model_service import ModelService
     from civil_3P.core.result_builder import (
         ResultBuilder,
-        Visualization2DMode,
+        ResultVisualization2DCriteria,
     )
     from civil_3P.core.result_data import ResultData
 
@@ -26,12 +26,16 @@ class ResultBuilderService:
     def process(
         self,
         task_result: TaskResult,
-        criteria: Visualization2DMode,
         selection: SelectionContext,
+        criteria: ResultVisualization2DCriteria | None = None,
     ) -> ResultData:
+        model = self._model_service.get_model()
+        if model is None:
+            raise ValueError("Cannot process results without a model")
+
         return self._processor.process(
-            task_result.results,
+            task_result,
             selection,
-            criteria,
-            self._model_service.model,
+            model,
+            visual_2d_criteria=criteria,
         )

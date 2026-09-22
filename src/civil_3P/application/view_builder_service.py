@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from civil_3P.core.model import FEMModel
-    from civil_3P.core.result_builder import Visualization2DMode
+    from civil_3P.core.result_builder import ResultVisualization2DCriteria
     from civil_3P.core.selection import SelectionContext
     from civil_3P.core.result_data import ResultData
     from civil_3P.visualization.scene import Scene
@@ -25,12 +25,10 @@ class ViewBuilderService:
         self,
         model: FEMModel,
         results: ResultData,
-        criteria: Visualization2DMode,
-        selection: SelectionContext,
+        criteria: ResultVisualization2DCriteria,
     ) -> Scene:
         return self._builder.build_result_scene(
-            model,
             results,
             criteria,
-            selection,
+            model,
         )

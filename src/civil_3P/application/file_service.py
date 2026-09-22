@@ -31,7 +31,7 @@ class FileService:
         with file_path.open("w", encoding="utf-8") as f:
             json.dump(payload, f, ensure_ascii=False, indent=4)
 
-    def load(self, path: str | Path) -> dict[str, Any]:
+    def load(self, path: str | Path) -> tuple[FEMModel, UserPreferences]:
         file_path = Path(path)
 
         with file_path.open("r", encoding="utf-8") as f:
@@ -46,6 +46,8 @@ class FileService:
             raise ValueError(f"Unsupported project format: {path}")
 
         model_data = loaded_file.get(fr.MODEL)
+        if not isinstance(model_data, dict):
+            raise TypeError(f"Model data is not a dictionary: {path}")
         model = FEMModel.from_dict(model_data)
 
         preferences_data = loaded_file.get(fr.PREFERENCES)

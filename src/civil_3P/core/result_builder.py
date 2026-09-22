@@ -17,7 +17,6 @@ from civil_3P.standard.task_result_representation import (
     Task2DResultsColumns as task_2d_rpr,
 )
 from civil_3P.standard.result_components import (
-    ResultLocation,
     Visualization2DMode,
 )
 

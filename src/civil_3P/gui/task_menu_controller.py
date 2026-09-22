@@ -1,31 +1,33 @@
-from typing import Any
+from __future__ import annotations
 
-from civil_3P.application.application_context import ApplicationContext
-from civil_3P.application.result_builder_service import ResultService
+from civil_3P.application.model_service import ModelService
+from civil_3P.application.result_builder_service import ResultBuilderService
 from civil_3P.application.task_service import TaskService
 from civil_3P.application.view_builder_service import ViewBuilderService
-from civil_3P.application.model_service import ModelService
-from civil_3P.core.model import FEMModel
-from civil_3P.core.result_builder import ResultBuilder, Visualization2DMode
+from civil_3P.core.result_builder import ResultVisualization2DCriteria
 from civil_3P.core.selection import SelectionContext
-from civil_3P.standard import model_components as mc
+from civil_3P.standard.model_components import ModelComponents as mc
 from civil_3P.tasks.task_base import TaskResult
 
 
 class TaskMenuController:
     def __init__(
         self,
-        result_service: ResultService,
-        visualization_service: ViewBuilderService,
-        context: ApplicationContext,
+        task_service: TaskService,
+        result_builder_service: ResultBuilderService,
+        view_builder_service: ViewBuilderService,
+        model_service: ModelService,
+        listeners=None,
     ) -> None:
-        self._context = context
-        self._result_service = result_service
-        self._visualization_service = visualization_service
+        self._task_service = task_service
+        self._result_builder_service = result_builder_service
+        self._view_builder_service = view_builder_service
+        self._model_service = model_service
+        self._listeners = listeners or []
 
     @property
-    def current_model(self) -> FEMModel | None:
-        return self._context.get_model()
+    def current_model(self):
+        return self._model_service.get_model()
 
     def create_selection(
         self,
@@ -33,10 +35,13 @@ class TaskMenuController:
         selected_element_ids: tuple[str, ...] | list[str],
         adjacent_element_ids: tuple[str, ...] | list[str] | None = None,
     ) -> SelectionContext:
+        selected = set(map(str, selected_element_ids))
+        adjacent = set(map(str, adjacent_element_ids or ()))
         return SelectionContext(
-            element_type=element_type,
-            selected_element_ids=tuple(selected_element_ids),
-            adjacent_element_ids=tuple(adjacent_element_ids or ()),
+            node_ids=selected if element_type == mc.NODES else set(),
+            element_1d_ids=selected if element_type == mc.ELEMENTS_1D else set(),
+            element_2d_ids=selected if element_type == mc.ELEMENTS_2D else set(),
+            adjacent_element_2d_ids=adjacent,
         )
 
     def execute_task(
@@ -45,34 +50,29 @@ class TaskMenuController:
         selection: SelectionContext,
         case_id: str,
     ) -> TaskResult:
-        return self._context.execute_task(
-            task_id,
-            selection,
-            case_id,
-        )
+        model = self.current_model
+        if model is None:
+            raise ValueError("Cannot execute a task without a model")
+        return self._task_service.execute_task(task_id, model, selection, case_id)
 
     def build_result_scene(
         self,
         selection: SelectionContext,
-        criteria: Visualization2DMode,
         task_result: TaskResult,
-    ) -> dict[str, Any]:
-        result = self._result_service.process(
+        criteria: ResultVisualization2DCriteria | None = None,
+    ):
+        model = self.current_model
+        if model is None:
+            raise ValueError("Cannot build a result scene without a model")
+        result = self._result_builder_service.process(
             task_result,
-            criteria,
             selection,
-        )
-        model = self._context.get_model()
-
-        return self._visualization_service.build_result_scene(
-            model,
-            result,
             criteria,
-            selection,
         )
+        return self._view_builder_service.build_result_scene(model, result, criteria)
 
     def get_task_identifiers(self) -> list[str]:
-        return self._context.get_task_identifiers()
+        return self._task_service.get_task_identifiers()
 
     def get_load_case_ids(self) -> list[str]:
-        return self._context.get_load_cases()
+        return self._model_service.get_load_cases()
