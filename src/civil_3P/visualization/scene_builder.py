@@ -10,7 +10,6 @@ from civil_3P.core.result_data import ResultData
 from civil_3P.visualization.model_view_data import ModelViewData
 from civil_3P.visualization.scene import Scene
 import pyvista as pv
-from civil_3P.core.result_builder import ResultVisualization2DCriteria
 
 
 class SceneBuilder(ABC):
@@ -94,7 +93,6 @@ class SceneBuilder(ABC):
     def build_result_scene(
         self,
         results: ResultData,
-        criteria: ResultVisualization2DCriteria,
         model: FEMModel,
     ) -> Scene:
         raise NotImplementedError()
@@ -104,7 +102,6 @@ class ModelSceneBuilder(SceneBuilder):
     def build_result_scene(
         self,
         results: ResultData,
-        criteria: ResultVisualization2DCriteria,
         model: FEMModel,
     ) -> Scene:
         return self.build_scene(model)

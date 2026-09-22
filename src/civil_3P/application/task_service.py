@@ -19,11 +19,12 @@ class TaskService:
 
     def __new__(
         cls,
+        task_registry: TaskRegistry,
         plugin_loader_service: PluginLoaderService,
     ) -> TaskService:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance._task_registry = TaskRegistry()
+            cls._instance._task_registry = task_registry
             cls._instance._plugin_loader_service = plugin_loader_service
 
         return cls._instance

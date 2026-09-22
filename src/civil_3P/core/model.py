@@ -40,11 +40,8 @@ class FEMModel:
         return cls(
             units=DEFAULT_UNITS.copy(),
             tables={
-                table_name: pd.DataFrame(
-                    columns=cols
-                )
-                for table_name, cols
-                in REQUIRED_MODEL_SCHEMA.items()
+                table_name: pd.DataFrame(columns=cols)
+                for table_name, cols in REQUIRED_MODEL_SCHEMA.items()
             },
         )
 
@@ -55,18 +52,14 @@ class FEMModel:
         units: dict[str, str],
     ) -> "FEMModel":
         missing = [
-            name for name in REQUIRED_MODEL_SCHEMA.keys()
-            if name not in tables.keys()
+            name for name in REQUIRED_MODEL_SCHEMA.keys() if name not in tables.keys()
         ]
 
         if missing:
             raise ValueError(f"Missing tables for FEMModel: {missing}")
 
         model = cls(
-            tables={
-                name: tables[name].copy()
-                for name in REQUIRED_MODEL_SCHEMA
-            },
+            tables={name: tables[name].copy() for name in REQUIRED_MODEL_SCHEMA},
             units=units.copy(),
         )
         model.validate_tables()
@@ -81,10 +74,7 @@ class FEMModel:
     ) -> FEMModel:
         dict_tables = data.get(fr.MODEL_TABLES, {})
         units = data.get(fr.MODEL_UNITS, {})
-        tables = {
-            name: pd.DataFrame(data)
-            for name, data in dict_tables.items()
-        }
+        tables = {name: pd.DataFrame(data) for name, data in dict_tables.items()}
 
         return cls.from_tables(tables=tables, units=units)
 
@@ -94,8 +84,7 @@ class FEMModel:
 
         if not required_quantities.issubset(quantities):
             raise ValueError(
-                f"Missing units for quantities: "
-                f"{required_quantities - quantities}"
+                f"Missing units for quantities: " f"{required_quantities - quantities}"
             )
 
         for quantity, unit in self.units.items():
@@ -111,9 +100,7 @@ class FEMModel:
 
     def copy(self) -> FEMModel:
         return FEMModel(
-            tables={
-                name: df.copy() for name, df in self.tables.items()
-            },
+            tables={name: df.copy() for name, df in self.tables.items()},
             units=self.units.copy(),
         )
 
@@ -130,31 +117,25 @@ class FEMModel:
         res_node_r_df = sel.tables[mt.ORIGIN_NODE_REACTIONS]
 
         element_1d_df = element_1d_df[
-            element_1d_df[rpr_1d.ELEMENT]
-            .isin(selection.element_1d_ids)
+            element_1d_df[rpr_1d.ELEMENT].isin(selection.element_1d_ids)
         ]
 
         element_2d_df = element_2d_df[
-            element_2d_df[rpr_2d.ELEMENT]
-            .isin(selection.all_element_2d_ids)
+            element_2d_df[rpr_2d.ELEMENT].isin(selection.all_element_2d_ids)
         ]
 
         res_1d_df = res_1d_df[
-            res_1d_df[rpr_origin_1d.ELEMENT]
-            .isin(selection.element_1d_ids)
+            res_1d_df[rpr_origin_1d.ELEMENT].isin(selection.element_1d_ids)
         ]
 
         res_2d_df = res_2d_df[
-            res_2d_df[rpr_origin_2d.ELEMENT]
-            .isin(selection.all_element_2d_ids)
+            res_2d_df[rpr_origin_2d.ELEMENT].isin(selection.all_element_2d_ids)
         ]
 
         nodes: set[str] = set()
 
         element_1d_cols = [rpr_1d.NODE_I, rpr_1d.NODE_J]
-        nodes.update(
-            set(np.unique(element_1d_df[element_1d_cols]))
-        )
+        nodes.update(set(np.unique(element_1d_df[element_1d_cols])))
 
         element_2d_cols = [
             rpr_2d.NODE_1,
@@ -162,25 +143,16 @@ class FEMModel:
             rpr_2d.NODE_3,
             rpr_2d.NODE_4,
         ]
-        nodes.update(
-            element_2d_df[element_2d_cols]
-            .stack().dropna().unique()
-        )
+        nodes.update(element_2d_df[element_2d_cols].stack().dropna().unique())
 
         nodes.update(selection.node_ids)
         sel.tables[mt.NODES] = sel.tables[mt.NODES][
             sel.tables[mt.NODES][rpr_node.NODE].isin(nodes)
         ]
 
-        res_node_d_df = res_node_d_df[
-            res_node_d_df[rpr_origin_node_d.NODE]
-            .isin(nodes)
-        ]
+        res_node_d_df = res_node_d_df[res_node_d_df[rpr_origin_node_d.NODE].isin(nodes)]
 
-        res_node_r_df = res_node_r_df[
-            res_node_r_df[rpr_origin_node_r.NODE]
-            .isin(nodes)
-        ]
+        res_node_r_df = res_node_r_df[res_node_r_df[rpr_origin_node_r.NODE].isin(nodes)]
 
         return sel
 
@@ -198,36 +170,27 @@ class FEMModel:
         res_node_r_df = sel.tables[mt.ORIGIN_NODE_REACTIONS]
 
         element_1d_df = element_1d_df[
-            ~element_1d_df[rpr_1d.ELEMENT]
-            .isin(selection.element_1d_ids)
+            ~element_1d_df[rpr_1d.ELEMENT].isin(selection.element_1d_ids)
         ]
 
         element_2d_df = element_2d_df[
-            ~element_2d_df[rpr_2d.ELEMENT]
-            .isin(selection.all_element_2d_ids)
+            ~element_2d_df[rpr_2d.ELEMENT].isin(selection.all_element_2d_ids)
         ]
 
         res_1d_df = res_1d_df[
-            ~res_1d_df[rpr_origin_1d.ELEMENT]
-            .isin(selection.element_1d_ids)
+            ~res_1d_df[rpr_origin_1d.ELEMENT].isin(selection.element_1d_ids)
         ]
 
         res_2d_df = res_2d_df[
-            ~res_2d_df[rpr_origin_2d.ELEMENT]
-            .isin(selection.all_element_2d_ids)
+            ~res_2d_df[rpr_origin_2d.ELEMENT].isin(selection.all_element_2d_ids)
         ]
 
-        nodes_df = nodes_df[
-            ~nodes_df[rpr_node.NODE]
-            .isin(selection.node_ids)
-        ]
+        nodes_df = nodes_df[~nodes_df[rpr_node.NODE].isin(selection.node_ids)]
 
         nodes = set(np.unique(nodes_df[rpr_node.NODE]))
 
         element_1d_cols = [rpr_1d.NODE_I, rpr_1d.NODE_J]
-        nodes.update(
-            set(np.unique(element_1d_df[element_1d_cols]))
-        )
+        nodes.update(set(np.unique(element_1d_df[element_1d_cols])))
 
         element_2d_cols = [
             rpr_2d.NODE_1,
@@ -235,24 +198,15 @@ class FEMModel:
             rpr_2d.NODE_3,
             rpr_2d.NODE_4,
         ]
-        nodes.update(
-            set(np.unique(element_2d_df[element_2d_cols]))
-        )
+        nodes.update(element_2d_df[element_2d_cols].stack().dropna().unique())
 
         sel.tables[mt.NODES] = sel.tables[mt.NODES][
-            sel.tables[mt.NODES][rpr_node.NODE]
-            .isin(nodes)
+            sel.tables[mt.NODES][rpr_node.NODE].isin(nodes)
         ]
 
-        res_node_d_df = res_node_d_df[
-            res_node_d_df[rpr_origin_node_d.NODE]
-            .isin(nodes)
-        ]
+        res_node_d_df = res_node_d_df[res_node_d_df[rpr_origin_node_d.NODE].isin(nodes)]
 
-        res_node_r_df = res_node_r_df[
-            res_node_r_df[rpr_origin_node_r.NODE]
-            .isin(nodes)
-        ]
+        res_node_r_df = res_node_r_df[res_node_r_df[rpr_origin_node_r.NODE].isin(nodes)]
 
         return sel
 
@@ -263,18 +217,10 @@ class FEMModel:
         df_2d = sel.tables[mt.ORIGIN_2D_RESULTS]
         df_node_d = sel.tables[mt.ORIGIN_NODE_DISPLACEMENTS]
         df_node_r = sel.tables[mt.ORIGIN_NODE_REACTIONS]
-        df_1d = df_1d[
-            df_1d[rpr_origin_1d.CASE] == load_case_id
-        ]
-        df_2d = df_2d[
-            df_2d[rpr_origin_2d.CASE] == load_case_id
-        ]
-        df_node_d = df_node_d[
-            df_node_d[rpr_origin_node_d.CASE] == load_case_id
-        ]
-        df_node_r = df_node_r[
-            df_node_r[rpr_origin_node_r.CASE] == load_case_id
-        ]
+        df_1d = df_1d[df_1d[rpr_origin_1d.CASE] == load_case_id]
+        df_2d = df_2d[df_2d[rpr_origin_2d.CASE] == load_case_id]
+        df_node_d = df_node_d[df_node_d[rpr_origin_node_d.CASE] == load_case_id]
+        df_node_r = df_node_r[df_node_r[rpr_origin_node_r.CASE] == load_case_id]
 
         return sel
 
@@ -288,24 +234,24 @@ class FEMModel:
         }
 
     def remove_elements(
-            self,
-            selection: SelectionContext,
+        self,
+        selection: SelectionContext,
     ) -> FEMModel:
         model = self.copy()
         model.tables[mt.ELEMENTS_1D] = model.tables[mt.ELEMENTS_1D][
-            ~model.tables[mt.ELEMENTS_1D][rpr_1d.ELEMENT]
-            .isin(selection.element_1d_ids)
+            ~model.tables[mt.ELEMENTS_1D][rpr_1d.ELEMENT].isin(selection.element_1d_ids)
         ]
         model.tables[mt.ELEMENTS_2D] = model.tables[mt.ELEMENTS_2D][
-            ~model.tables[mt.ELEMENTS_2D][rpr_2d.ELEMENT]
-            .isin(selection.all_element_2d_ids)
+            ~model.tables[mt.ELEMENTS_2D][rpr_2d.ELEMENT].isin(
+                selection.all_element_2d_ids
+            )
         ]
         nodes = set(np.unique(model.tables[mt.ELEMENTS_1D][rpr_1d.NODE_I]))
         nodes.update(np.unique(model.tables[mt.ELEMENTS_1D][rpr_1d.NODE_J]))
         nodes.update(np.unique(model.tables[mt.ELEMENTS_2D][rpr_2d.NODE_1]))
         nodes.update(np.unique(model.tables[mt.ELEMENTS_2D][rpr_2d.NODE_2]))
         nodes.update(np.unique(model.tables[mt.ELEMENTS_2D][rpr_2d.NODE_3]))
-        nodes.update(np.unique(model.tables[mt.ELEMENTS_2D][rpr_2d.NODE_4]))
+        nodes.update(model.tables[mt.ELEMENTS_2D][rpr_2d.NODE_4].dropna().unique())
         nodes = selection.node_ids.difference(nodes)
 
         model.tables[mt.NODES] = model.tables[mt.NODES][

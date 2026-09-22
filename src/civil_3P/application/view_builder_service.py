@@ -4,31 +4,42 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from civil_3P.core.model import FEMModel
-    from civil_3P.core.result_builder import ResultVisualization2DCriteria
-    from civil_3P.core.selection import SelectionContext
+    from civil_3P.standard.result_components import ViewContentKind
     from civil_3P.core.result_data import ResultData
     from civil_3P.visualization.scene import Scene
     from civil_3P.visualization.scene_builder import SceneBuilder
+    from civil_3P.visualization.scene_builder_registry import SceneBuilderRegistry
 
 
 class ViewBuilderService:
-    def __init__(self, builder: SceneBuilder) -> None:
-        self._builder = builder
+    _instance: ViewBuilderService | None = None
+
+    def __new__(
+        cls,
+        scene_builder_registry: SceneBuilderRegistry,
+    ) -> ViewBuilderService:
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._registry = scene_builder_registry
+
+        return cls._instance
+
+    _registry: SceneBuilderRegistry
 
     def build_scene(
         self,
         model: FEMModel,
     ) -> Scene:
-        return self._builder.build_scene(model)
+        return self._registry.build_scene(model)
 
     def build_result_scene(
         self,
-        model: FEMModel,
         results: ResultData,
-        criteria: ResultVisualization2DCriteria,
+        view_content_kind: ViewContentKind,
+        model: FEMModel,
     ) -> Scene:
-        return self._builder.build_result_scene(
-            results,
-            criteria,
-            model,
+        return self._registry.build_result_scene(
+            results=results,
+            view_content_kind=view_content_kind,
+            model=model,
         )

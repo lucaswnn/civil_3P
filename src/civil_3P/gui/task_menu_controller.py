@@ -4,10 +4,11 @@ from civil_3P.application.model_service import ModelService
 from civil_3P.application.result_builder_service import ResultBuilderService
 from civil_3P.application.task_service import TaskService
 from civil_3P.application.view_builder_service import ViewBuilderService
-from civil_3P.core.result_builder import ResultVisualization2DCriteria
+from civil_3P.standard.result_components import ViewContentKind
 from civil_3P.core.selection import SelectionContext
 from civil_3P.standard.model_components import ModelComponents as mc
 from civil_3P.tasks.task_base import TaskResult
+from civil_3P.visualization.scene import Scene
 
 
 class TaskMenuController:
@@ -32,8 +33,8 @@ class TaskMenuController:
     def create_selection(
         self,
         element_type: mc.ModelComponents,
-        selected_element_ids: tuple[str, ...] | list[str],
-        adjacent_element_ids: tuple[str, ...] | list[str] | None = None,
+        selected_element_ids: list[str],
+        adjacent_element_ids: list[str] | None = None,
     ) -> SelectionContext:
         selected = set(map(str, selected_element_ids))
         adjacent = set(map(str, adjacent_element_ids or ()))
@@ -59,17 +60,24 @@ class TaskMenuController:
         self,
         selection: SelectionContext,
         task_result: TaskResult,
-        criteria: ResultVisualization2DCriteria | None = None,
-    ):
+        view_content_kind: ViewContentKind,
+    ) -> Scene:
         model = self.current_model
+
         if model is None:
             raise ValueError("Cannot build a result scene without a model")
-        result = self._result_builder_service.process(
-            task_result,
-            selection,
-            criteria,
+
+        result = self._result_builder_service.build_result_data(
+            task_result=task_result,
+            selection=selection,
+            view_content_kind=view_content_kind,
         )
-        return self._view_builder_service.build_result_scene(model, result, criteria)
+
+        return self._view_builder_service.build_result_scene(
+            results=result,
+            view_content_kind=view_content_kind,
+            model=model,
+        )
 
     def get_task_identifiers(self) -> list[str]:
         return self._task_service.get_task_identifiers()

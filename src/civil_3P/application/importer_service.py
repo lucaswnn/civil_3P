@@ -14,10 +14,13 @@ if TYPE_CHECKING:
 class ImporterService:
     _instance: ImporterService | None = None
 
-    def __new__(cls) -> ImporterService:
+    def __new__(
+        cls,
+        importer_registry: ImporterRegistry,
+    ) -> ImporterService:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance._registry = ImporterRegistry()
+            cls._instance._registry = importer_registry
         return cls._instance
 
     def import_model(

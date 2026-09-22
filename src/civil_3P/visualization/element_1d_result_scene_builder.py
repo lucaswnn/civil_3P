@@ -14,22 +14,22 @@ from civil_3P.visualization.result_view_data import (
     ViewContentKind
 )
 from civil_3P.standard.task_result_representation import Task1DResultsColumns as task_rpr_1d
+from civil_3P.application.model_service import ModelService
 
 
 class Element1DResultSceneBuilder(SceneBuilder):
     def build_result_scene(
         self,
         results: ResultData,
-        criteria: Visualization2DMode,
         model: FEMModel,
     ) -> Scene:
         res_selection = SelectionContext(
-            node_ids={},
+            node_ids=set(),
             element_1d_ids=results.elements,
-            element_2d_ids={},
+            element_2d_ids=set(),
 
         )
-        idle_model = self._model_service.model_without_elements(
+        idle_model = ModelService.model_without_elements(
             model,
             res_selection,
         )

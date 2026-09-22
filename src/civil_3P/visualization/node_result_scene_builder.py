@@ -1,7 +1,7 @@
 import numpy as np
 
 from civil_3P.core.model import FEMModel
-from civil_3P.core.result_builder import Visualization2DMode
+from civil_3P.application.model_service import ModelService
 from civil_3P.core.selection import SelectionContext
 from civil_3P.core.result_data import ResultData
 from civil_3P.standard.result_components import ViewContentKind
@@ -15,7 +15,6 @@ class NodeResultSceneBuilder(SceneBuilder):
     def build_result_scene(
         self,
         results: ResultData,
-        criteria: Visualization2DMode,
         model: FEMModel,
     ) -> Scene:
         model_scene = self.build_scene(model)
@@ -25,7 +24,7 @@ class NodeResultSceneBuilder(SceneBuilder):
             element_1d_ids={},
             element_2d_ids={},
         )
-        res_model = self._model_service.model_without_elements(
+        res_model = ModelService.model_without_elements(
             model,
             res_selection,
         )

@@ -5,7 +5,7 @@ from civil_3P.standard.model_components import (
     ModelElement1DComponents,
     ModelElement2DComponents,
 )
-from civil_3P.standard.result_components import ResultLocation, Visualization2DMode
+from civil_3P.standard.result_components import Visualization2DMode
 from civil_3P.standard import model_representation
 from civil_3P.standard import task_result_representation
 from civil_3P.standard.model_representation import ModelTables
@@ -20,7 +20,6 @@ __all__ = [
     "ModelNodeComponents",
     "ModelElement1DComponents",
     "ModelElement2DComponents",
-    "ResultLocation",
     "Visualization2DMode",
     "model_representation",
     "task_result_representation",

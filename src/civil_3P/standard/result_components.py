@@ -3,11 +3,6 @@ from __future__ import annotations
 from enum import StrEnum
 
 
-class ResultLocation(StrEnum):
-    ELEMENT = "element"
-    NODE = "node"
-
-
 class Visualization2DMode(StrEnum):
     ELEMENT = "element"
     NODE_AVERAGED = "node_averaged"

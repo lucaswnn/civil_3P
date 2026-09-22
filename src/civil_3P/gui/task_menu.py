@@ -13,13 +13,12 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from civil_3P.core.result_builder import ResultVisualization2DCriteria
 from civil_3P.standard.gui_components import GuiMenuComponents
 from civil_3P.gui.task_menu_controller import TaskMenuController
 from civil_3P.standard import model_components as mc
 from civil_3P.standard import model_representation as rpr
-from civil_3P.standard.result_components import Visualization2DMode
 from civil_3P.gui.scene_widget import SceneWidget
+from civil_3P.standard.result_components import ViewContentKind
 
 
 class TaskMenu:
@@ -123,6 +122,7 @@ class TaskMenu:
 
         task_id = self._selected_task_id
         case_id = self._selected_case_id
+
         if task_id is None or case_id is None:
             QMessageBox.warning(
                 self._panel,
@@ -133,35 +133,35 @@ class TaskMenu:
 
         try:
             if task_id == "example_bar_check":
+                view_content_kind = ViewContentKind.ELEMENT_1D_PROFILE
                 element_type = mc.ModelComponents.ELEMENTS_1D
-                element_ids = tuple(
+                element_ids = list(
                     model.tables[rpr.ModelTables.ELEMENTS_1D]
-                    [rpr.Elements1DColumns.ELEMENT].astype(str))
+                    [rpr.Elements1DColumns.ELEMENT].astype(str)
+                )
             else:
+                view_content_kind = ViewContentKind.ELEMENT_2D_UNIFORM
                 element_type = mc.ModelComponents.ELEMENTS_2D
-                element_ids = tuple(
+                element_ids = list(
                     model.tables[rpr.ModelTables.ELEMENTS_2D]
-                    [rpr.Elements2DColumns.ELEMENT].astype(str))
+                    [rpr.Elements2DColumns.ELEMENT].astype(str)
+                )
 
             selection = self._controller.create_selection(
-                element_type,
-                element_ids,
+                element_type=element_type,
+                selected_element_ids=element_ids,
             )
 
             task_result = self._controller.execute_task(
-                task_id,
-                selection,
-                case_id,
+                task_id=task_id,
+                selection=selection,
+                case_id=case_id,
             )
 
             scene = self._controller.build_result_scene(
                 selection=selection,
                 task_result=task_result,
-                criteria=ResultVisualization2DCriteria(
-                    mode=Visualization2DMode.ELEMENT
-                    if task_id == "example_bar_check"
-                    else Visualization2DMode.NODE_AVERAGED,
-                ),
+                view_content_kind=view_content_kind,
             )
 
             self._scene_widget.set_result_scene(scene)

@@ -6,6 +6,7 @@ from civil_3P.gui.model_view_tab import ModelViewTab
 from civil_3P.gui.table_view_tab import TableViewTab
 from civil_3P.gui.tabs import ViewTabRegistry
 from civil_3P.application.result_builder_service import ResultBuilderService
+from civil_3P.core.result_builder_registry import ResultBuilderRegistry
 
 from PySide6.QtWidgets import QApplication
 
@@ -24,27 +25,33 @@ from civil_3P.gui.scene_widget_controller import SceneWidgetController
 from civil_3P.gui.scene_widget_listener import SceneWidgetListener
 from civil_3P.gui.file_menu import FileMenu
 from civil_3P.gui.task_menu import TaskMenu
-from civil_3P.core.result_builder import ResultBuilder
-from civil_3P.visualization.scene_builder import ModelSceneBuilder
+from civil_3P.visualization.scene_builder_registry import SceneBuilderRegistry
 from civil_3P.visualization.scene_renderer import SceneRenderer
+from civil_3P.tasks.task_registry import TaskRegistry
+from civil_3P.importers.importer_registry import ImporterRegistry
 
 
 class Application:
     def __init__(self):
         self._qt_app = QApplication.instance() or QApplication([])
-        importer_service = ImporterService()
+        importer_registry = ImporterRegistry()
+        importer_service = ImporterService(importer_registry)
+        task_registry = TaskRegistry()
         plugin_loader_service = PluginLoaderService()
-        task_service = TaskService(plugin_loader_service)
+        task_service = TaskService(
+            task_registry=task_registry,
+            plugin_loader_service=plugin_loader_service,
+        )
         model_service = ModelService()
         file_service = FileService()
         preferences_service = PreferencesService()
-        result_builder = ResultBuilder()
+        result_builder_registry = ResultBuilderRegistry()
         result_builder_service = ResultBuilderService(
             model_service=model_service,
-            processor=result_builder,
+            result_builder_registry=result_builder_registry,
         )
-        scene_builder = ModelSceneBuilder()
-        view_builder_service = ViewBuilderService(scene_builder)
+        scene_builder_registry = SceneBuilderRegistry()
+        view_builder_service = ViewBuilderService(scene_builder_registry)
         file_loader_service = FileLoaderService(
             model_service=model_service,
             file_service=file_service,
@@ -89,7 +96,7 @@ class Application:
         tab_registry = ViewTabRegistry(
             [
                 model_viewtab,
-                table_viewtab
+                table_viewtab,
             ]
         )
         self.main_window = MainWindow(
@@ -97,6 +104,8 @@ class Application:
             view_tab_registry=tab_registry,
             scene_widget=scene_widget,
         )
+
+        task_service.load_plugins_from(preferences_service.get_plugins_base_path())
 
     def run(self):
         self.main_window.show()

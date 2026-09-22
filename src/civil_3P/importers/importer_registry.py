@@ -3,11 +3,12 @@ from pathlib import Path
 from civil_3P.core.model import FEMModel
 from civil_3P.importers.sap2000_importer import Sap2000Importer
 from civil_3P.standard.importer_profiles import ImporterProfiles
+from civil_3P.importers.importer_adapter import ImporterAdapter
 
 
 class ImporterRegistry:
     def __init__(self) -> None:
-        self._registry = {
+        self._registry: dict[str, ImporterAdapter] = {
             ImporterProfiles.SAP2000: Sap2000Importer(),
         }
 

@@ -17,3 +17,6 @@ class ResultViewData:
     kind: ViewContentKind
     value_range: tuple[float, float]
     data: ResultElementViewData
+
+    def __repr__(self):
+        return f"ResultViewData\nKind: {self.kind}\nValue range: {self.value_range}"
