@@ -4,19 +4,19 @@ import numpy as np
 
 
 @dataclass(frozen=True, slots=True)
-class ResultElementViewData:
+class ResultElementSceneData:
     nodes: np.ndarray
-    values: np.ndarray
+    values: np.ndarray | None = None
     connection: np.ndarray | None = None
     element_type: np.ndarray | None = None
     block_data: list[tuple[np.ndarray, list[int], np.ndarray]] | None = None
 
 
 @dataclass(frozen=True, slots=True)
-class ResultViewData:
+class ResultSceneData:
     kind: ViewContentKind
     value_range: tuple[float, float]
-    data: ResultElementViewData
+    data: ResultElementSceneData
 
     def __repr__(self):
         return f"ResultViewData\nKind: {self.kind}\nValue range: {self.value_range}"

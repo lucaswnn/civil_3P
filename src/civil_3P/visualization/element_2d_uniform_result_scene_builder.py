@@ -5,9 +5,9 @@ import numpy as np
 from civil_3P.core.model import FEMModel
 from civil_3P.application.model_service import ModelService
 from civil_3P.core.result_data import ResultData
-from civil_3P.visualization.result_view_data import (
-    ResultViewData,
-    ResultElementViewData,
+from civil_3P.visualization.result_scene_data import (
+    ResultSceneData,
+    ResultElementSceneData,
 )
 from civil_3P.standard.result_components import ViewContentKind
 from civil_3P.core.selection import SelectionContext
@@ -38,14 +38,12 @@ class Element2DUniformResultSceneBuilder(SceneBuilder):
             res_selection,
         )
         model_scene = self.build_scene(idle_model)
-
-        res_model = self._model_service.model_with_elements(
+        res_model = ModelService.model_with_elements(
             model,
             res_selection,
         )
         node_map, points = self.get_node_map(res_model)
-
-        result_view = self._render_element_2d_uniform(
+        result_view = self._build_result_scene(
             res_model=res_model,
             node_map=node_map,
             points=points,
@@ -58,12 +56,12 @@ class Element2DUniformResultSceneBuilder(SceneBuilder):
             result_view=result_view,
         )
 
-    def _render_element_2d_uniform(
+    def _build_result_scene(
         self,
         res_model: FEMModel,
         node_map: dict[str, int],
         points: np.ndarray,
-        results: ResultViewData,
+        results: ResultSceneData,
     ) -> Scene:
         result_df = results.result_df
 
@@ -111,10 +109,10 @@ class Element2DUniformResultSceneBuilder(SceneBuilder):
                 celltypes.append(pv.CellType.QUAD)
             values.append(elements_values[element_id])
 
-        return ResultViewData(
+        return ResultSceneData(
             kind=ViewContentKind.ELEMENT_2D_UNIFORM,
-            value_range=(min(values), max(values)) if values else (0.0, 0.0),
-            data=ResultElementViewData(
+            value_range=(min(values), max(values)) if values.size > 0 else (0.0, 0.0),
+            data=ResultElementSceneData(
                 nodes=points,
                 values=np.array(values),
                 connection=np.array(cells),

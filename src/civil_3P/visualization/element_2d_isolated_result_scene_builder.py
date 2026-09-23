@@ -5,9 +5,9 @@ import numpy as np
 from civil_3P.core.model import FEMModel
 from civil_3P.application.model_service import ModelService
 from civil_3P.core.result_data import ResultData
-from civil_3P.visualization.result_view_data import (
-    ResultViewData,
-    ResultElementViewData,
+from civil_3P.visualization.result_scene_data import (
+    ResultSceneData,
+    ResultElementSceneData,
 )
 from civil_3P.standard.result_components import ViewContentKind
 from civil_3P.core.selection import SelectionContext
@@ -39,13 +39,13 @@ class Element2DIsolatedResultSceneBuilder(SceneBuilder):
         )
         model_scene = self.build_scene(idle_model)
 
-        res_model = self._model_service.model_with_elements(
+        res_model = ModelService.model_with_elements(
             model,
             res_selection,
         )
         node_map, points = self.get_node_map(res_model)
 
-        result_view = self._render_element_2d_isolated_nodes(
+        result_view = self._build_result_scene(
             res_model=res_model,
             node_map=node_map,
             points=points,
@@ -58,13 +58,13 @@ class Element2DIsolatedResultSceneBuilder(SceneBuilder):
             result_view=result_view,
         )
 
-    def _render_element_2d_isolated_nodes(
+    def _build_result_scene(
         self,
         res_model: FEMModel,
         node_map: dict[str, int],
         points: np.ndarray,
         results: ResultData,
-    ) -> ResultViewData:
+    ) -> ResultSceneData:
         result_df = results.result_df
 
         elements_values: dict[str, dict[str, float]] = dict()
@@ -92,8 +92,8 @@ class Element2DIsolatedResultSceneBuilder(SceneBuilder):
                 elements_topology[element_id] = [node1, node2, node3]
 
         blocks: list[tuple[np.ndarray, list[int], np.ndarray]] = []
-        blocks = pv.MultiBlock()
         min_max = [0.0, 0.0]
+        
         for element_id, node_values in elements_values.items():
 
             model_node_ids = list(elements_topology[element_id])
@@ -109,10 +109,10 @@ class Element2DIsolatedResultSceneBuilder(SceneBuilder):
             min_max[1] = max(max(values), min_max[1])
             blocks.append((local_points, faces, values))
 
-        return ResultViewData(
+        return ResultSceneData(
             kind=ViewContentKind.ELEMENT_2D_ISOLATED_NODES,
             value_range=(min_max[0], min_max[1]),
-            data=ResultElementViewData(
+            data=ResultElementSceneData(
                 nodes=points,
                 block_data=blocks,
             ),

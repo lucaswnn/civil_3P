@@ -3,7 +3,7 @@ import numpy as np
 
 
 @dataclass(frozen=True, slots=True)
-class ModelViewData:
+class ModelSceneData:
     nodes: np.ndarray
     elements_1d_connection: np.ndarray
     elements_1d_type: np.ndarray

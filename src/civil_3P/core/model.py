@@ -151,8 +151,14 @@ class FEMModel:
         ]
 
         res_node_d_df = res_node_d_df[res_node_d_df[rpr_origin_node_d.NODE].isin(nodes)]
-
         res_node_r_df = res_node_r_df[res_node_r_df[rpr_origin_node_r.NODE].isin(nodes)]
+
+        sel.tables[mt.ELEMENTS_1D] = element_1d_df
+        sel.tables[mt.ELEMENTS_2D] = element_2d_df
+        sel.tables[mt.ORIGIN_1D_RESULTS] = res_1d_df
+        sel.tables[mt.ORIGIN_2D_RESULTS] = res_2d_df
+        sel.tables[mt.ORIGIN_NODE_DISPLACEMENTS] = res_node_d_df
+        sel.tables[mt.ORIGIN_NODE_REACTIONS] = res_node_r_df
 
         return sel
 
@@ -252,10 +258,20 @@ class FEMModel:
         nodes.update(np.unique(model.tables[mt.ELEMENTS_2D][rpr_2d.NODE_2]))
         nodes.update(np.unique(model.tables[mt.ELEMENTS_2D][rpr_2d.NODE_3]))
         nodes.update(model.tables[mt.ELEMENTS_2D][rpr_2d.NODE_4].dropna().unique())
-        nodes = selection.node_ids.difference(nodes)
+        nodes = nodes.difference(selection.node_ids)
 
         model.tables[mt.NODES] = model.tables[mt.NODES][
             model.tables[mt.NODES][rpr_node.NODE].isin(nodes)
         ]
 
         return model
+
+    def __repr__(self):
+        msg = "FEMModel:"
+        msg += f"\nNodes count: {self.tables[mt.NODES].shape[0]}"
+        msg += f"\nBars count: {self.tables[mt.ELEMENTS_1D].shape[0]}"
+        msg += f"\nShells count: {self.tables[mt.ELEMENTS_2D].shape[0]}"
+        msg += f"\nMaterials count: {self.tables[mt.MATERIALS].shape[0]}"
+        msg += f"\nSections count: {self.tables[mt.SECTIONS].shape[0]}"
+        msg += f"\nLoad cases count: {self.tables[mt.LOAD_CASES].shape[0]}"
+        return msg

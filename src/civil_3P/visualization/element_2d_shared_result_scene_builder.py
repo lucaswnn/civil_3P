@@ -5,9 +5,9 @@ import numpy as np
 from civil_3P.core.model import FEMModel
 from civil_3P.application.model_service import ModelService
 from civil_3P.core.result_data import ResultData
-from civil_3P.visualization.result_view_data import (
-    ResultViewData,
-    ResultElementViewData,
+from civil_3P.visualization.result_scene_data import (
+    ResultSceneData,
+    ResultElementSceneData,
 )
 from civil_3P.standard.result_components import ViewContentKind
 from civil_3P.core.selection import SelectionContext
@@ -39,13 +39,13 @@ class Element2DSharedResultSceneBuilder(SceneBuilder):
         )
         model_scene = self.build_scene(idle_model)
 
-        res_model = self._model_service.model_with_elements(
+        res_model = ModelService.model_with_elements(
             model,
             res_selection,
         )
         node_map, points = self.get_node_map(res_model)
 
-        result_view = self._render_element_2d_shared_nodes(
+        result_view = self._build_result_scene(
             res_model=res_model,
             node_map=node_map,
             points=points,
@@ -58,13 +58,13 @@ class Element2DSharedResultSceneBuilder(SceneBuilder):
             result_view=result_view,
         )
 
-    def _render_element_2d_shared_nodes(
+    def _build_result_scene(
         self,
         res_model: FEMModel,
         node_map: dict[str, int],
         points: np.ndarray,
         results: ResultData,
-    ) -> ResultViewData:
+    ) -> ResultSceneData:
         result_df = results.result_df
 
         node_values: dict[str, float] = dict()
@@ -106,10 +106,10 @@ class Element2DSharedResultSceneBuilder(SceneBuilder):
             if index is not None:
                 values[index] = value
 
-        return ResultViewData(
+        return ResultSceneData(
             kind=ViewContentKind.ELEMENT_2D_SHARED_NODES,
-            value_range=(min(values), max(values)) if values else (0.0, 0.0),
-            data=ResultElementViewData(
+            value_range=(min(values), max(values)) if values.size > 0 else (0.0, 0.0),
+            data=ResultElementSceneData(
                 nodes=points,
                 values=np.array(values),
                 connection=np.array(cells),

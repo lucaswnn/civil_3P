@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 
-from civil_3P.visualization.result_view_data import ResultViewData
-from civil_3P.visualization.model_view_data import ModelViewData
+from civil_3P.visualization.result_scene_data import ResultSceneData
+from civil_3P.visualization.model_scene_data import ModelSceneData
 
 
 @dataclass(frozen=True, slots=True)
 class Scene:
     node_map: dict[str, int]
-    model_view: ModelViewData
-    result_view: ResultViewData | None = None
+    model_view: ModelSceneData
+    result_view: ResultSceneData | None = None
 
     def __repr__(self):
         return f"{self.model_view}\n-----\n{self.result_view}"

@@ -7,7 +7,7 @@ import pandas as pd
 from civil_3P.core.model import FEMModel
 from civil_3P.standard import model_representation as rpr
 from civil_3P.core.result_data import ResultData
-from civil_3P.visualization.model_view_data import ModelViewData
+from civil_3P.visualization.model_scene_data import ModelSceneData
 from civil_3P.visualization.scene import Scene
 import pyvista as pv
 
@@ -20,8 +20,7 @@ class SceneBuilder(ABC):
         nodes_df = model.tables[rpr.ModelTables.NODES]
         node_map = {
             str(getattr(row, rpr.NodesColumns.NODE)): idx
-            for idx, row in enumerate(
-                nodes_df.itertuples(index=False))
+            for idx, row in enumerate(nodes_df.itertuples(index=False))
         }
         nodes = np.array(
             [
@@ -76,7 +75,7 @@ class SceneBuilder(ABC):
                 elements_2d_connection.extend([3, n1, n2, n3])
                 elements_2d_type.append(pv.CellType.TRIANGLE)
 
-        model_view_data = ModelViewData(
+        model_view_data = ModelSceneData(
             nodes=nodes,
             elements_1d_connection=np.array(elements_1d_connection),
             elements_1d_type=np.array(elements_1d_type),

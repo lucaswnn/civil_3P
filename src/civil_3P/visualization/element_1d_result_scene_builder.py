@@ -8,12 +8,14 @@ from civil_3P.standard.model_representation import ModelTables as mt
 from civil_3P.standard.model_representation import Elements1DColumns as rpr_1d
 from civil_3P.visualization.scene_builder import SceneBuilder
 from civil_3P.visualization.scene import Scene
-from civil_3P.visualization.result_view_data import (
-    ResultViewData, 
-    ResultElementViewData, 
-    ViewContentKind
+from civil_3P.visualization.result_scene_data import (
+    ResultSceneData,
+    ResultElementSceneData,
+    ViewContentKind,
 )
-from civil_3P.standard.task_result_representation import Task1DResultsColumns as task_rpr_1d
+from civil_3P.standard.task_result_representation import (
+    Task1DResultsColumns as task_rpr_1d,
+)
 from civil_3P.application.model_service import ModelService
 
 
@@ -27,7 +29,6 @@ class Element1DResultSceneBuilder(SceneBuilder):
             node_ids=set(),
             element_1d_ids=results.elements,
             element_2d_ids=set(),
-
         )
         idle_model = ModelService.model_without_elements(
             model,
@@ -35,7 +36,7 @@ class Element1DResultSceneBuilder(SceneBuilder):
         )
         model_scene = self.build_scene(idle_model)
 
-        res_model = self._model_service.model_with_elements(
+        res_model = ModelService.model_with_elements(
             model,
             res_selection,
         )
@@ -60,8 +61,8 @@ class Element1DResultSceneBuilder(SceneBuilder):
 
         for row in element_1d_df.itertuples(index=False):
             element_id = getattr(row, rpr_1d.ELEMENT)
-            start_node = getattr(row, rpr_1d.START_NODE)
-            end_node = getattr(row, rpr_1d.END_NODE)
+            start_node = getattr(row, rpr_1d.NODE_I)
+            end_node = getattr(row, rpr_1d.NODE_J)
             elements_topology[element_id] = (start_node, end_node)
 
         element_1d_points: list[np.ndarray] = []
@@ -79,8 +80,7 @@ class Element1DResultSceneBuilder(SceneBuilder):
 
             line = [len(profile)]
             for station, value in profile:
-                fraction = 0.0 if length == 0 else min(
-                    max(station / length, 0.0), 1.0)
+                fraction = 0.0 if length == 0 else min(max(station / length, 0.0), 1.0)
                 element_1d_points.append(start + fraction * (end - start))
                 element_1d_values.append(value)
                 line.append(len(element_1d_points) - 1)
@@ -89,18 +89,20 @@ class Element1DResultSceneBuilder(SceneBuilder):
         return Scene(
             node_map=node_map,
             model_view=model_scene.model_view,
-            result_view=ResultViewData(
+            result_view=ResultSceneData(
                 kind=ViewContentKind.ELEMENT_1D_PROFILE,
                 value_range=(
-                    np.nanmin(element_1d_values),
-                    np.nanmax(element_1d_values),
-                )
-                if element_1d_values
-                else (0.0, 0.0),
-                data=ResultElementViewData(
+                    (
+                        np.nanmin(element_1d_values),
+                        np.nanmax(element_1d_values),
+                    )
+                    if element_1d_values
+                    else (0.0, 0.0)
+                ),
+                data=ResultElementSceneData(
                     nodes=np.array(element_1d_points),
                     values=np.array(element_1d_values),
                     connection=np.array(lines),
-                )
+                ),
             ),
         )

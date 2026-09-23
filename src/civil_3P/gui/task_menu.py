@@ -58,16 +58,14 @@ class TaskMenu:
         self.case_button.setText("Selecione")
         self.case_button.setPopupMode(QToolButton.InstantPopup)
         case_menu = QMenu(self.case_button)
-        case_menu.aboutToShow.connect(
-            lambda: self._refresh_case_menu(case_menu))
+        case_menu.aboutToShow.connect(lambda: self._refresh_case_menu(case_menu))
         self.case_button.setMenu(case_menu)
 
         self.task_button = QToolButton(panel)
         self.task_button.setText("Selecione")
         self.task_button.setPopupMode(QToolButton.InstantPopup)
         task_menu = QMenu(self.task_button)
-        task_menu.aboutToShow.connect(
-            lambda: self._refresh_task_menu(task_menu))
+        task_menu.aboutToShow.connect(lambda: self._refresh_task_menu(task_menu))
         self.task_button.setMenu(task_menu)
 
         form_layout.addRow(QLabel("Caso"), self.case_button)
@@ -76,8 +74,7 @@ class TaskMenu:
         self.apply_to_selection_button = QPushButton(panel)
         self.apply_to_selection_button.setCheckable(True)
         apply_to_selection_label = QLabel("Aplicar na seleção")
-        form_layout.addRow(self.apply_to_selection_button,
-                           apply_to_selection_label)
+        form_layout.addRow(self.apply_to_selection_button, apply_to_selection_label)
 
         run_button = QPushButton("Executar tarefa")
         run_button.clicked.connect(self._run_task)
@@ -93,14 +90,18 @@ class TaskMenu:
         for case_id in self._controller.get_load_case_ids():
             action = menu.addAction(case_id)
             action.triggered.connect(
-                lambda _checked=False, identifier=case_id: self._select_case(identifier))
+                lambda _checked=False, identifier=case_id: self._select_case(
+                    identifier
+                ),
+            )
 
     def _refresh_task_menu(self, menu: QMenu) -> None:
         menu.clear()
         for task_id in self._controller.get_task_identifiers():
             action = menu.addAction(task_id)
             action.triggered.connect(
-                lambda _checked=False, identifier=task_id: self._select_task(identifier))
+                lambda _checked=False, identifier=task_id: self._select_task(identifier)
+            )
 
     def _select_case(self, identifier: str) -> None:
         self._selected_case_id = identifier
@@ -136,15 +137,17 @@ class TaskMenu:
                 view_content_kind = ViewContentKind.ELEMENT_1D_PROFILE
                 element_type = mc.ModelComponents.ELEMENTS_1D
                 element_ids = list(
-                    model.tables[rpr.ModelTables.ELEMENTS_1D]
-                    [rpr.Elements1DColumns.ELEMENT].astype(str)
+                    model.tables[rpr.ModelTables.ELEMENTS_1D][
+                        rpr.Elements1DColumns.ELEMENT
+                    ].astype(str)
                 )
             else:
-                view_content_kind = ViewContentKind.ELEMENT_2D_UNIFORM
+                view_content_kind = ViewContentKind.ELEMENT_2D_ISOLATED_NODES
                 element_type = mc.ModelComponents.ELEMENTS_2D
                 element_ids = list(
-                    model.tables[rpr.ModelTables.ELEMENTS_2D]
-                    [rpr.Elements2DColumns.ELEMENT].astype(str)
+                    model.tables[rpr.ModelTables.ELEMENTS_2D][
+                        rpr.Elements2DColumns.ELEMENT
+                    ].astype(str)
                 )
 
             selection = self._controller.create_selection(

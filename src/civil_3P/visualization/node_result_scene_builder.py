@@ -5,8 +5,13 @@ from civil_3P.application.model_service import ModelService
 from civil_3P.core.selection import SelectionContext
 from civil_3P.core.result_data import ResultData
 from civil_3P.standard.result_components import ViewContentKind
-from civil_3P.standard.task_result_representation import TaskNodeResultsColumns as task_rpr_node
-from civil_3P.visualization.result_view_data import ResultElementViewData, ResultViewData
+from civil_3P.standard.task_result_representation import (
+    TaskNodeResultsColumns as task_rpr_node,
+)
+from civil_3P.visualization.result_scene_data import (
+    ResultElementSceneData,
+    ResultSceneData,
+)
 from civil_3P.visualization.scene import Scene
 from civil_3P.visualization.scene_builder import SceneBuilder
 
@@ -41,14 +46,16 @@ class NodeResultSceneBuilder(SceneBuilder):
         return Scene(
             node_map=node_map,
             model_view=model_scene.model_view,
-            result_view=ResultViewData(
+            result_view=ResultSceneData(
                 kind=ViewContentKind.NODE_POINTS,
-                value_range=(np.nanmin(values), np.nanmax(values))
-                if values.size > 0
-                else (0.0, 0.0),
-                data=ResultElementViewData(
+                value_range=(
+                    (np.nanmin(values), np.nanmax(values))
+                    if values.size > 0
+                    else (0.0, 0.0)
+                ),
+                data=ResultElementSceneData(
                     nodes=nodes,
                     values=values,
-                )
+                ),
             ),
         )
