@@ -122,3 +122,6 @@ class FileMenuController:
 
         except Exception as exc:
             return self._response(EventStatus.FAILURE, str(exc), exc)
+
+    def get_plugins_base_path(self) -> Path:
+        return self._preferences_service.get_plugins_base_path()

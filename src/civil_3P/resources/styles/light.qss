@@ -12,6 +12,13 @@ QWidget#rightPanel {
 }
 
 QWidget#leftPanel {
+    padding: 10px;
+    border: 1px solid #d2ddd7;
+    border-radius: 6px;
+}
+
+QWidget#rightPanel {
+    padding: 10px;
     border: 1px solid #d2ddd7;
     border-radius: 6px;
 }
@@ -53,7 +60,7 @@ QToolButton:pressed {
     background-color: #dcece6;
 }
 
-QToolButton#categorySelector {
+QComboBox#categorySelector {
     min-width: 112px;
     font-weight: 600;
 }
@@ -102,8 +109,7 @@ QScrollBar::sub-line:vertical {
 }
 
 QSplitter::handle {
-    width: 5px;
-    background-color: #dbe4df;
+    background-color: #f4f7f5;
 }
 
 QSplitter::handle:hover {
