@@ -11,9 +11,10 @@ from typing import TYPE_CHECKING
 
 import traceback
 
-from civil_3P.gui.file_menu_button_labels import FileMenuButtonLabels
 from civil_3P.standard.gui_components import GuiMenuComponents
+from civil_3P.standard.gui_texts import FileMenuButtonLabels
 from civil_3P.standard.importer_profiles import ImporterProfiles
+from civil_3P.standard.gui_texts import GuiFileDialogTexts, GuiMessageTexts
 from civil_3P.utils.gui_messages import GuiMessages as gm
 
 if TYPE_CHECKING:
@@ -38,6 +39,7 @@ class FileMenu:
 
     def build_panel(self, parent: QWidget) -> QWidget:
         panel = QWidget(parent)
+        panel.setObjectName("fileMenuPanel")
         self._panel = panel
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -71,9 +73,9 @@ class FileMenu:
         try:
             files, _ = QFileDialog.getOpenFileNames(
                 self._panel,
-                "Selecionar arquivos de plugins",
+                GuiFileDialogTexts.SELECT_PLUGIN_FILES,
                 str(Path.cwd()),
-                "Arquivos Python (*.py);;Todos os Arquivos (*)",
+                GuiFileDialogTexts.PYTHON_FILES_FILTER,
             )
 
             if not files:
@@ -85,7 +87,9 @@ class FileMenu:
         except Exception as exc:  # pragma: no cover - runtime feedback only
             gm.display_error(
                 self._panel,
-                message=f"Falha ao carregar plugins: {exc}",
+                message=GuiMessageTexts.LOAD_PLUGINS_FAILED.format(
+                    error=exc
+                ),
                 detailed_message=traceback.format_exc(),
             )
 
@@ -93,9 +97,9 @@ class FileMenu:
         try:
             file_path, _ = QFileDialog.getOpenFileName(
                 self._panel,
-                "Selecionar arquivo do SAP2000",
+                GuiFileDialogTexts.SELECT_SAP2000_FILE,
                 str(Path.cwd()),
-                "Arquivos Excel (*.xlsx);;Todos os Arquivos (*)",
+                GuiFileDialogTexts.EXCEL_FILES_FILTER,
             )
 
             if not file_path:
@@ -110,7 +114,9 @@ class FileMenu:
         except Exception as exc:  # pragma: no cover - runtime feedback only
             gm.display_error(
                 self._panel,
-                message=f"Falha ao importar o modelo: {exc}",
+                message=GuiMessageTexts.IMPORT_MODEL_FAILED.format(
+                    error=exc
+                ),
                 detailed_message=traceback.format_exc(),
             )
 
@@ -118,9 +124,9 @@ class FileMenu:
         try:
             model_path, _ = QFileDialog.getOpenFileName(
                 self._panel,
-                "Carregar modelo civil_3P",
+                GuiFileDialogTexts.LOAD_MODEL,
                 str(Path.cwd()),
-                "Arquivos civil_3P (*.c3p)",
+                GuiFileDialogTexts.MODEL_FILES_FILTER,
             )
 
             if not model_path:
@@ -132,7 +138,9 @@ class FileMenu:
         except Exception as exc:  # pragma: no cover - runtime feedback only
             gm.display_error(
                 self._panel,
-                message=f"Falha ao carregar o modelo salvo: {exc}",
+                message=GuiMessageTexts.LOAD_MODEL_FAILED.format(
+                    error=exc
+                ),
                 detailed_message=traceback.format_exc(),
             )
 
@@ -140,9 +148,9 @@ class FileMenu:
         try:
             save_path, _ = QFileDialog.getSaveFileName(
                 self._panel,
-                "Salvar modelo civil_3P",
+                GuiFileDialogTexts.SAVE_MODEL,
                 str(Path.cwd()),
-                "Arquivos civil_3P (*.c3p)",
+                GuiFileDialogTexts.MODEL_FILES_FILTER,
             )
 
             if not save_path:
@@ -159,7 +167,9 @@ class FileMenu:
         except Exception as exc:  # pragma: no cover - runtime feedback only
             gm.display_error(
                 self._panel,
-                message=f"Falha ao salvar o modelo: {exc}",
+                message=GuiMessageTexts.SAVE_MODEL_FAILED.format(
+                    error=exc
+                ),
                 detailed_message=traceback.format_exc(),
             )
 
@@ -167,7 +177,7 @@ class FileMenu:
         try:
             directory = QFileDialog.getExistingDirectory(
                 self._panel,
-                "Definir pasta de plugins",
+                GuiFileDialogTexts.SET_PLUGINS_FOLDER,
                 str(self._controller.get_plugins_base_path()),
             )
 
@@ -182,6 +192,8 @@ class FileMenu:
         except Exception as exc:  # pragma: no cover - runtime feedback only
             gm.display_error(
                 self._panel,
-                message=f"Falha ao definir a pasta de plugins: {exc}",
+                message=GuiMessageTexts.SET_PLUGINS_FOLDER_FAILED.format(
+                    error=exc
+                ),
                 detailed_message=traceback.format_exc(),
             )

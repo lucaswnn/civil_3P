@@ -10,6 +10,7 @@ from civil_3P.application.task_service import TaskService
 from civil_3P.gui.event_response import EventResponse, EventStatus
 from civil_3P.gui.scene_widget_controller import SceneWidgetController
 from civil_3P.standard.importer_profiles import ImporterProfiles
+from civil_3P.standard.gui_texts import GuiMessageTexts
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -65,7 +66,7 @@ class FileMenuController:
 
             return self._response(
                 EventStatus.SUCCESS,
-                "Model imported successfully.",
+                GuiMessageTexts.MODEL_IMPORTED,
             )
 
         except Exception as exc:
@@ -78,7 +79,7 @@ class FileMenuController:
 
             return self._response(
                 EventStatus.SUCCESS,
-                "Model loaded successfully.",
+                GuiMessageTexts.MODEL_LOADED,
             )
 
         except Exception as exc:
@@ -90,7 +91,7 @@ class FileMenuController:
 
             return self._response(
                 EventStatus.SUCCESS,
-                "Model saved successfully.",
+                GuiMessageTexts.MODEL_SAVED,
             )
 
         except Exception as exc:
@@ -102,7 +103,7 @@ class FileMenuController:
 
             return self._response(
                 EventStatus.SUCCESS,
-                "Plugins base path set successfully.",
+                GuiMessageTexts.PLUGINS_FOLDER_SET,
             )
 
         except Exception as exc:
@@ -116,8 +117,11 @@ class FileMenuController:
 
             return self._response(
                 EventStatus.SUCCESS,
-                f"Loaded {len(loaded)} plugins.",
+                GuiMessageTexts.PLUGINS_LOADED.format(count=len(loaded)),
             )
 
         except Exception as exc:
             return self._response(EventStatus.FAILURE, str(exc), exc)
+
+    def get_plugins_base_path(self) -> Path:
+        return self._preferences_service.get_plugins_base_path()

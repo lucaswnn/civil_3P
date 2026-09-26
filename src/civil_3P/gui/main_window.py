@@ -3,9 +3,9 @@ from __future__ import annotations
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QButtonGroup,
+    QComboBox,
     QHBoxLayout,
     QMainWindow,
-    QMenu,
     QSplitter,
     QStackedWidget,
     QToolButton,
@@ -13,6 +13,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 from typing import TYPE_CHECKING
+
+from civil_3P.standard.gui_texts import GuiLabels
 
 if TYPE_CHECKING:
     from civil_3P.gui.main_window_controller import MainWindowController
@@ -37,32 +39,33 @@ class MainWindow(QMainWindow):
         self._setup_ui()
 
     def _setup_ui(self) -> None:
-        self.setWindowTitle("civil_3P")
+        self.setObjectName("mainWindow")
+        self.setWindowTitle(GuiLabels.APPLICATION_NAME)
         self.resize(1000, 600)
 
         central_widget = QWidget(self)
+        central_widget.setObjectName("centralWidget")
         self.setCentralWidget(central_widget)
 
         root_layout = QHBoxLayout(central_widget)
-        root_layout.setContentsMargins(12, 12, 12, 12)
         root_layout.setSpacing(12)
 
         right_panel = self._build_right_panel()
         left_panel = self._build_left_panel()
 
         splitter = QSplitter(Qt.Orientation.Horizontal)
-        splitter.setChildrenCollapsible(False)
+        splitter.setHandleWidth(6)
         splitter.addWidget(left_panel)
         splitter.addWidget(right_panel)
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 3)
-        splitter.setSizes([300, 900])
+        splitter.setSizes([30, 90])
         root_layout.addWidget(splitter)
 
     def _build_right_panel(self) -> QWidget:
         right_panel = QWidget(self)
+        right_panel.setObjectName("rightPanel")
         right_layout = QVBoxLayout(right_panel)
-        right_layout.setContentsMargins(0, 0, 0, 0)
         right_layout.setSpacing(4)
 
         self._scene_widget.setMinimumWidth(700)
@@ -80,9 +83,8 @@ class MainWindow(QMainWindow):
             self._tab_index[tab.identifier] = index
 
         tab_bar = QWidget(right_panel)
-        tab_bar.setFixedHeight(28)
+        tab_bar.setObjectName("viewTabBar")
         tab_bar_layout = QHBoxLayout(tab_bar)
-        tab_bar_layout.setContentsMargins(4, 0, 4, 0)
         tab_bar_layout.setSpacing(4)
 
         tab_group = QButtonGroup(tab_bar)
@@ -112,13 +114,14 @@ class MainWindow(QMainWindow):
 
     def _build_left_panel(self) -> QWidget:
         left_panel = QWidget(self)
+        left_panel.setObjectName("leftPanel")
         left_layout = QVBoxLayout(left_panel)
-        left_layout.setContentsMargins(0, 0, 0, 0)
         left_layout.setSpacing(12)
 
         self._category_registry = self._menu_registry
 
         self._category_stack = QStackedWidget(left_panel)
+        self._category_stack.setObjectName("categoryStack")
         self._category_index: dict[str, int] = {}
 
         for category in self._category_registry.all():
@@ -127,22 +130,28 @@ class MainWindow(QMainWindow):
             )
             self._category_index[category.identifier] = index
 
-        self._category_button = QToolButton(left_panel)
-        self._category_button.setPopupMode(QToolButton.InstantPopup)
-        category_menu = QMenu(self._category_button)
+        self._category_button = QComboBox(left_panel)
+        self._category_button.setObjectName("categorySelector")
+        self._category_button.setEditable(False)
+        self._category_button.view().setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
 
         for category in self._category_registry.all():
-            action = category_menu.addAction(category.display_name)
-            action.triggered.connect(
-                lambda _checked=False,
-                identifier=category.identifier: self._select_category(identifier),
+            self._category_button.addItem(
+                category.display_name,
+                category.identifier,
             )
 
-        self._category_button.setMenu(category_menu)
+        self._category_button.activated.connect(
+            lambda index: self._select_category(
+                self._category_button.itemData(index)
+            )
+        )
 
         left_layout.addWidget(
             self._category_button,
-            alignment=Qt.AlignmentFlag.AlignHCenter,
+            alignment=Qt.AlignmentFlag.AlignLeft,
         )
         left_layout.addWidget(self._category_stack)
 
@@ -151,8 +160,9 @@ class MainWindow(QMainWindow):
         return left_panel
 
     def _select_category(self, identifier: str) -> None:
-        category = self._category_registry.get(identifier)
-        self._category_button.setText(category.display_name)
+        self._category_button.setCurrentIndex(
+            self._category_button.findData(identifier)
+        )
         self._category_stack.setCurrentIndex(self._category_index[identifier])
 
     def _select_tab(self, identifier: str) -> None:

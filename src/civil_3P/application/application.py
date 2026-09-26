@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from importlib.resources import files
+
 from PySide6.QtWidgets import QApplication
 
 from civil_3P.application.file_loader_service import FileLoaderService
@@ -33,6 +35,12 @@ from civil_3P.visualization.scene_renderer import SceneRenderer
 class Application:
     def __init__(self):
         self._qt_app = QApplication.instance() or QApplication([])
+        stylesheet = (
+            files("civil_3P")
+            .joinpath("resources", "styles", "light.qss")
+            .read_text(encoding="utf-8")
+        )
+        self._qt_app.setStyleSheet(stylesheet)
 
         # --------
         # services

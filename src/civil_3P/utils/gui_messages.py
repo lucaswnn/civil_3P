@@ -3,6 +3,8 @@ from __future__ import annotations
 from PySide6.QtWidgets import QMessageBox
 from typing import TYPE_CHECKING
 
+from civil_3P.standard.gui_texts import GuiLabels
+
 if TYPE_CHECKING:
     from PySide6.QtWidgets import QWidget
 
@@ -15,7 +17,7 @@ class GuiMessages:
     ) -> None:
         QMessageBox.information(
             panel,
-            "Civil 3P",
+            GuiLabels.APPLICATION_NAME,
             message,
         )
 
@@ -26,7 +28,7 @@ class GuiMessages:
     ) -> None:
         QMessageBox.warning(
             panel,
-            "Civil 3P",
+            GuiLabels.APPLICATION_NAME,
             message,
         )
 
@@ -38,7 +40,7 @@ class GuiMessages:
     ) -> None:
         msgbox = QMessageBox(panel)
         msgbox.setIcon(QMessageBox.Critical)
-        msgbox.setWindowTitle("Civil 3P")
+        msgbox.setWindowTitle(GuiLabels.APPLICATION_NAME)
         msgbox.setText(message)
 
         if detailed_message:

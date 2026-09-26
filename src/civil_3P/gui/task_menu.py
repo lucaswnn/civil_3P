@@ -1,23 +1,29 @@
 from __future__ import annotations
 
+import traceback
+from typing import TYPE_CHECKING
+
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
+    QComboBox,
     QFormLayout,
     QLabel,
-    QMenu,
-    QMessageBox,
     QPushButton,
-    QToolButton,
     QVBoxLayout,
     QWidget,
 )
-from typing import TYPE_CHECKING
 
-import traceback
-
-from civil_3P.standard.gui_components import GuiMenuComponents
+from civil_3P.gui.refreshing_combo_box import RefreshingComboBox
 from civil_3P.standard import model_components as mc
 from civil_3P.standard import model_representation as rpr
+from civil_3P.standard.gui_components import GuiMenuComponents
+from civil_3P.standard.gui_texts import TaskMenuButtonLabels
 from civil_3P.standard.result_components import ViewContentKind
+from civil_3P.standard.gui_texts import (
+    GuiLabels,
+    GuiMessageTexts,
+)
+from civil_3P.utils.gui_messages import GuiMessages
 
 if TYPE_CHECKING:
     from civil_3P.gui.task_menu_controller import TaskMenuController
@@ -29,11 +35,9 @@ class TaskMenu:
         controller: TaskMenuController,
     ) -> None:
         self._controller = controller
-        self.case_button: QToolButton | None = None
-        self.task_button: QToolButton | None = None
+        self.case_button: RefreshingComboBox | None = None
+        self.task_button: RefreshingComboBox | None = None
         self.apply_to_selection_button: QPushButton | None = None
-        self._selected_case_id: str | None = None
-        self._selected_task_id: str | None = None
         self._panel: QWidget | None = None
 
     @property
@@ -46,6 +50,7 @@ class TaskMenu:
 
     def build_panel(self, parent: QWidget) -> QWidget:
         panel = QWidget(parent)
+        panel.setObjectName("taskMenuPanel")
         self._panel = panel
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -54,36 +59,29 @@ class TaskMenu:
         form_layout = QFormLayout()
         form_layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
 
-        self.case_button = QToolButton(panel)
-        self.case_button.setText("Selecione")
-        self.case_button.setPopupMode(QToolButton.InstantPopup)
-        case_menu = QMenu(self.case_button)
-        case_menu.aboutToShow.connect(
-            lambda: self._refresh_case_menu(case_menu)
+        self.case_button = RefreshingComboBox(
+            self._controller.get_load_case_ids,
+            GuiLabels.SELECT_OPTION,
+            panel,
         )
-        self.case_button.setMenu(case_menu)
-
-        self.task_button = QToolButton(panel)
-        self.task_button.setText("Selecione")
-        self.task_button.setPopupMode(QToolButton.InstantPopup)
-        task_menu = QMenu(self.task_button)
-        task_menu.aboutToShow.connect(
-            lambda: self._refresh_task_menu(task_menu)
+        self.case_button.setObjectName("caseCombo")
+        self.task_button = RefreshingComboBox(
+            self._controller.get_task_identifiers,
+            GuiLabels.SELECT_OPTION,
+            panel,
         )
-        self.task_button.setMenu(task_menu)
+        self.task_button.setObjectName("taskCombo")
 
-        form_layout.addRow(QLabel("Caso"), self.case_button)
-        form_layout.addRow(QLabel("Tarefa"), self.task_button)
-
-        self.apply_to_selection_button = QPushButton(panel)
-        self.apply_to_selection_button.setCheckable(True)
-        apply_to_selection_label = QLabel("Aplicar na seleção")
         form_layout.addRow(
-            self.apply_to_selection_button,
-            apply_to_selection_label,
+            QLabel(TaskMenuButtonLabels.CASE),
+            self.case_button,
+        )
+        form_layout.addRow(
+            QLabel(TaskMenuButtonLabels.TASK),
+            self.task_button,
         )
 
-        run_button = QPushButton("Executar tarefa")
+        run_button = QPushButton(TaskMenuButtonLabels.EXECUTE_TASK)
         run_button.clicked.connect(self._run_task)
         form_layout.addRow(run_button)
 
@@ -92,54 +90,31 @@ class TaskMenu:
 
         return panel
 
-    def _refresh_case_menu(self, menu: QMenu) -> None:
-        menu.clear()
-
-        for case_id in self._controller.get_load_case_ids():
-            action = menu.addAction(case_id)
-            action.triggered.connect(
-                lambda _checked=False,
-                identifier=case_id: self._select_case(identifier),
-            )
-
-    def _refresh_task_menu(self, menu: QMenu) -> None:
-        menu.clear()
-
-        for task_id in self._controller.get_task_identifiers():
-            action = menu.addAction(task_id)
-            action.triggered.connect(
-                lambda _checked=False,
-                identifier=task_id: self._select_task(identifier),
-            )
-
-    def _select_case(self, identifier: str) -> None:
-        self._selected_case_id = identifier
-        self.case_button.setText(identifier)
-
-    def _select_task(self, identifier: str) -> None:
-        self._selected_task_id = identifier
-        self.task_button.setText(identifier)
-
     def _run_task(self) -> None:
         model = self._controller.current_model
 
         if model is None:
-            QMessageBox.warning(
+            GuiMessages.display_warning(
                 self._panel,
-                "civil_3P",
-                "Carregue um modelo antes de executar uma tarefa.",
+                GuiMessageTexts.LOAD_MODEL_BEFORE_TASK,
             )
 
             return
 
-        task_id = self._selected_task_id
-        case_id = self._selected_case_id
+        task_combo = self.task_button
+        case_combo = self.case_button
+        if task_combo is None or case_combo is None:
+            return
+
+        task_combo.refresh_options()
+        case_combo.refresh_options()
+        task_id = self._selected_option(task_combo)
+        case_id = self._selected_option(case_combo)
 
         if task_id is None or case_id is None:
-            QMessageBox.warning(
+            GuiMessages.display_warning(
                 self._panel,
-                "civil_3P",
-                "Selecione uma tarefa e um caso antes de executar.",
+                GuiMessageTexts.SELECT_TASK_AND_CASE,
             )
 
             return
@@ -180,16 +155,23 @@ class TaskMenu:
                 view_content_kind=view_content_kind,
             )
 
-            QMessageBox.information(
+            GuiMessages.display_info(
                 self._panel,
-                "civil_3P",
-                "Tarefa executada com sucesso.",
+                GuiMessageTexts.TASK_SUCCEEDED,
             )
 
         except Exception as exc:  # pragma: no cover - runtime feedback only
-            msgbox = QMessageBox()
-            msgbox.setIcon(QMessageBox.Critical)
-            msgbox.setWindowTitle("civil_3P")
-            msgbox.setText(f"Falha ao executar a tarefa: {exc}")
-            msgbox.setDetailedText(traceback.format_exc())
-            msgbox.exec()
+            GuiMessages.display_error(
+                self._panel,
+                GuiMessageTexts.TASK_FAILED.format(error=exc),
+                traceback.format_exc(),
+            )
+
+    @staticmethod
+    def _selected_option(combo: QComboBox) -> str | None:
+        text = combo.currentText().strip()
+        index = combo.findText(text, Qt.MatchFlag.MatchFixedString)
+        if not text or index < 0:
+            return None
+
+        return combo.itemText(index)

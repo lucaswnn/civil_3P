@@ -1,0 +1,121 @@
+QMainWindow#mainWindow {
+    background-color: #e9efec;
+    color: #25333a;
+    font-family: "Segoe UI";
+    font-size: 10pt;
+}
+
+QWidget#centralWidget,
+QWidget#leftPanel,
+QWidget#rightPanel {
+    background-color: #f4f7f5;
+}
+
+QWidget#leftPanel {
+    padding: 10px;
+    border: 1px solid #d2ddd7;
+    border-radius: 6px;
+}
+
+QWidget#rightPanel {
+    padding: 10px;
+    border: 1px solid #d2ddd7;
+    border-radius: 6px;
+}
+
+QWidget#fileMenuPanel,
+QWidget#taskMenuPanel {
+    background-color: transparent;
+}
+
+QWidget#viewTabBar {
+    background-color: transparent;
+}
+
+QLabel {
+    color: #26373c;
+    background-color: transparent;
+}
+
+QPushButton,
+QToolButton,
+QComboBox {
+    min-height: 16px;
+    padding: 4px 9px;
+    border: 1px solid #bdcbc5;
+    border-radius: 4px;
+    background-color: #ffffff;
+    color: #25333a;
+}
+
+QPushButton:hover,
+QToolButton:hover,
+QComboBox:hover {
+    border-color: #458d7c;
+    background-color: #f2f8f5;
+}
+
+QPushButton:pressed,
+QToolButton:pressed {
+    background-color: #dcece6;
+}
+
+QComboBox#categorySelector {
+    min-width: 112px;
+    font-weight: 600;
+}
+
+QToolButton:checked {
+    border-color: #247965;
+    background-color: #dcece6;
+    color: #145b4b;
+}
+
+QComboBox:focus,
+QPushButton:focus,
+QToolButton:focus {
+    border: 1px solid #247965;
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid #bdcbc5;
+    background-color: #ffffff;
+    color: #25333a;
+    selection-background-color: #dcece6;
+    selection-color: #145b4b;
+    outline: 0;
+}
+
+QScrollBar:vertical {
+    width: 11px;
+    margin: 2px;
+    border: none;
+    background-color: #f1f5f3;
+}
+
+QScrollBar::handle:vertical {
+    min-height: 24px;
+    border-radius: 4px;
+    background-color: #b5c5be;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #829d91;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0;
+}
+
+QSplitter::handle {
+    background-color: #f4f7f5;
+}
+
+QSplitter::handle:hover {
+    background-color: #8eafa1;
+}
+
+QMessageBox {
+    background-color: #f4f7f5;
+}
