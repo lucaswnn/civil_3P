@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from civil_3P.standard.gui_texts import GuiLabels
+
 if TYPE_CHECKING:
     from PySide6.QtWidgets import QWidget
     
@@ -10,7 +12,7 @@ if TYPE_CHECKING:
 
 class ModelViewTab:
     identifier = "modelo"
-    display_name = "Modelo"
+    display_name = GuiLabels.MODEL_TAB
 
     def __init__(self, scene_widget: SceneWidget) -> None:
         self._scene_widget = scene_widget

@@ -14,6 +14,8 @@ from PySide6.QtWidgets import (
 )
 from typing import TYPE_CHECKING
 
+from civil_3P.standard.gui_texts import GuiLabels
+
 if TYPE_CHECKING:
     from civil_3P.gui.main_window_controller import MainWindowController
     from civil_3P.gui.menu_category_registry import MenuCategoryRegistry
@@ -37,10 +39,12 @@ class MainWindow(QMainWindow):
         self._setup_ui()
 
     def _setup_ui(self) -> None:
-        self.setWindowTitle("civil_3P")
+        self.setObjectName("mainWindow")
+        self.setWindowTitle(GuiLabels.APPLICATION_NAME)
         self.resize(1000, 600)
 
         central_widget = QWidget(self)
+        central_widget.setObjectName("centralWidget")
         self.setCentralWidget(central_widget)
 
         root_layout = QHBoxLayout(central_widget)
@@ -61,6 +65,7 @@ class MainWindow(QMainWindow):
 
     def _build_right_panel(self) -> QWidget:
         right_panel = QWidget(self)
+        right_panel.setObjectName("rightPanel")
         right_layout = QVBoxLayout(right_panel)
         right_layout.setContentsMargins(0, 0, 0, 0)
         right_layout.setSpacing(4)
@@ -80,6 +85,7 @@ class MainWindow(QMainWindow):
             self._tab_index[tab.identifier] = index
 
         tab_bar = QWidget(right_panel)
+        tab_bar.setObjectName("viewTabBar")
         tab_bar.setFixedHeight(28)
         tab_bar_layout = QHBoxLayout(tab_bar)
         tab_bar_layout.setContentsMargins(4, 0, 4, 0)
@@ -112,6 +118,7 @@ class MainWindow(QMainWindow):
 
     def _build_left_panel(self) -> QWidget:
         left_panel = QWidget(self)
+        left_panel.setObjectName("leftPanel")
         left_layout = QVBoxLayout(left_panel)
         left_layout.setContentsMargins(0, 0, 0, 0)
         left_layout.setSpacing(12)
@@ -119,6 +126,7 @@ class MainWindow(QMainWindow):
         self._category_registry = self._menu_registry
 
         self._category_stack = QStackedWidget(left_panel)
+        self._category_stack.setObjectName("categoryStack")
         self._category_index: dict[str, int] = {}
 
         for category in self._category_registry.all():
@@ -128,6 +136,7 @@ class MainWindow(QMainWindow):
             self._category_index[category.identifier] = index
 
         self._category_button = QToolButton(left_panel)
+        self._category_button.setObjectName("categorySelector")
         self._category_button.setPopupMode(QToolButton.InstantPopup)
         category_menu = QMenu(self._category_button)
 
@@ -142,7 +151,7 @@ class MainWindow(QMainWindow):
 
         left_layout.addWidget(
             self._category_button,
-            alignment=Qt.AlignmentFlag.AlignHCenter,
+            alignment=Qt.AlignmentFlag.AlignLeft,
         )
         left_layout.addWidget(self._category_stack)
 
