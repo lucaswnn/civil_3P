@@ -74,24 +74,24 @@ python -m civil_3P
 ### Testes
 
 - Teste para importar SAP2000
- - Modelo incompleto
- - Modelo corrompido
+  - Modelo incompleto
+  - Modelo corrompido
 - Teste para arquivos em json
- - Salvar arquivo
- - Carregar arquivo
- - Carregar arquivo corrompido
+  - Salvar arquivo
+  - Carregar arquivo
+  - Carregar arquivo corrompido
 - Teste de modelo
- - Conectividade
- - Falta de conectividade
- - Elementos com seções
- - Elementos com materiais
- - Integridade entre resultados e modelo
- - Teste de filtro por seleção
- - Teste de filtro por seleção complementar
- - Teste de filtro por caso de carga
- - Teste de modelo vazio
- - Teste de filtros com modelo vazio
- - Teste de modelo sem seleção
+  - Conectividade
+  - Falta de conectividade
+  - Elementos com seções
+  - Elementos com materiais
+  - Integridade entre resultados e modelo
+  - Teste de filtro por seleção
+  - Teste de filtro por seleção complementar
+  - Teste de filtro por caso de carga
+  - Teste de modelo vazio
+  - Teste de filtros com modelo vazio
+  - Teste de modelo sem seleção
 
 ### Funcionalidades
 
