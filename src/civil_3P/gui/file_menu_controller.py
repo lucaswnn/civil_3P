@@ -1,71 +1,123 @@
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING
 
-from civil_3P.application.services import (
-    ApplicationContext,
-    ImportModelService,
-    ModelService,
-    VisualizationService,
-)
-from civil_3P.application.preferences import UserPreferencesService
-from civil_3P.core.model import FEMModel
-from civil_3P.file_service.file_service import FileService
+import traceback
+
+from civil_3P.application.model_service import ModelService
+from civil_3P.application.preferences_service import PreferencesService
+from civil_3P.application.task_service import TaskService
+from civil_3P.gui.event_response import EventResponse, EventStatus
+from civil_3P.gui.scene_widget_controller import SceneWidgetController
 from civil_3P.standard.importer_profiles import ImporterProfiles
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from civil_3P.application.file_loader_service import FileLoaderService
+    from civil_3P.application.importer_service import ImporterService
 
 
 class FileMenuController:
     def __init__(
         self,
-        import_model_service: ImportModelService | None = None,
-        file_service: FileService | None = None,
-        visualization_service: VisualizationService | None = None,
-        model_service: ModelService | None = None,
-        context: ApplicationContext | None = None,
+        importer_service: ImporterService,
+        task_service: TaskService,
+        file_loader_service: FileLoaderService,
+        model_service: ModelService,
+        preferences_service: PreferencesService,
+        scene_widget_controller: SceneWidgetController,
     ) -> None:
-        self._context = context or ApplicationContext()
-        self._import_service = import_model_service or ImportModelService()
-        self._file_service = file_service or FileService(context=self._context)
-        self._visualization_service = visualization_service or VisualizationService()
-        self._model_service = model_service or self._context.model_service
+        self._importer_service = importer_service
+        self._task_service = task_service
+        self._file_loader_service = file_loader_service
+        self._model_service = model_service
+        self._preferences_service = preferences_service
+        self._scene_widget_controller = scene_widget_controller
 
-    @property
-    def current_model(self) -> FEMModel | None:
-        return self._model_service.model
+    def _response(
+        self,
+        status: EventStatus,
+        message: str,
+        exc: Exception | None = None,
+    ) -> EventResponse:
+        return EventResponse(
+            status,
+            message,
+            traceback.format_exc() if exc else None,
+        )
 
     def import_model(
         self,
         profile: ImporterProfiles,
         directory: str | Path,
-    ) -> FEMModel:
-        model = self._import_service.import_model(profile, directory)
-        self._model_service.model = model
-        self._context.load_plugins()
-        return model
+    ) -> EventResponse:
+        try:
+            model = self._importer_service.import_model(
+                profile,
+                directory,
+            )
+            self._model_service.set_model(model)
+            self._task_service.load_plugins_from(
+                self._preferences_service.get_plugins_base_path()
+            )
+            self._scene_widget_controller.set_model_scene()
 
-    def load_model_file(self, path: str | Path) -> FEMModel:
-        model = self._file_service.load(path)
-        self._model_service.model = model
-        self._context.load_plugins()
-        return model
+            return self._response(
+                EventStatus.SUCCESS,
+                "Model imported successfully.",
+            )
 
-    def save_model(self, path: str | Path) -> None:
-        self._file_service.save(path)
+        except Exception as exc:
+            return self._response(EventStatus.FAILURE, str(exc), exc)
 
-    @property
-    def preferences(self) -> UserPreferencesService:
-        return self._context.preferences
+    def load_model_file(self, path: str | Path) -> EventResponse:
+        try:
+            self._file_loader_service.load_and_apply(path)
+            self._scene_widget_controller.set_model_scene()
 
-    def set_plugins_base_path(self, path: str | Path) -> Path:
-        return self.preferences.set_plugins_base_path(path)
+            return self._response(
+                EventStatus.SUCCESS,
+                "Model loaded successfully.",
+            )
 
-    def load_plugins(self) -> list[str]:
-        return self._context.load_plugins()
+        except Exception as exc:
+            return self._response(EventStatus.FAILURE, str(exc), exc)
 
-    def add_plugins(self, files: list[str] | list[Path]) -> list[str]:
-        return self._context.add_plugins(files)
+    def save_model(self, path: str | Path) -> EventResponse:
+        try:
+            self._file_loader_service.save(path)
 
-    def build_scene(self, model: FEMModel) -> dict[str, Any]:
-        return self._visualization_service.build_scene(model)
+            return self._response(
+                EventStatus.SUCCESS,
+                "Model saved successfully.",
+            )
 
+        except Exception as exc:
+            return self._response(EventStatus.FAILURE, str(exc), exc)
+
+    def set_plugins_base_path(self, path: str | Path) -> EventResponse:
+        try:
+            self._preferences_service.set_plugins_base_path(path)
+
+            return self._response(
+                EventStatus.SUCCESS,
+                "Plugins base path set successfully.",
+            )
+
+        except Exception as exc:
+            return self._response(EventStatus.FAILURE, str(exc), exc)
+
+    def add_plugins(self, files: list[str] | list[Path]) -> EventResponse:
+        try:
+            loaded = self._task_service.add_plugins_from(
+                files, self._preferences_service.get_plugins_base_path()
+            )
+
+            return self._response(
+                EventStatus.SUCCESS,
+                f"Loaded {len(loaded)} plugins.",
+            )
+
+        except Exception as exc:
+            return self._response(EventStatus.FAILURE, str(exc), exc)

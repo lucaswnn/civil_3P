@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from enum import StrEnum
 
 
@@ -12,12 +14,6 @@ class ModelTables(StrEnum):
     ORIGIN_NODE_DISPLACEMENTS = "origin_node_displacements_df"
     ORIGIN_NODE_REACTIONS = "origin_node_reactions_df"
     LOAD_CASES = "load_cases_df"
-    TASK_1D_RESULTS = "task_1d_results_df"
-    TASK_2D_RESULTS = "task_2d_results_df"
-    TASK_NODE_RESULTS = "task_node_results_df"
-
-
-REQUIRED_TABLES = {table.value for table in ModelTables}
 
 
 class NodesColumns(StrEnum):
@@ -113,21 +109,88 @@ class LoadCasesColumns(StrEnum):
     DESCRIPTION = "description"
 
 
-class Task1DResultsColumns(StrEnum):
-    ELEMENT = "element"
-    STATION = "station"
-    CASE = "case"
-    VALUE = "value"
-
-
-class Task2DResultsColumns(StrEnum):
-    ELEMENT = "element"
-    NODE = "node"
-    CASE = "case"
-    VALUE = "value"
-
-
-class TaskNodeResultsColumns(StrEnum):
-    NODE = "node"
-    CASE = "case"
-    VALUE = "value"
+REQUIRED_MODEL_SCHEMA = {
+    ModelTables.NODES: [
+        NodesColumns.NODE,
+        NodesColumns.X,
+        NodesColumns.Y,
+        NodesColumns.Z,
+    ],
+    ModelTables.ELEMENTS_1D: [
+        Elements1DColumns.ELEMENT,
+        Elements1DColumns.NODE_I,
+        Elements1DColumns.NODE_J,
+        Elements1DColumns.MATERIAL,
+        Elements1DColumns.SECTION,
+    ],
+    ModelTables.ELEMENTS_2D: [
+        Elements2DColumns.ELEMENT,
+        Elements2DColumns.NODE_1,
+        Elements2DColumns.NODE_2,
+        Elements2DColumns.NODE_3,
+        Elements2DColumns.NODE_4,
+        Elements2DColumns.MATERIAL,
+        Elements2DColumns.THICKNESS,
+    ],
+    ModelTables.MATERIALS: [
+        MaterialsColumns.MATERIAL,
+        MaterialsColumns.YOUNG_MODULUS,
+        MaterialsColumns.SHEAR_MODULUS,
+        MaterialsColumns.POISSON_RATIO,
+        MaterialsColumns.THERMAL_COEFF,
+    ],
+    ModelTables.SECTIONS: [
+        SectionsColumns.SECTION,
+        SectionsColumns.AREA,
+        SectionsColumns.INERTIA_22,
+        SectionsColumns.INERTIA_33,
+    ],
+    ModelTables.ORIGIN_1D_RESULTS: [
+        Origin1DResultsColumns.ELEMENT,
+        Origin1DResultsColumns.STATION,
+        Origin1DResultsColumns.CASE,
+        Origin1DResultsColumns.NORMAL,
+        Origin1DResultsColumns.SHEAR_2,
+        Origin1DResultsColumns.SHEAR_3,
+        Origin1DResultsColumns.TORSION,
+        Origin1DResultsColumns.BENDING_2,
+        Origin1DResultsColumns.BENDING_3,
+    ],
+    ModelTables.ORIGIN_2D_RESULTS: [
+        Elements2DColumns.ELEMENT,
+        Origin2DResultsColumns.NODE,
+        Origin2DResultsColumns.CASE,
+        Origin2DResultsColumns.NORMAL_11,
+        Origin2DResultsColumns.NORMAL_22,
+        Origin2DResultsColumns.NORMAL_12,
+        Origin2DResultsColumns.BENDING_11,
+        Origin2DResultsColumns.BENDING_22,
+        Origin2DResultsColumns.BENDING_12,
+        Origin2DResultsColumns.SHEAR_13,
+        Origin2DResultsColumns.SHEAR_23,
+    ],
+    ModelTables.ORIGIN_NODE_DISPLACEMENTS: [
+        OriginNodeDisplacementsColumns.NODE,
+        OriginNodeDisplacementsColumns.CASE,
+        OriginNodeDisplacementsColumns.DX,
+        OriginNodeDisplacementsColumns.DY,
+        OriginNodeDisplacementsColumns.DZ,
+        OriginNodeDisplacementsColumns.RX,
+        OriginNodeDisplacementsColumns.RY,
+        OriginNodeDisplacementsColumns.RZ,
+    ],
+    ModelTables.ORIGIN_NODE_REACTIONS: [
+        OriginNodeReactionsColumns.NODE,
+        OriginNodeReactionsColumns.CASE,
+        OriginNodeReactionsColumns.FX,
+        OriginNodeReactionsColumns.FY,
+        OriginNodeReactionsColumns.FZ,
+        OriginNodeReactionsColumns.MX,
+        OriginNodeReactionsColumns.MY,
+        OriginNodeReactionsColumns.MZ,
+    ],
+    ModelTables.LOAD_CASES: [
+        LoadCasesColumns.CASE,
+        LoadCasesColumns.DESCRIPTION,
+    ],
+}

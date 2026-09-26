@@ -1,0 +1,23 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import pandas as pd
+
+
+@dataclass(frozen=True, slots=True)
+class ResultData:
+    element_type: str
+    result_df: pd.DataFrame
+    elements: set[str]
+    nodes: set[str]
+
+    def __repr__(self):
+        return (
+            "ResultData\n"
+            f"Element type: {self.element_type}\n"
+            f"Element count: {len(self.elements)}\n"
+            f"Node count: {len(self.nodes)}"
+        )

@@ -1,73 +1,99 @@
-from typing import Any
+from __future__ import annotations
 
-from civil_3P.application.services import ResultQueryService, TaskExecutionService, VisualizationService, ModelService, ApplicationContext
-from civil_3P.core.model import FEMModel
-from civil_3P.core.results import ResultProcessor, VisualizationCriteria
-from civil_3P.core.selection import SelectionContext
-from civil_3P.standard import model_components as mc
-from civil_3P.tasks.task_base import TaskResult
+from typing import TYPE_CHECKING
+
+from civil_3P.core.selection_context import SelectionContext
+from civil_3P.standard.model_components import ModelComponents as mc
+
+if TYPE_CHECKING:
+    from civil_3P.application.model_service import ModelService
+    from civil_3P.application.result_builder_service import ResultBuilderService
+    from civil_3P.application.task_service import TaskService
+    from civil_3P.application.view_builder_service import ViewBuilderService
+    from civil_3P.gui.scene_widget_controller import SceneWidgetController
+    from civil_3P.standard.result_components import ViewContentKind
+    from civil_3P.tasks.task_result import TaskResult
 
 
 class TaskMenuController:
     def __init__(
         self,
-        task_service: TaskExecutionService | None = None,
-        result_service: ResultQueryService | None = None,
-        visualization_service: VisualizationService | None = None,
-        session: ModelService | None = None,
-        context: ApplicationContext | None = None,
+        task_service: TaskService,
+        result_builder_service: ResultBuilderService,
+        view_builder_service: ViewBuilderService,
+        model_service: ModelService,
+        scene_widget_controller: SceneWidgetController,
     ) -> None:
-        self._context = context or ApplicationContext()
-        self._task_service = task_service or TaskExecutionService(
-            context=self._context)
-        self._result_service = result_service or ResultQueryService(
-            processor=ResultProcessor()
-        )
-        self._visualization_service = visualization_service or VisualizationService()
-        self._session = session or self._context.model_service
+        self._task_service = task_service
+        self._result_builder_service = result_builder_service
+        self._view_builder_service = view_builder_service
+        self._model_service = model_service
+        self._scene_widget_controller = scene_widget_controller
 
     @property
-    def current_model(self) -> FEMModel | None:
-        return self._session.model
+    def current_model(self):
+        return self._model_service.get_model()
 
     def create_selection(
         self,
         element_type: mc.ModelComponents,
-        selected_element_ids: tuple[str, ...] | list[str],
-        adjacent_element_ids: tuple[str, ...] | list[str] | None = None,
+        selected_element_ids: list[str],
+        adjacent_element_ids: list[str] | None = None,
     ) -> SelectionContext:
+        selected = set(map(str, selected_element_ids))
+        adjacent = set(map(str, adjacent_element_ids or ()))
+
         return SelectionContext(
-            element_type=element_type,
-            selected_element_ids=tuple(selected_element_ids),
-            adjacent_element_ids=tuple(adjacent_element_ids or ()),
+            node_ids=selected if element_type == mc.NODES else set(),
+            element_1d_ids=selected if element_type == mc.ELEMENTS_1D else set(),
+            element_2d_ids=selected if element_type == mc.ELEMENTS_2D else set(),
+            adjacent_element_2d_ids=adjacent,
         )
 
     def execute_task(
         self,
         task_id: str,
-        model: FEMModel,
         selection: SelectionContext,
         case_id: str,
     ) -> TaskResult:
-        return self._task_service.execute(task_id, model, selection, case_id)
+        model = self.current_model
 
-    def build_result_scene(
-        self,
-        selection: SelectionContext,
-        criteria: VisualizationCriteria,
-        task_result: TaskResult,
-    ) -> dict[str, Any]:
-        result = self._result_service.process(
-            task_result, criteria, selection)
-        return self._visualization_service.build_result_scene(
-            self._session.model,
-            result,
-            criteria,
+        if model is None:
+            raise ValueError("Cannot execute a task without a model")
+
+        return self._task_service.execute_task(
+            task_id,
+            model,
             selection,
+            case_id,
         )
 
+    def set_result_scene(
+        self,
+        selection: SelectionContext,
+        task_result: TaskResult,
+        view_content_kind: ViewContentKind,
+    ) -> None:
+        model = self.current_model
+
+        if model is None:
+            raise ValueError("Cannot build a result scene without a model")
+
+        result = self._result_builder_service.build_result_data(
+            task_result=task_result,
+            selection=selection,
+            view_content_kind=view_content_kind,
+        )
+
+        scene = self._view_builder_service.build_result_scene(
+            results=result,
+            view_content_kind=view_content_kind,
+            model=model,
+        )
+        self._scene_widget_controller.set_result_scene(scene)
+
     def get_task_identifiers(self) -> list[str]:
-        return self._context.get_task_identifiers()
+        return self._task_service.get_task_identifiers()
 
     def get_load_case_ids(self) -> list[str]:
-        return self._context.get_load_cases()
+        return self._model_service.get_load_cases()

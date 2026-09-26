@@ -1,4 +1,9 @@
-import pandas as pd
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 class PandasUtils:
@@ -9,6 +14,7 @@ class PandasUtils:
         default_mapping: dict[str, object],
     ) -> None:
         df.rename(columns=rename_mapping, inplace=True)
+
         for key, value in default_mapping.items():
             if key not in df.columns:
                 df[key] = value
@@ -19,15 +25,33 @@ class PandasUtils:
         columns_to_keep: list[str],
     ) -> None:
         df.drop(
-            columns=[col for col in df.columns if col not in columns_to_keep],
+            columns=[
+                col
+                for col in df.columns
+                if col not in columns_to_keep
+            ],
             inplace=True,
         )
 
     @staticmethod
     def ensure_columns(
         df: pd.DataFrame,
-        expected_columns: list[str],
+        expected_columns: set[str],
     ) -> None:
         for column in expected_columns:
             if column not in df.columns:
                 raise ValueError(f"Missing expected column: {column}")
+
+    @staticmethod
+    def ensure_strict_columns(
+        df: pd.DataFrame,
+        expected_columns: set[str],
+    ) -> None:
+        actual_columns = set(df.columns)
+
+        if actual_columns != expected_columns:
+            raise ValueError(
+                f"Columns do not match exactly. "
+                f"Expected: {expected_columns}, "
+                f"Actual: {actual_columns}"
+            )

@@ -2,18 +2,18 @@ from __future__ import annotations
 
 import pandas as pd
 
-from civil_3P.application.services import (
-    ImportModelService,
-    ResultQueryService,
-    TaskExecutionService,
+from civil_3P.application.application_context import (
+    ImportProjectService,
+    ResultService,
+    TaskService,
 )
 
 from civil_3P.core.enums import ModelComponents, VisualizationMode
-from civil_3P.core.results import ResultAveragingPolicy, VisualizationCriteria
-from civil_3P.core.selection import SelectionContext
+from civil_3P.core.result_builder import Result2DAveragingPolicy, Visualization2DMode
+from civil_3P.core.selection_context import SelectionContext
 from civil_3P.importers.importer_adapter import ImporterProfile
-from task_examples.check_example import ExampleBarCheckPlugin
-from task_examples.design_example import ExampleShellDesignPlugin
+from task_examples.example_1d_plugin import ExampleBarCheckPlugin
+from task_examples.example_2d_plugin import Example2DPlugin
 
 
 def test_import_and_example_tasks(tmp_path) -> None:
@@ -180,24 +180,24 @@ def test_import_and_example_tasks(tmp_path) -> None:
         columns=["Case", "Node", "Result", "Value", "Location"]
     ).to_csv(tmp_path / "origin_results_nodes.csv", index=False)
 
-    importer = ImportModelService()
+    importer = ImportProjectService()
     model = importer.import_model(ImporterProfile.SAP2000, tmp_path)
 
-    task_service = TaskExecutionService()
-    result_service = ResultQueryService()
+    task_service = TaskService()
+    result_service = ResultService()
 
     bar_selection = SelectionContext(element_type=ModelComponents.ELEMENTS_1D,
                                      selected_element_ids=("B1",))
 
-    bar_result = task_service.execute(ExampleBarCheckPlugin(),
-                                      model,
-                                      bar_selection,
-                                      "LC1")
+    bar_result = task_service.execute_task(ExampleBarCheckPlugin(),
+                                           model,
+                                           bar_selection,
+                                           "LC1")
 
     bar_view = result_service.process(
         bar_result,
-        VisualizationCriteria(result_name="utilization",
-                              case_id="LC1", mode=VisualizationMode.ELEMENT),
+        Visualization2DMode(result_name="utilization",
+                            case_id="LC1", mode=VisualizationMode.ELEMENT),
         bar_selection,
     )
 
@@ -207,19 +207,19 @@ def test_import_and_example_tasks(tmp_path) -> None:
                                        selected_element_ids=("P1",),
                                        adjacent_element_ids=("P2",))
 
-    shell_result = task_service.execute(ExampleShellDesignPlugin(),
-                                        model,
-                                        shell_selection,
-                                        "LC1")
+    shell_result = task_service.execute_task(Example2DPlugin(),
+                                             model,
+                                             shell_selection,
+                                             "LC1")
 
     shell_view = result_service.process(
         shell_result,
-        VisualizationCriteria(
+        Visualization2DMode(
             result_name="required_thickness",
             case_id="LC1",
             mode=VisualizationMode.NODE_AVERAGED,
-            averaging_policy=ResultAveragingPolicy(
-                include_adjacent_for_2d_average=True),
+            averaging_policy=Result2DAveragingPolicy(
+                include_adjacent=True),
         ),
         shell_selection,
     )

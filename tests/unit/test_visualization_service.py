@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import pandas as pd
 
-from civil_3P.core.model import FEMModel
+from civil_3P.core.model import Model
 from civil_3P.visualization.scene_builder import SceneBuilder
 
 
 def test_visualization_service_builds_scene_data() -> None:
-    model = FEMModel.empty()
+    model = Model.empty()
     model.nodes_df = pd.DataFrame([
         {"node_id": "N1", "x": 0.0, "y": 0.0, "z": 0.0},
         {"node_id": "N2", "x": 1.0, "y": 0.0, "z": 0.0},
@@ -30,7 +30,7 @@ def test_visualization_service_builds_scene_data() -> None:
 
 
 def test_visualization_service_handles_triangular_shells() -> None:
-    model = FEMModel.empty()
+    model = Model.empty()
     model.nodes_df = pd.DataFrame([
         {"node_id": "N1", "x": 0.0, "y": 0.0, "z": 0.0},
         {"node_id": "N2", "x": 1.0, "y": 0.0, "z": 0.0},

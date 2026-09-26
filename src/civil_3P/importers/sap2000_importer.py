@@ -2,22 +2,23 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import logging
 import pandas as pd
 
 from civil_3P.standard import model_representation as rpr
 from civil_3P.standard.model_representation import ModelTables as mt
 from civil_3P.utils.pandas_utils import PandasUtils as pdUtils
 from civil_3P.standard import units
-from civil_3P.importers.importer_adapter import (
-    ImporterAdapter,
-    ColumnMapping,
-    ImporterSpec,
-    IntermediateRepresentation,
+from civil_3P.importers.column_mapping import ColumnMapping
+from civil_3P.importers.importer_adapter import ImporterAdapter
+from civil_3P.importers.importer_spec import ImporterSpec
+from civil_3P.importers.intermediate_representation import (
+    IntermediateRepresentation
 )
 
+logger = logging.getLogger(__name__)
 
 SAP2000_SPEC = ImporterSpec(
-
     tables_mapping={
         mt.NODES: ColumnMapping(
             rename={
@@ -179,26 +180,32 @@ class Sap2000Importer(ImporterAdapter):
         self.intermediate = IntermediateRepresentation.empty()
         self.original_tables: dict[str, pd.DataFrame] = {}
 
-    def read_intermediate(self, source: str | Path) -> IntermediateRepresentation:
-        print("Reading SAP2000 model from workbook")
+    def read_intermediate(
+        self,
+        source: str | Path,
+    ) -> IntermediateRepresentation:
+        logger.info("Reading SAP2000 model from workbook")
         source_path = Path(source)
 
         if source_path.is_dir():
             raise ValueError(
-                f"Expected a file path for SAP2000 import, but got a directory: {source_path}"
+                "Expected a file path for SAP2000 import, "
+                f"but got a directory: {source_path}"
             )
 
         self._read_sap_tables_from_workbook(source_path)
+
         return self._build_intermediate()
 
     def _build_table(
-            self,
-            table_name: str,
-            keep_columns: list[str],
-            model_table: str,
-            concat_columns_on_first: list[str] | None = None,
+        self,
+        table_name: str,
+        keep_columns: list[str],
+        model_table: str,
+        concat_columns_on_first: list[str] | None = None,
     ) -> None:
         table, table_units = self._get_table(table_name)
+
         if concat_columns_on_first:
             table[concat_columns_on_first[0]] = (
                 table[concat_columns_on_first[0]] +
@@ -212,7 +219,10 @@ class Sap2000Importer(ImporterAdapter):
             keep_columns,
         )
         self.process_units(table, table_units)
-        self.map_dataframe(table, self._spec.tables_mapping[model_table])
+        self.map_dataframe(
+            table,
+            self._spec.tables_mapping[model_table],
+        )
         pdUtils.ensure_columns(
             table,
             list(self.intermediate.tables[model_table].columns),
@@ -221,21 +231,23 @@ class Sap2000Importer(ImporterAdapter):
 
     def _join_and_build_tables(
         self,
-            main_table_name: str,
-            table_key_merge_mapping: dict[str, str],
-            keep_columns: list[str],
-            main_model_table: str,
-            rename_other_tables_columns_mapping: dict[str,
-                                                      dict[str, str]] | None = None,
+        main_table_name: str,
+        table_key_merge_map: dict[str, str],
+        keep_columns: list[str],
+        main_model_table: str,
+        rename_other_columns_map: dict[str, dict[str, str]] | None = None,
     ) -> None:
         main_table, main_table_units = self._get_table(main_table_name)
 
-        for key_table_name, merge_key in table_key_merge_mapping.items():
+        for key_table_name, merge_key in table_key_merge_map.items():
             key_table, key_table_units = self._get_table(key_table_name)
-            if (rename_other_tables_columns_mapping
-                    and key_table_name in rename_other_tables_columns_mapping.keys()):
+
+            if (
+                rename_other_columns_map
+                and key_table_name in rename_other_columns_map.keys()
+            ):
                 key_table = key_table.rename(
-                    columns=rename_other_tables_columns_mapping[key_table_name]
+                    columns=rename_other_columns_map[key_table_name]
                 )
 
             if not key_table.empty:
@@ -280,7 +292,9 @@ class Sap2000Importer(ImporterAdapter):
 
         def concat_case_names(row):
             if row["ComboType"] == "Envelope":
-                return [f"{row['ComboName']} - Max", f"{row['ComboName']} - Min"]
+                return [
+                    f"{row['ComboName']} - Max", f"{row['ComboName']} - Min"
+                ]
 
             return [row['ComboName']]
 
@@ -299,18 +313,19 @@ class Sap2000Importer(ImporterAdapter):
             ignore_index=True,
             sort=False,
         ).drop_duplicates(subset=["Case"])
+
         self.process_units(load_case, load_case_units)
         self.map_dataframe(
-            load_case, self._spec.tables_mapping[mt.LOAD_CASES])
+            load_case, self._spec.tables_mapping[mt.LOAD_CASES]
+        )
         pdUtils.ensure_columns(
             load_case,
-            list(
-                self.intermediate.tables[mt.LOAD_CASES].columns),
+            list(self.intermediate.tables[mt.LOAD_CASES].columns),
         )
         self.intermediate.tables[mt.LOAD_CASES] = load_case
 
     def _build_intermediate(self) -> IntermediateRepresentation:
-        print("Building intermediate representation from SAP2000 tables")
+        logger.info("Building intermediate representation from SAP2000 tables")
 
         self._build_table(
             table_name="Joint Coordinates",
@@ -348,7 +363,7 @@ class Sap2000Importer(ImporterAdapter):
 
         self._join_and_build_tables(
             main_table_name="Connectivity - Frame",
-            table_key_merge_mapping={
+            table_key_merge_map={
                 "Frame Section Assignments": "Frame",
                 "Frame Props 01 - General": "AnalSect",
             },
@@ -360,7 +375,7 @@ class Sap2000Importer(ImporterAdapter):
                 "AnalSect",
             ],
             main_model_table=mt.ELEMENTS_1D,
-            rename_other_tables_columns_mapping={
+            rename_other_columns_map={
                 "Frame Props 01 - General": {
                     "SectionName": "AnalSect",
                 },
@@ -369,7 +384,7 @@ class Sap2000Importer(ImporterAdapter):
 
         self._join_and_build_tables(
             main_table_name="Connectivity - Area",
-            table_key_merge_mapping={
+            table_key_merge_map={
                 "Area Section Assignments": "Area",
                 "Area Section Properties": "Section",
             },
@@ -469,22 +484,28 @@ class Sap2000Importer(ImporterAdapter):
                 dtype=object,
                 decimal=",",
             )
-            print(f"Successfully read {len(sheets)} sheets from workbook")
+            logger.info(
+                f"Successfully read {len(sheets)} sheets from workbook"
+            )
             self.original_tables = sheets
+
         except ImportError as exc:
             raise RuntimeError(
-                "Excel engine is missing. Install xlrd/openpyxl to import SAP2000 XLS files."
+                "Excel engine is missing. Install xlrd/openpyxl "
+                "to import SAP2000 XLS files."
             ) from exc
 
     def _get_table(
         self,
         name: str,
     ) -> tuple[pd.DataFrame, dict[str, str]]:
-        print(f"Retrieving table '{name}' from SAP2000 tables")
+        logger.info(f"Retrieving table '{name}' from SAP2000 tables")
         table = self.original_tables.get(name).copy()
+
         if table is None:
             raise ValueError(
-                f"Table '{name}' not found in the provided tables.")
+                f"Table '{name}' not found in the provided tables."
+            )
 
         columns = table.iloc[1].to_list()
         units = table.iloc[2].to_list()
@@ -492,4 +513,5 @@ class Sap2000Importer(ImporterAdapter):
         table.columns = columns
         table.drop(table.index[:3], inplace=True)
         table.reset_index(drop=True, inplace=True)
+
         return table, units_dict

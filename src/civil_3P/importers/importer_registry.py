@@ -1,14 +1,28 @@
-from pathlib import Path
+from __future__ import annotations
 
-from civil_3P.core.model import FEMModel
+from typing import TYPE_CHECKING
+
 from civil_3P.importers.sap2000_importer import Sap2000Importer
 from civil_3P.standard.importer_profiles import ImporterProfiles
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from civil_3P.core.model import Model
+    from civil_3P.importers.importer_adapter import ImporterAdapter
 
 
 class ImporterRegistry:
     def __init__(self) -> None:
-        self._registry = {ImporterProfiles.SAP2000: Sap2000Importer()}
+        self._registry: dict[str, ImporterAdapter] = {
+            ImporterProfiles.SAP2000: Sap2000Importer(),
+        }
 
-    def import_model(self, profile: ImporterProfiles, source: str | Path) -> FEMModel:
+    def import_model(
+        self,
+        profile: ImporterProfiles,
+        source: str | Path,
+    ) -> Model:
         importer = self._registry[profile]
+
         return importer.import_model(source)
