@@ -1,6 +1,6 @@
-# civil_3P
+# Civil 3P
 
-`civil_3P` é um aplicativo desktop de visualização e processamento de resultados de elementos finitos.
+`Civil 3P` é um aplicativo desktop de visualização e processamento de resultados de elementos finitos feito na linguagem python.
 
 O projeto foi pensado com foco em:
 
@@ -51,7 +51,7 @@ python -m pip install -U pip
 python -m pip install -e .[dev]
 ```
 
-## Como Rodar os Testes
+## Como Rodar os Testes (atualmente quebrados)
 
 ```powershell
 python -m pytest -q
@@ -71,29 +71,44 @@ python -m civil_3P
 - Inspecionar testes e cobertura
 - Lançar primeira versão utilizável
 
-### Refatoração
+### Testes
 
-- Refatorar enums, inspecionar serviços e controles e suas responsabilidades
-- Separar tabelas de task para outra classe, com colunas obrigatórias e com tipo de elemento e critério de exibição
-- Classe abstrata para critério de exibição, com 3 subclasses (nó, barra e placa)
-- Substituir dicts primitivos dos elementos e resultados a serem exibidos por uma classe para o pyvista
-- Rever testes
+- Teste para importar SAP2000
+ - Modelo incompleto
+ - Modelo corrompido
+- Teste para arquivos em json
+ - Salvar arquivo
+ - Carregar arquivo
+ - Carregar arquivo corrompido
+- Teste de modelo
+ - Conectividade
+ - Falta de conectividade
+ - Elementos com seções
+ - Elementos com materiais
+ - Integridade entre resultados e modelo
+ - Teste de filtro por seleção
+ - Teste de filtro por seleção complementar
+ - Teste de filtro por caso de carga
+ - Teste de modelo vazio
+ - Teste de filtros com modelo vazio
+ - Teste de modelo sem seleção
 
 ### Funcionalidades
 
-- Criar exemplo de plugin de placa e de nós (1)
+- Criar exemplo de plugin de placa e de nós
 - Criar seleção com o pyvista
 - Serviço de seleção
 - Listener de seleção
 - Controller de seleção (3D e tabela)
 - Tabela
 - Modos de exibição (habilitar/desabilitar elementos, cores, espessuras)
-- Realocar legenda e colocar em container (2)
+- Realocar legenda e colocar em container
 - Modos de exibição da legenda
 - Botão de atualização com mais dados do modelo externo (aviso que assume que os dados sao consistentes) - dados são novos ou sobrescritos
 - Possibilitar carregar modelo incompleto e alertar que faltam dados básicos (tasks só funcionam com dados básicos)
 - Antes de executar task verificar dados básicos
 - Ordenador da tabela
-- Filtrar FEMModel com seleção para a task e reduzir carga de cálculo
 - Criar importador Midas
+- Criar importador SCIA
 - Criar parametrização para plugins
+- Criar salvamento do projeto em binário (eficiente)
