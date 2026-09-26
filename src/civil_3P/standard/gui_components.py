@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from enum import StrEnum
+
 
 class GuiMenuComponents(StrEnum):
     FILE_MENU = "file_menu"

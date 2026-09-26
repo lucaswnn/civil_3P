@@ -1,21 +1,25 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pandas as pd
 
-from civil_3P.core.model import FEMModel
 from civil_3P.standard import model_representation as rpr
-from civil_3P.core.result_data import ResultData
 from civil_3P.visualization.model_scene_data import ModelSceneData
 from civil_3P.visualization.scene import Scene
 import pyvista as pv
+
+if TYPE_CHECKING:
+    from civil_3P.core.model import Model
+    from civil_3P.core.result_data import ResultData
 
 
 class SceneBuilder(ABC):
     def get_node_map(
         self,
-        model: FEMModel,
+        model: Model,
     ) -> tuple[dict[str, int], np.ndarray]:
         nodes_df = model.tables[rpr.ModelTables.NODES]
         node_map = {
@@ -38,7 +42,7 @@ class SceneBuilder(ABC):
 
     def build_scene(
         self,
-        model: FEMModel,
+        model: Model,
     ) -> Scene:
         node_map, nodes = self.get_node_map(model)
         element_1d_df = model.tables[rpr.ModelTables.ELEMENTS_1D]
@@ -48,7 +52,6 @@ class SceneBuilder(ABC):
         for row in element_1d_df.itertuples(index=False):
             start = node_map[str(getattr(row, rpr.Elements1DColumns.NODE_I))]
             end = node_map[str(getattr(row, rpr.Elements1DColumns.NODE_J))]
-
             elements_1d_connection.extend([2, start, end])
             elements_1d_type.append(pv.CellType.LINE)
 
@@ -58,6 +61,7 @@ class SceneBuilder(ABC):
 
         for row in element_2d_df.itertuples(index=False):
             node_4 = getattr(row, rpr.Elements2DColumns.NODE_4)
+
             if not pd.isna(node_4):
                 n1 = node_map[str(getattr(row, rpr.Elements2DColumns.NODE_1))]
                 n2 = node_map[str(getattr(row, rpr.Elements2DColumns.NODE_2))]
@@ -92,15 +96,6 @@ class SceneBuilder(ABC):
     def build_result_scene(
         self,
         results: ResultData,
-        model: FEMModel,
+        model: Model,
     ) -> Scene:
         raise NotImplementedError()
-
-
-class ModelSceneBuilder(SceneBuilder):
-    def build_result_scene(
-        self,
-        results: ResultData,
-        model: FEMModel,
-    ) -> Scene:
-        return self.build_scene(model)

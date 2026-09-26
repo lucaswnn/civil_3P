@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-
-import pandas as pd
+from typing import TYPE_CHECKING
 
 from civil_3P.standard.model_components import ModelComponents as mc
 from civil_3P.standard.task_result_representation import (
@@ -11,29 +9,12 @@ from civil_3P.standard.task_result_representation import (
     Task1DResultsColumns as task_rpr_1d,
     Task2DResultsColumns as task_rpr_2d,
 )
-from civil_3P.core.model import FEMModel
 from civil_3P.utils.pandas_utils import PandasUtils
 
-
-@dataclass(frozen=True, slots=True)
-class TaskMetadata:
-    identifier: str
-    display_name: str
-    supported_element_type: mc
-    version: str = "0.1.0"
-
-
-@dataclass(frozen=True, slots=True)
-class TaskInputContext:
-    full_model: FEMModel
-    selection_model: FEMModel
-    case_id: str
-
-
-@dataclass(frozen=True, slots=True)
-class TaskResult:
-    metadata: TaskMetadata
-    results: pd.DataFrame
+if TYPE_CHECKING:
+    from civil_3P.tasks.task_input_context import TaskInputContext
+    from civil_3P.tasks.task_metadata import TaskMetadata
+    from civil_3P.tasks.task_result import TaskResult
 
 
 class TaskPlugin(ABC):
@@ -93,7 +74,8 @@ class TaskPlugin(ABC):
             )
 
         else:
-            raise ValueError("Unsupported element type for task result validation")
+            raise ValueError(
+                "Unsupported element type for task result validation")
 
     def get_task_result(
         self,

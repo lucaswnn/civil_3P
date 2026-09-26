@@ -8,10 +8,8 @@ import inspect
 import logging
 import shutil
 
-from civil_3P.tasks.task_base import (
-    TaskMetadata,
-    TaskPlugin,
-)
+from civil_3P.tasks.task_metadata import TaskMetadata
+from civil_3P.tasks.task_plugin import TaskPlugin
 
 if TYPE_CHECKING:
     from types import ModuleType
@@ -29,7 +27,9 @@ class PluginLoaderService:
 
         if not destiny_directory.is_dir():
             raise ValueError(
-                f"Destiny directory {destiny_directory} is not a valid directory")
+                f"Destiny directory {destiny_directory} "
+                "is not a valid directory"
+            )
 
         loaded: list[TaskPlugin] = []
 
@@ -38,7 +38,9 @@ class PluginLoaderService:
 
             if not source_path.is_file():
                 logger.warning(
-                    "Source file %s is not a valid file", source_path)
+                    "Source file %s is not a valid file",
+                    source_path,
+                )
                 continue
 
             destiny_path = destiny_directory / source_path.name
@@ -52,7 +54,10 @@ class PluginLoaderService:
 
             except Exception:
                 logger.exception(
-                    "Could not copy and load plugin from %s to %s", source_path, destiny_path)
+                    "Could not copy and load plugin from %s to %s",
+                    source_path,
+                    destiny_path,
+                )
 
         return loaded
 
@@ -96,7 +101,10 @@ class PluginLoaderService:
             return self._get_plugin_from_module(module)
 
         except Exception:
-            logger.exception("Could not load plugin module %s", plugin_path)
+            logger.exception(
+                "Could not load plugin module %s",
+                plugin_path,
+            )
 
     def _get_plugin_from_module(
         self,

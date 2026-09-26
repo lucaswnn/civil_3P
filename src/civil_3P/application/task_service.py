@@ -2,16 +2,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from civil_3P.tasks.task_registry import TaskRegistry
-from civil_3P.tasks.task_base import TaskInputContext
+from civil_3P.tasks.task_input_context import TaskInputContext
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from civil_3P.application.plugin_loader_service import PluginLoaderService
-    from civil_3P.core.model import FEMModel
-    from civil_3P.core.selection import SelectionContext
-    from civil_3P.tasks.task_base import TaskResult
+    from civil_3P.application.plugin_loader_service import (
+        PluginLoaderService
+    )
+    from civil_3P.core.model import Model
+    from civil_3P.core.selection_context import SelectionContext
+    from civil_3P.tasks.task_result import TaskResult
+    from civil_3P.tasks.task_registry import TaskRegistry
 
 
 class TaskService:
@@ -35,7 +37,7 @@ class TaskService:
     def execute_task(
         self,
         task_id: str,
-        model: FEMModel,
+        model: Model,
         selection: SelectionContext,
         case_id: str,
     ) -> TaskResult:

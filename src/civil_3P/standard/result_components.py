@@ -3,12 +3,6 @@ from __future__ import annotations
 from enum import StrEnum
 
 
-class Visualization2DMode(StrEnum):
-    ELEMENT = "element"
-    NODE_AVERAGED = "node_averaged"
-    NODE_RAW = "node_raw"
-
-
 class ViewContentKind(StrEnum):
     NODE_POINTS = "node_points"
     ELEMENT_1D_PROFILE = "element_1d_profile"

@@ -1,29 +1,38 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 
-from civil_3P.core.model import FEMModel
-from civil_3P.core.result_data import ResultData
-from civil_3P.core.selection import SelectionContext
-from civil_3P.standard.result_components import Visualization2DMode
-from civil_3P.standard.model_representation import ModelTables as mt
-from civil_3P.standard.model_representation import Elements1DColumns as rpr_1d
-from civil_3P.visualization.scene_builder import SceneBuilder
-from civil_3P.visualization.scene import Scene
-from civil_3P.visualization.result_scene_data import (
-    ResultSceneData,
-    ResultElementSceneData,
-    ViewContentKind,
+from civil_3P.application.model_service import ModelService
+from civil_3P.core.selection_context import SelectionContext
+from civil_3P.standard.model_representation import (
+    Elements1DColumns as rpr_1d,
+    ModelTables as mt,
 )
+from civil_3P.standard.result_components import ViewContentKind
+from civil_3P.visualization.result_element_scene_data import (
+    ResultElementSceneData
+)
+from civil_3P.visualization.result_scene_data import (
+    ResultSceneData
+)
+from civil_3P.visualization.scene import Scene
+from civil_3P.visualization.scene_builder import SceneBuilder
 from civil_3P.standard.task_result_representation import (
     Task1DResultsColumns as task_rpr_1d,
 )
-from civil_3P.application.model_service import ModelService
+
+if TYPE_CHECKING:
+    from civil_3P.core.model import Model
+    from civil_3P.core.result_data import ResultData
 
 
 class Element1DResultSceneBuilder(SceneBuilder):
     def build_result_scene(
         self,
         results: ResultData,
-        model: FEMModel,
+        model: Model,
     ) -> Scene:
         res_selection = SelectionContext(
             node_ids=set(),
@@ -49,8 +58,10 @@ class Element1DResultSceneBuilder(SceneBuilder):
             element_id = getattr(row, task_rpr_1d.ELEMENT)
             station = getattr(row, task_rpr_1d.STATION)
             value = getattr(row, task_rpr_1d.VALUE)
+
             if element_id not in elements:
                 elements[element_id] = []
+
             elements[element_id].append((station, value))
 
         for k in elements.keys():
@@ -71,19 +82,25 @@ class Element1DResultSceneBuilder(SceneBuilder):
 
         for element_id, profile in elements.items():
             bar = elements_topology.get(element_id)
+
             if bar is None or not profile:
                 continue
 
             start = nodes[node_map[bar[0]]]
             end = nodes[node_map[bar[1]]]
             length = float(np.linalg.norm(end - start))
-
             line = [len(profile)]
+
             for station, value in profile:
-                fraction = 0.0 if length == 0 else min(max(station / length, 0.0), 1.0)
+                fraction = (
+                    0.0
+                    if length == 0
+                    else min(max(station / length, 0.0), 1.0)
+                )
                 element_1d_points.append(start + fraction * (end - start))
                 element_1d_values.append(value)
                 line.append(len(element_1d_points) - 1)
+
             lines.extend(line)
 
         return Scene(

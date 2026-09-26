@@ -1,29 +1,31 @@
 from __future__ import annotations
 
-from civil_3P.standard.model_components import ModelComponents as mc
-from civil_3P.standard.model_representation import (
-    Origin2DResultsColumns as rpr_origin_2d,
-)
-from civil_3P.standard.model_representation import ModelTables as mt
-from civil_3P.standard.task_result_representation import (
-    Task2DResultsColumns as task_rpr_2d,
-)
-from civil_3P.tasks.task_base import (
-    TaskInputContext,
-    TaskMetadata,
-    TaskPlugin,
-    TaskResult,
-)
+from typing import TYPE_CHECKING
 
 import pandas as pd
 
+from civil_3P.standard.model_components import ModelComponents as mc
+from civil_3P.standard.model_representation import (
+    ModelTables as mt,
+    Origin2DResultsColumns as rpr_origin_2d,
+)
+from civil_3P.standard.task_result_representation import (
+    Task2DResultsColumns as task_rpr_2d
+)
+from civil_3P.tasks.task_metadata import TaskMetadata
+from civil_3P.tasks.task_plugin import TaskPlugin
+from civil_3P.tasks.task_result import TaskResult
 
-class ExampleShellDesignPlugin(TaskPlugin):
+if TYPE_CHECKING:
+    from civil_3P.tasks.task_input_context import TaskInputContext
+
+
+class Example2DPlugin(TaskPlugin):
     @property
     def metadata(self) -> TaskMetadata:
         return TaskMetadata(
-            identifier="example_shell_design",
-            display_name="Example Shell Design",
+            identifier="example_2d",
+            display_name="Example 2D task",
             supported_element_type=mc.ELEMENTS_2D,
         )
 

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from enum import StrEnum
 from pathlib import Path
 from PySide6.QtWidgets import (
     QFileDialog,
@@ -12,31 +11,21 @@ from typing import TYPE_CHECKING
 
 import traceback
 
+from civil_3P.gui.file_menu_button_labels import FileMenuButtonLabels
 from civil_3P.standard.gui_components import GuiMenuComponents
 from civil_3P.standard.importer_profiles import ImporterProfiles
 from civil_3P.utils.gui_messages import GuiMessages as gm
 
 if TYPE_CHECKING:
     from civil_3P.gui.file_menu_controller import FileMenuController
-    from civil_3P.gui.scene_widget import SceneWidget
-
-
-class FileMenuButtonLabels(StrEnum):
-    ADD_PLUGINS = "Adicionar plugins"
-    IMPORT_SAP2000 = "Importar SAP2000"
-    LOAD_MODEL = "Carregar modelo"
-    SAVE_MODEL = "Salvar modelo"
-    SET_PLUGINS_FOLDER = "Definir pasta de plugins"
 
 
 class FileMenu:
     def __init__(
         self,
-        scene_widget: SceneWidget,
         file_menu_controller: FileMenuController,
     ) -> None:
         self._controller = file_menu_controller
-        self._scene_widget = scene_widget
         self._panel: QWidget | None = None
 
     @property
@@ -116,7 +105,6 @@ class FileMenu:
                 ImporterProfiles.SAP2000,
                 Path(file_path),
             )
-            self._scene_widget.set_scene()
             res.display_message(self._panel)
 
         except Exception as exc:  # pragma: no cover - runtime feedback only
@@ -139,7 +127,6 @@ class FileMenu:
                 return
 
             res = self._controller.load_model_file(model_path)
-            self._scene_widget.set_scene()
             res.display_message(self._panel)
 
         except Exception as exc:  # pragma: no cover - runtime feedback only

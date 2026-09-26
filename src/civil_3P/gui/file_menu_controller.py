@@ -1,15 +1,21 @@
 from __future__ import annotations
 
-import traceback
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-from civil_3P.application.file_loader_service import FileLoaderService
-from civil_3P.application.importer_service import ImporterService
+import traceback
+
 from civil_3P.application.model_service import ModelService
 from civil_3P.application.preferences_service import PreferencesService
 from civil_3P.application.task_service import TaskService
 from civil_3P.gui.event_response import EventResponse, EventStatus
+from civil_3P.gui.scene_widget_controller import SceneWidgetController
 from civil_3P.standard.importer_profiles import ImporterProfiles
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from civil_3P.application.file_loader_service import FileLoaderService
+    from civil_3P.application.importer_service import ImporterService
 
 
 class FileMenuController:
@@ -20,14 +26,14 @@ class FileMenuController:
         file_loader_service: FileLoaderService,
         model_service: ModelService,
         preferences_service: PreferencesService,
-        listeners=None,
+        scene_widget_controller: SceneWidgetController,
     ) -> None:
         self._importer_service = importer_service
         self._task_service = task_service
         self._file_loader_service = file_loader_service
         self._model_service = model_service
         self._preferences_service = preferences_service
-        self._listeners = listeners or []
+        self._scene_widget_controller = scene_widget_controller
 
     def _response(
         self,
@@ -55,40 +61,50 @@ class FileMenuController:
             self._task_service.load_plugins_from(
                 self._preferences_service.get_plugins_base_path()
             )
+            self._scene_widget_controller.set_model_scene()
+
             return self._response(
                 EventStatus.SUCCESS,
                 "Model imported successfully.",
             )
+
         except Exception as exc:
             return self._response(EventStatus.FAILURE, str(exc), exc)
 
     def load_model_file(self, path: str | Path) -> EventResponse:
         try:
             self._file_loader_service.load_and_apply(path)
+            self._scene_widget_controller.set_model_scene()
+
             return self._response(
                 EventStatus.SUCCESS,
                 "Model loaded successfully.",
             )
+
         except Exception as exc:
             return self._response(EventStatus.FAILURE, str(exc), exc)
 
     def save_model(self, path: str | Path) -> EventResponse:
         try:
             self._file_loader_service.save(path)
+
             return self._response(
                 EventStatus.SUCCESS,
                 "Model saved successfully.",
             )
+
         except Exception as exc:
             return self._response(EventStatus.FAILURE, str(exc), exc)
 
     def set_plugins_base_path(self, path: str | Path) -> EventResponse:
         try:
             self._preferences_service.set_plugins_base_path(path)
+
             return self._response(
                 EventStatus.SUCCESS,
                 "Plugins base path set successfully.",
             )
+
         except Exception as exc:
             return self._response(EventStatus.FAILURE, str(exc), exc)
 
@@ -97,9 +113,11 @@ class FileMenuController:
             loaded = self._task_service.add_plugins_from(
                 files, self._preferences_service.get_plugins_base_path()
             )
+
             return self._response(
                 EventStatus.SUCCESS,
                 f"Loaded {len(loaded)} plugins.",
             )
+
         except Exception as exc:
             return self._response(EventStatus.FAILURE, str(exc), exc)

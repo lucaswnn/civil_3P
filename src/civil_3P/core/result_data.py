@@ -15,4 +15,9 @@ class ResultData:
     nodes: set[str]
 
     def __repr__(self):
-        return f"ResultData\nElement type: {self.element_type}\nElement count: {len(self.elements)}\nNode count: {len(self.nodes)}"
+        return (
+            "ResultData\n"
+            f"Element type: {self.element_type}\n"
+            f"Element count: {len(self.elements)}\n"
+            f"Node count: {len(self.nodes)}"
+        )

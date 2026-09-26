@@ -1,8 +1,13 @@
-from PySide6.QtWidgets import QMessageBox, QWidget
+from __future__ import annotations
+
+from PySide6.QtWidgets import QMessageBox
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QWidget
 
 
 class GuiMessages:
-
     @staticmethod
     def display_info(
         panel: QWidget,
@@ -35,6 +40,8 @@ class GuiMessages:
         msgbox.setIcon(QMessageBox.Critical)
         msgbox.setWindowTitle("Civil 3P")
         msgbox.setText(message)
+
         if detailed_message:
             msgbox.setDetailedText(detailed_message)
+            
         msgbox.exec()

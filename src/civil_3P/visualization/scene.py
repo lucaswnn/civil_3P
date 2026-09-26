@@ -1,7 +1,15 @@
-from dataclasses import dataclass
+from __future__ import annotations
 
-from civil_3P.visualization.result_scene_data import ResultSceneData
-from civil_3P.visualization.model_scene_data import ModelSceneData
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from civil_3P.visualization.result_scene_data import (
+        ResultSceneData
+    )
+    from civil_3P.visualization.model_scene_data import (
+        ModelSceneData
+    )
 
 
 @dataclass(frozen=True, slots=True)

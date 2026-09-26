@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 from enum import StrEnum
 
 DATAFRAME_DICT_CONV = "records"
+
 
 class FileRepresentation(StrEnum):
     FORMAT_VERSION = "format_version"

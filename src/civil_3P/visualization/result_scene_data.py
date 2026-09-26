@@ -1,15 +1,13 @@
-from dataclasses import dataclass, field
-from civil_3P.standard.result_components import ViewContentKind
-import numpy as np
+from __future__ import annotations
 
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-@dataclass(frozen=True, slots=True)
-class ResultElementSceneData:
-    nodes: np.ndarray
-    values: np.ndarray | None = None
-    connection: np.ndarray | None = None
-    element_type: np.ndarray | None = None
-    block_data: list[tuple[np.ndarray, list[int], np.ndarray]] | None = None
+if TYPE_CHECKING:
+    from civil_3P.standard.result_components import ViewContentKind
+    from civil_3P.visualization.result_element_scene_data import (
+        ResultElementSceneData
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,4 +17,8 @@ class ResultSceneData:
     data: ResultElementSceneData
 
     def __repr__(self):
-        return f"ResultViewData\nKind: {self.kind}\nValue range: {self.value_range}"
+        return (
+            f"ResultViewData\n"
+            f"Kind: {self.kind}\n"
+            f"Value range: {self.value_range}"
+        )

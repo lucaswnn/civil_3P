@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QApplication,
     QButtonGroup,
     QHBoxLayout,
     QMainWindow,
@@ -13,13 +12,13 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from typing import TYPE_CHECKING
 
-from civil_3P.gui.main_window_controller import MainWindowController
-from civil_3P.gui.menu_categories import MenuCategoryRegistry
-from civil_3P.gui.tabs import (
-    ViewTabRegistry,
-)
-from civil_3P.gui.scene_widget import SceneWidget
+if TYPE_CHECKING:
+    from civil_3P.gui.main_window_controller import MainWindowController
+    from civil_3P.gui.menu_category_registry import MenuCategoryRegistry
+    from civil_3P.gui.view_tab_registry import ViewTabRegistry
+    from civil_3P.gui.scene_widget import SceneWidget
 
 
 class MainWindow(QMainWindow):
@@ -27,11 +26,13 @@ class MainWindow(QMainWindow):
         self,
         menu_registry: MenuCategoryRegistry,
         view_tab_registry: ViewTabRegistry,
+        main_window_controller: MainWindowController,
         scene_widget: SceneWidget,
     ) -> None:
         super().__init__()
         self._menu_registry = menu_registry
         self._view_tab_registry = view_tab_registry
+        self._main_window_controller = main_window_controller
         self._scene_widget = scene_widget
         self._setup_ui()
 
@@ -136,6 +137,7 @@ class MainWindow(QMainWindow):
                 lambda _checked=False,
                 identifier=category.identifier: self._select_category(identifier),
             )
+
         self._category_button.setMenu(category_menu)
 
         left_layout.addWidget(

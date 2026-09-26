@@ -1,6 +1,4 @@
 from __future__ import annotations
-import traceback
-
 
 from PySide6.QtWidgets import (
     QFormLayout,
@@ -12,22 +10,24 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from typing import TYPE_CHECKING
+
+import traceback
 
 from civil_3P.standard.gui_components import GuiMenuComponents
-from civil_3P.gui.task_menu_controller import TaskMenuController
 from civil_3P.standard import model_components as mc
 from civil_3P.standard import model_representation as rpr
-from civil_3P.gui.scene_widget import SceneWidget
 from civil_3P.standard.result_components import ViewContentKind
+
+if TYPE_CHECKING:
+    from civil_3P.gui.task_menu_controller import TaskMenuController
 
 
 class TaskMenu:
     def __init__(
         self,
-        scene_widget: SceneWidget,
         controller: TaskMenuController,
     ) -> None:
-        self._scene_widget = scene_widget
         self._controller = controller
         self.case_button: QToolButton | None = None
         self.task_button: QToolButton | None = None
@@ -58,14 +58,18 @@ class TaskMenu:
         self.case_button.setText("Selecione")
         self.case_button.setPopupMode(QToolButton.InstantPopup)
         case_menu = QMenu(self.case_button)
-        case_menu.aboutToShow.connect(lambda: self._refresh_case_menu(case_menu))
+        case_menu.aboutToShow.connect(
+            lambda: self._refresh_case_menu(case_menu)
+        )
         self.case_button.setMenu(case_menu)
 
         self.task_button = QToolButton(panel)
         self.task_button.setText("Selecione")
         self.task_button.setPopupMode(QToolButton.InstantPopup)
         task_menu = QMenu(self.task_button)
-        task_menu.aboutToShow.connect(lambda: self._refresh_task_menu(task_menu))
+        task_menu.aboutToShow.connect(
+            lambda: self._refresh_task_menu(task_menu)
+        )
         self.task_button.setMenu(task_menu)
 
         form_layout.addRow(QLabel("Caso"), self.case_button)
@@ -74,7 +78,10 @@ class TaskMenu:
         self.apply_to_selection_button = QPushButton(panel)
         self.apply_to_selection_button.setCheckable(True)
         apply_to_selection_label = QLabel("Aplicar na seleção")
-        form_layout.addRow(self.apply_to_selection_button, apply_to_selection_label)
+        form_layout.addRow(
+            self.apply_to_selection_button,
+            apply_to_selection_label,
+        )
 
         run_button = QPushButton("Executar tarefa")
         run_button.clicked.connect(self._run_task)
@@ -87,20 +94,22 @@ class TaskMenu:
 
     def _refresh_case_menu(self, menu: QMenu) -> None:
         menu.clear()
+
         for case_id in self._controller.get_load_case_ids():
             action = menu.addAction(case_id)
             action.triggered.connect(
-                lambda _checked=False, identifier=case_id: self._select_case(
-                    identifier
-                ),
+                lambda _checked=False,
+                identifier=case_id: self._select_case(identifier),
             )
 
     def _refresh_task_menu(self, menu: QMenu) -> None:
         menu.clear()
+
         for task_id in self._controller.get_task_identifiers():
             action = menu.addAction(task_id)
             action.triggered.connect(
-                lambda _checked=False, identifier=task_id: self._select_task(identifier)
+                lambda _checked=False,
+                identifier=task_id: self._select_task(identifier),
             )
 
     def _select_case(self, identifier: str) -> None:
@@ -113,12 +122,14 @@ class TaskMenu:
 
     def _run_task(self) -> None:
         model = self._controller.current_model
+
         if model is None:
             QMessageBox.warning(
                 self._panel,
                 "civil_3P",
                 "Carregue um modelo antes de executar uma tarefa.",
             )
+
             return
 
         task_id = self._selected_task_id
@@ -130,10 +141,11 @@ class TaskMenu:
                 "civil_3P",
                 "Selecione uma tarefa e um caso antes de executar.",
             )
+
             return
 
         try:
-            if task_id == "example_bar_check":
+            if task_id == "example_1d":
                 view_content_kind = ViewContentKind.ELEMENT_1D_PROFILE
                 element_type = mc.ModelComponents.ELEMENTS_1D
                 element_ids = list(
@@ -141,8 +153,9 @@ class TaskMenu:
                         rpr.Elements1DColumns.ELEMENT
                     ].astype(str)
                 )
+
             else:
-                view_content_kind = ViewContentKind.ELEMENT_2D_ISOLATED_NODES
+                view_content_kind = ViewContentKind.ELEMENT_2D_SHARED_NODES
                 element_type = mc.ModelComponents.ELEMENTS_2D
                 element_ids = list(
                     model.tables[rpr.ModelTables.ELEMENTS_2D][
@@ -161,13 +174,12 @@ class TaskMenu:
                 case_id=case_id,
             )
 
-            scene = self._controller.build_result_scene(
+            self._controller.set_result_scene(
                 selection=selection,
                 task_result=task_result,
                 view_content_kind=view_content_kind,
             )
 
-            self._scene_widget.set_result_scene(scene)
             QMessageBox.information(
                 self._panel,
                 "civil_3P",

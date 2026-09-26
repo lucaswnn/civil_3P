@@ -1,39 +1,16 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
-from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import os
 
+from civil_3P.application.user_preferences import UserPreferences
 from civil_3P.standard.file_representation import FileRepresentation as fr
-from civil_3P.visualization.config import SceneViewerConfig
+from civil_3P.visualization.scene_viewer_config import SceneViewerConfig
 
-
-@dataclass(frozen=True, slots=True)
-class UserPreferences:
-    plugins_base_path: Path
-    scene_viewer_config: SceneViewerConfig
-
-    @classmethod
-    def from_snapshot(
-        cls,
-        snapshot: dict[str, Any],
-    ) -> UserPreferences:
-        plugins_base_path = Path(
-            snapshot.get(fr.PLUGINS_BASE_PATH)
-        )
-        scene_viewer_config_data = snapshot.get(
-            fr.SCENE_VIEWER_CONFIG
-        )
-        scene_viewer_config = SceneViewerConfig.from_dict(
-            scene_viewer_config_data
-        )
-
-        return cls(
-            plugins_base_path=plugins_base_path,
-            scene_viewer_config=scene_viewer_config
-        )
+if TYPE_CHECKING:
+    from typing import Any
 
 
 class PreferencesService:
@@ -56,8 +33,11 @@ class PreferencesService:
     @staticmethod
     def default_plugins_path() -> Path:
         app_data = os.environ.get("APPDATA")
-        base = Path(app_data) if app_data else Path.home() / \
-            "AppData" / "Roaming"
+        base = (
+            Path(app_data)
+            if app_data
+            else Path.home() / "AppData" / "Roaming"
+        )
 
         return base / "civil_3P" / "plugins"
 
@@ -74,13 +54,16 @@ class PreferencesService:
 
         self._preferences = UserPreferences(
             plugins_base_path=normalized,
-            scene_viewer_config=self._preferences.scene_viewer_config
+            scene_viewer_config=self._preferences.scene_viewer_config,
         )
 
     def get_scene_viewer_config(self) -> SceneViewerConfig:
         return self._preferences.scene_viewer_config
 
-    def set_scene_viewer_config(self, config: SceneViewerConfig) -> SceneViewerConfig:
+    def set_scene_viewer_config(
+        self,
+        config: SceneViewerConfig,
+    ) -> SceneViewerConfig:
         self._preferences = UserPreferences(
             plugins_base_path=self._preferences.plugins_base_path,
             scene_viewer_config=config

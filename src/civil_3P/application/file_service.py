@@ -6,7 +6,7 @@ from typing import Any
 import json
 
 from civil_3P.application.preferences_service import UserPreferences
-from civil_3P.core.model import FEMModel
+from civil_3P.core.model import Model
 from civil_3P.standard.file_representation import FileRepresentation as fr
 
 
@@ -16,12 +16,11 @@ class FileService:
     def save(
         self,
         path: str | Path,
-        model: FEMModel,
+        model: Model,
         preferences_snapshot: dict[str, Any],
     ) -> None:
         file_path = Path(path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
-
         payload = {
             fr.FORMAT_VERSION: self.FORMAT_VERSION,
             fr.PREFERENCES: preferences_snapshot,
@@ -31,7 +30,7 @@ class FileService:
         with file_path.open("w", encoding="utf-8") as f:
             json.dump(payload, f, ensure_ascii=False, indent=4)
 
-    def load(self, path: str | Path) -> tuple[FEMModel, UserPreferences]:
+    def load(self, path: str | Path) -> tuple[Model, UserPreferences]:
         file_path = Path(path)
 
         with file_path.open("r", encoding="utf-8") as f:
@@ -46,9 +45,11 @@ class FileService:
             raise ValueError(f"Unsupported project format: {path}")
 
         model_data = loaded_file.get(fr.MODEL)
+
         if not isinstance(model_data, dict):
             raise TypeError(f"Model data is not a dictionary: {path}")
-        model = FEMModel.from_dict(model_data)
+
+        model = Model.from_dict(model_data)
 
         preferences_data = loaded_file.get(fr.PREFERENCES)
 

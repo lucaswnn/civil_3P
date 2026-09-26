@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from civil_3P.application.plugin_loader_service import PluginLoaderService
-from civil_3P.tasks.task_base import TaskMetadata
+from civil_3P.tasks.task_plugin import TaskMetadata
 from civil_3P.tasks.task_registry import TaskRegistry
 from civil_3P.standard.model_components import ModelComponents
 

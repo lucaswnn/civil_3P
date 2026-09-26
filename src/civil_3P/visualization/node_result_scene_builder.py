@@ -1,26 +1,34 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 
-from civil_3P.core.model import FEMModel
 from civil_3P.application.model_service import ModelService
-from civil_3P.core.selection import SelectionContext
-from civil_3P.core.result_data import ResultData
+from civil_3P.core.selection_context import SelectionContext
 from civil_3P.standard.result_components import ViewContentKind
 from civil_3P.standard.task_result_representation import (
     TaskNodeResultsColumns as task_rpr_node,
 )
+from civil_3P.visualization.result_element_scene_data import (
+    ResultElementSceneData
+)
 from civil_3P.visualization.result_scene_data import (
-    ResultElementSceneData,
-    ResultSceneData,
+    ResultSceneData
 )
 from civil_3P.visualization.scene import Scene
 from civil_3P.visualization.scene_builder import SceneBuilder
+
+if TYPE_CHECKING:
+    from civil_3P.core.model import Model
+    from civil_3P.core.result_data import ResultData
 
 
 class NodeResultSceneBuilder(SceneBuilder):
     def build_result_scene(
         self,
         results: ResultData,
-        model: FEMModel,
+        model: Model,
     ) -> Scene:
         model_scene = self.build_scene(model)
 
@@ -36,10 +44,12 @@ class NodeResultSceneBuilder(SceneBuilder):
         node_map, nodes = self.get_node_map(res_model)
 
         values = np.full(nodes.shape[0], np.nan)
+
         for row in results.result_df.itertuples():
             node_id = getattr(row, task_rpr_node.NODE)
             value = getattr(row, task_rpr_node.VALUE)
             index = node_map.get(node_id)
+
             if index is not None:
                 values[index] = value
 

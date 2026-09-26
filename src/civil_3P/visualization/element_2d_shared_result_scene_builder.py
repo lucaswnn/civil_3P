@@ -1,32 +1,39 @@
 from __future__ import annotations
 
-import numpy as np
+from typing import TYPE_CHECKING
 
-from civil_3P.core.model import FEMModel
+import numpy as np
+import pyvista as pv
+
 from civil_3P.application.model_service import ModelService
-from civil_3P.core.result_data import ResultData
-from civil_3P.visualization.result_scene_data import (
-    ResultSceneData,
-    ResultElementSceneData,
+from civil_3P.core.selection_context import SelectionContext
+from civil_3P.standard.model_representation import (
+    Elements2DColumns as rpr_2d,
+    ModelTables as mt,
 )
 from civil_3P.standard.result_components import ViewContentKind
-from civil_3P.core.selection import SelectionContext
+from civil_3P.visualization.result_element_scene_data import (
+    ResultElementSceneData
+)
+from civil_3P.visualization.result_scene_data import (
+    ResultSceneData
+)
 from civil_3P.visualization.scene import Scene
+from civil_3P.visualization.scene_builder import SceneBuilder
 from civil_3P.standard.task_result_representation import (
     Task2DResultsColumns as task_rpr_2d,
 )
-import pyvista as pv
-from civil_3P.standard.model_representation import ModelTables as mt
-from civil_3P.standard.model_representation import Elements2DColumns as rpr_2d
 
-from civil_3P.visualization.scene_builder import SceneBuilder
+if TYPE_CHECKING:
+    from civil_3P.core.model import Model
+    from civil_3P.core.result_data import ResultData
 
 
 class Element2DSharedResultSceneBuilder(SceneBuilder):
     def build_result_scene(
         self,
         results: ResultData,
-        model: FEMModel,
+        model: Model,
     ) -> Scene:
         res_selection = SelectionContext(
             node_ids=set(),
@@ -60,7 +67,7 @@ class Element2DSharedResultSceneBuilder(SceneBuilder):
 
     def _build_result_scene(
         self,
-        res_model: FEMModel,
+        res_model: Model,
         node_map: dict[str, int],
         points: np.ndarray,
         results: ResultData,
@@ -108,7 +115,8 @@ class Element2DSharedResultSceneBuilder(SceneBuilder):
 
         return ResultSceneData(
             kind=ViewContentKind.ELEMENT_2D_SHARED_NODES,
-            value_range=(min(values), max(values)) if values.size > 0 else (0.0, 0.0),
+            value_range=(min(values), max(values)
+                         ) if values.size > 0 else (0.0, 0.0),
             data=ResultElementSceneData(
                 nodes=points,
                 values=np.array(values),

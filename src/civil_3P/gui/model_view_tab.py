@@ -1,5 +1,11 @@
-from PySide6.QtWidgets import QWidget
-from civil_3P.gui.scene_widget import SceneWidget
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QWidget
+    
+    from civil_3P.gui.scene_widget import SceneWidget
 
 
 class ModelViewTab:

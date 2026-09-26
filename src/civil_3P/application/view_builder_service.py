@@ -3,11 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from civil_3P.core.model import FEMModel
-    from civil_3P.standard.result_components import ViewContentKind
+    from civil_3P.core.model import Model
     from civil_3P.core.result_data import ResultData
+    from civil_3P.standard.result_components import ViewContentKind
     from civil_3P.visualization.scene import Scene
-    from civil_3P.visualization.scene_builder import SceneBuilder
     from civil_3P.visualization.scene_builder_registry import SceneBuilderRegistry
 
 
@@ -28,7 +27,7 @@ class ViewBuilderService:
 
     def build_scene(
         self,
-        model: FEMModel,
+        model: Model,
     ) -> Scene:
         return self._registry.build_scene(model)
 
@@ -36,7 +35,7 @@ class ViewBuilderService:
         self,
         results: ResultData,
         view_content_kind: ViewContentKind,
-        model: FEMModel,
+        model: Model,
     ) -> Scene:
         return self._registry.build_result_scene(
             results=results,

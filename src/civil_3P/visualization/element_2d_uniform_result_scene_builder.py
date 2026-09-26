@@ -1,32 +1,40 @@
 from __future__ import annotations
 
-import numpy as np
+from typing import TYPE_CHECKING
 
-from civil_3P.core.model import FEMModel
+import numpy as np
+import pyvista as pv
+
 from civil_3P.application.model_service import ModelService
-from civil_3P.core.result_data import ResultData
-from civil_3P.visualization.result_scene_data import (
-    ResultSceneData,
-    ResultElementSceneData,
+from civil_3P.core.selection_context import SelectionContext
+from civil_3P.standard.model_representation import (
+    Elements2DColumns as rpr_2d,
+    ModelTables as mt,
 )
 from civil_3P.standard.result_components import ViewContentKind
-from civil_3P.core.selection import SelectionContext
+from civil_3P.visualization.result_element_scene_data import (
+    ResultElementSceneData
+)
+from civil_3P.standard.result_components import ViewContentKind
+from civil_3P.visualization.result_scene_data import (
+    ResultSceneData
+)
 from civil_3P.visualization.scene import Scene
+from civil_3P.visualization.scene_builder import SceneBuilder
 from civil_3P.standard.task_result_representation import (
     Task2DResultsColumns as task_rpr_2d,
 )
-import pyvista as pv
-from civil_3P.standard.model_representation import ModelTables as mt
-from civil_3P.standard.model_representation import Elements2DColumns as rpr_2d
 
-from civil_3P.visualization.scene_builder import SceneBuilder
+if TYPE_CHECKING:
+    from civil_3P.core.model import Model
+    from civil_3P.core.result_data import ResultData
 
 
 class Element2DUniformResultSceneBuilder(SceneBuilder):
     def build_result_scene(
         self,
         results: ResultData,
-        model: FEMModel,
+        model: Model,
     ) -> Scene:
         res_selection = SelectionContext(
             node_ids=set(),
@@ -58,7 +66,7 @@ class Element2DUniformResultSceneBuilder(SceneBuilder):
 
     def _build_result_scene(
         self,
-        res_model: FEMModel,
+        res_model: Model,
         node_map: dict[str, int],
         points: np.ndarray,
         results: ResultSceneData,
@@ -95,23 +103,27 @@ class Element2DUniformResultSceneBuilder(SceneBuilder):
         cells: list[int] = []
         celltypes: list[int] = []
         values: list[float] = []
+
         for element_id, nodes in elements_topology.items():
             if len(nodes) == 3:
                 ids = [node_map[p] for p in nodes]
-
                 cells.extend([3, *ids])
                 celltypes.append(pv.CellType.TRIANGLE)
 
             elif len(nodes) == 4:
                 ids = [node_map[p] for p in nodes]
-
                 cells.extend([4, *ids])
                 celltypes.append(pv.CellType.QUAD)
+
             values.append(elements_values[element_id])
 
         return ResultSceneData(
             kind=ViewContentKind.ELEMENT_2D_UNIFORM,
-            value_range=(min(values), max(values)) if values.size > 0 else (0.0, 0.0),
+            value_range=(
+                (min(values), max(values))
+                if values.size > 0
+                else (0.0, 0.0)
+            ),
             data=ResultElementSceneData(
                 nodes=points,
                 values=np.array(values),

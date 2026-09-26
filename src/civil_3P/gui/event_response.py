@@ -1,14 +1,13 @@
-from dataclasses import dataclass
-from enum import StrEnum
-from PySide6.QtWidgets import QMessageBox, QWidget
+from __future__ import annotations
 
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+from civil_3P.gui.event_status import EventStatus
 from civil_3P.utils.gui_messages import GuiMessages as gm
 
-
-class EventStatus(StrEnum):
-    SUCCESS = "success"
-    FAILURE = "failure"
-    WARNING = "warning"
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QWidget
 
 
 @dataclass

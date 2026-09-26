@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from typing import Any
+from typing import TYPE_CHECKING
 
 from civil_3P.utils.colors import Colors
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 @dataclass
@@ -28,4 +31,5 @@ class SceneViewerConfig:
     def from_dict(cls, values: dict[str, Any]) -> SceneViewerConfig:
         defaults = cls().to_dict()
         defaults.update(values)
+        
         return cls(**defaults)

@@ -10,10 +10,10 @@ from civil_3P.application.application_context import (
 
 from civil_3P.core.enums import ModelComponents, VisualizationMode
 from civil_3P.core.result_builder import Result2DAveragingPolicy, Visualization2DMode
-from civil_3P.core.selection import SelectionContext
+from civil_3P.core.selection_context import SelectionContext
 from civil_3P.importers.importer_adapter import ImporterProfile
-from task_examples.check_example import ExampleBarCheckPlugin
-from task_examples.design_example import ExampleShellDesignPlugin
+from task_examples.example_1d_plugin import ExampleBarCheckPlugin
+from task_examples.example_2d_plugin import Example2DPlugin
 
 
 def test_import_and_example_tasks(tmp_path) -> None:
@@ -207,7 +207,7 @@ def test_import_and_example_tasks(tmp_path) -> None:
                                        selected_element_ids=("P1",),
                                        adjacent_element_ids=("P2",))
 
-    shell_result = task_service.execute_task(ExampleShellDesignPlugin(),
+    shell_result = task_service.execute_task(Example2DPlugin(),
                                              model,
                                              shell_selection,
                                              "LC1")

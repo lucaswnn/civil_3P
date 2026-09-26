@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from civil_3P.tasks.task_base import TaskPlugin
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from civil_3P.tasks.task_plugin import TaskPlugin
 
 
 class TaskRegistry:
