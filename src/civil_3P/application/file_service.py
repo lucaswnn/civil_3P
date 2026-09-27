@@ -7,7 +7,9 @@ import json
 
 from civil_3P.application.preferences_service import UserPreferences
 from civil_3P.core.model import Model
-from civil_3P.standard.file_representation import FileRepresentation as fr
+from civil_3P.standard.file_representation import (
+    FileRepresentation as fr
+)
 
 
 class FileService:
