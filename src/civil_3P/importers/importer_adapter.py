@@ -9,6 +9,7 @@ import pandas as pd
 
 from civil_3P.core.model import Model
 from civil_3P.standard import units
+from civil_3P.standard.unit_converter import UnitConverter
 from civil_3P.utils.pandas_utils import PandasUtils as pdUtils
 
 if TYPE_CHECKING:
@@ -65,7 +66,7 @@ class ImporterAdapter(ABC):
         if unit is None:
             raise ValueError(f"Unit '{unit}' not found in unit map")
 
-        physicalquantity = units.UnitConverter.get_physical_quantity(unit)
+        physicalquantity = UnitConverter.get_physical_quantity(unit)
         if unit == units.Unitless.NONE:
             logger.info(
                 f"Column '{column}' is not number, skipping normalization"
@@ -85,7 +86,7 @@ class ImporterAdapter(ABC):
 
         normalized_unit = units.DEFAULT_UNITS[physicalquantity]
         frame[column] = frame[column].apply(
-            lambda x: units.UnitConverter.convert(x, unit, normalized_unit)
+            lambda x: UnitConverter.convert(x, unit, normalized_unit)
         )
 
     def process_units(
