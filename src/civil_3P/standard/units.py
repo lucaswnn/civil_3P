@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from enum import StrEnum
-from math import pi
 
 
 class PhysicalQuantities(StrEnum):

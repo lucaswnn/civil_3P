@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QButtonGroup,
@@ -12,15 +14,14 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from typing import TYPE_CHECKING
 
 from civil_3P.standard.gui_texts import GuiLabels
 
 if TYPE_CHECKING:
     from civil_3P.gui.main_window_controller import MainWindowController
     from civil_3P.gui.menu_category_registry import MenuCategoryRegistry
-    from civil_3P.gui.view_tab_registry import ViewTabRegistry
     from civil_3P.gui.scene_widget import SceneWidget
+    from civil_3P.gui.view_tab_registry import ViewTabRegistry
 
 
 class MainWindow(QMainWindow):
@@ -77,9 +78,7 @@ class MainWindow(QMainWindow):
         self._tab_index: dict[str, int] = {}
 
         for tab in self._tab_registry.all():
-            index = self._view_stack.addWidget(
-                tab.build_content(self._view_stack)
-            )
+            index = self._view_stack.addWidget(tab.build_content(self._view_stack))
             self._tab_index[tab.identifier] = index
 
         tab_bar = QWidget(right_panel)
@@ -95,8 +94,9 @@ class MainWindow(QMainWindow):
             tab_button.setText(tab.display_name)
             tab_button.setCheckable(True)
             tab_button.clicked.connect(
-                lambda _checked=False,
-                identifier=tab.identifier: self._select_tab(identifier),
+                lambda _checked=False, identifier=tab.identifier: self._select_tab(
+                    identifier
+                ),
             )
             tab_group.addButton(tab_button)
             tab_bar_layout.addWidget(tab_button)
@@ -144,9 +144,7 @@ class MainWindow(QMainWindow):
             )
 
         self._category_button.activated.connect(
-            lambda index: self._select_category(
-                self._category_button.itemData(index)
-            )
+            lambda index: self._select_category(self._category_button.itemData(index))
         )
 
         left_layout.addWidget(

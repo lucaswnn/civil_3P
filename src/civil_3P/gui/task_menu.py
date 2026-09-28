@@ -15,14 +15,14 @@ from PySide6.QtWidgets import (
 
 from civil_3P.gui.refreshing_combo_box import RefreshingComboBox
 from civil_3P.standard import model_components as mc
-from civil_3P.standard import model_representation as rpr
+from civil_3P.standard import model_repr as rpr
 from civil_3P.standard.gui_components import GuiMenuComponents
-from civil_3P.standard.gui_texts import TaskMenuButtonLabels
-from civil_3P.standard.result_components import ViewContentKind
 from civil_3P.standard.gui_texts import (
     GuiLabels,
     GuiMessageTexts,
+    TaskMenuButtonLabels,
 )
+from civil_3P.standard.res_components import ResSceneKind
 from civil_3P.utils.gui_messages import GuiMessages
 
 if TYPE_CHECKING:
@@ -121,21 +121,19 @@ class TaskMenu:
 
         try:
             if task_id == "example_1d":
-                view_content_kind = ViewContentKind.ELEMENT_1D_PROFILE
-                element_type = mc.ModelComponents.ELEMENTS_1D
+                view_content_kind = ResSceneKind.BAR_PROFILE
+                element_type = mc.ModelComponents.BARS
                 element_ids = list(
-                    model.tables[rpr.ModelTables.ELEMENTS_1D][
-                        rpr.Elements1DColumns.ELEMENT
-                    ].astype(str)
+                    model.tables[rpr.ModelTables.BARS][rpr.BarCols.ELEMENT].astype(str)
                 )
 
             else:
-                view_content_kind = ViewContentKind.ELEMENT_2D_SHARED_NODES
-                element_type = mc.ModelComponents.ELEMENTS_2D
+                view_content_kind = ResSceneKind.SHELL_SHARED_NODES
+                element_type = mc.ModelComponents.SHELLS
                 element_ids = list(
-                    model.tables[rpr.ModelTables.ELEMENTS_2D][
-                        rpr.Elements2DColumns.ELEMENT
-                    ].astype(str)
+                    model.tables[rpr.ModelTables.SHELLS][rpr.ShellCols.ELEMENT].astype(
+                        str
+                    )
                 )
 
             selection = self._controller.create_selection(
@@ -149,7 +147,7 @@ class TaskMenu:
                 case_id=case_id,
             )
 
-            self._controller.set_result_scene(
+            self._controller.set_res_scene(
                 selection=selection,
                 task_result=task_result,
                 view_content_kind=view_content_kind,

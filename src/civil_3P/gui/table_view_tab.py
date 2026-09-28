@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from PySide6.QtWidgets import QLabel
 from typing import TYPE_CHECKING
+
+from PySide6.QtWidgets import QLabel
 
 from civil_3P.standard.gui_texts import GuiLabels
 

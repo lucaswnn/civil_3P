@@ -4,6 +4,6 @@ from enum import StrEnum
 
 
 class ModelComponents(StrEnum):
-    ELEMENTS_1D = "elements_1d"
-    ELEMENTS_2D = "elements_2d"
+    BARS = "bars"
+    SHELLS = "shells"
     NODES = "nodes"

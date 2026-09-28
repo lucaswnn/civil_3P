@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QComboBox,
     QCompleter,
     QWidget,
 )
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from typing import Callable
@@ -41,9 +42,7 @@ class RefreshingComboBox(QComboBox):
     def refresh_options(self) -> None:
         current_text = self.currentText()
         options = self._options_provider()
-        current_options = [
-            self.itemText(index) for index in range(self.count())
-        ]
+        current_options = [self.itemText(index) for index in range(self.count())]
 
         if options == current_options:
             return

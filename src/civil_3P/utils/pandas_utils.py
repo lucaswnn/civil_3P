@@ -25,11 +25,7 @@ class PandasUtils:
         columns_to_keep: list[str],
     ) -> None:
         df.drop(
-            columns=[
-                col
-                for col in df.columns
-                if col not in columns_to_keep
-            ],
+            columns=[col for col in df.columns if col not in columns_to_keep],
             inplace=True,
         )
 

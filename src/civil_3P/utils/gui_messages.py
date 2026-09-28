@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from PySide6.QtWidgets import QMessageBox
 from typing import TYPE_CHECKING
+
+from PySide6.QtWidgets import QMessageBox
 
 from civil_3P.standard.gui_texts import GuiLabels
 
@@ -45,5 +46,5 @@ class GuiMessages:
 
         if detailed_message:
             msgbox.setDetailedText(detailed_message)
-            
+
         msgbox.exec()
