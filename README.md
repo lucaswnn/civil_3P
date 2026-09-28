@@ -16,11 +16,23 @@ O projeto foi pensado com foco em:
 ```text
 src/
   civil_3P/
-    application/
+    app/
     core/
+    gui/
     importers/
+    resources/
+      styles/
+    standard/
     tasks/
+    utils/
+    visual/
+task_examples/
 tests/
+  fixtures/
+    sap2000/
+  integration/
+    importers/
+  unit/
 .github/
 ```
 
@@ -51,7 +63,7 @@ python -m pip install -U pip
 python -m pip install -e .[dev]
 ```
 
-## Como Rodar os Testes (atualmente quebrados)
+## Como Rodar os Testes
 
 ```powershell
 python -m pytest -q
@@ -70,32 +82,11 @@ python -m civil_3P
 - Integrar github actions
 - Inspecionar testes e cobertura
 - Lançar primeira versão utilizável
-
-### Testes
-
-- Teste para importar SAP2000
-  - Modelo incompleto
-  - Modelo corrompido
-- Teste para arquivos em json
-  - Salvar arquivo
-  - Carregar arquivo
-  - Carregar arquivo corrompido
-- Teste de modelo
-  - Conectividade
-  - Falta de conectividade
-  - Elementos com seções
-  - Elementos com materiais
-  - Integridade entre resultados e modelo
-  - Teste de filtro por seleção
-  - Teste de filtro por seleção complementar
-  - Teste de filtro por caso de carga
-  - Teste de modelo vazio
-  - Teste de filtros com modelo vazio
-  - Teste de modelo sem seleção
+- Criar mais testes
 
 ### Funcionalidades
 
-- Criar exemplo de plugin de placa e de nós
+- Criar exemplo de plugin de nós
 - Criar seleção com o pyvista
 - Serviço de seleção
 - Listener de seleção
