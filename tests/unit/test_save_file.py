@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import json
 
-from civil_3P.application.file_service import FileService
-from civil_3P.standard.file_representation import FileRepresentation as fr
-
 from conftest import build_small_model
+
+from civil_3P.app.file_service import FileService
+from civil_3P.standard.file_repr import FileRepr as fr
 
 
 class TestFileServiceSave:
@@ -37,8 +37,7 @@ class TestFileServiceSave:
 
         assert payload[fr.FORMAT_VERSION] == FileService.FORMAT_VERSION
         assert payload[fr.PREFERENCES] == self.preferences_snapshot
-        assert set(payload[fr.MODEL].keys()) == {
-            fr.MODEL_TABLES, fr.MODEL_UNITS}
+        assert set(payload[fr.MODEL].keys()) == {fr.MODEL_TABLES, fr.MODEL_UNITS}
 
     def test_save_then_load_roundtrip_preserves_model(self, tmp_path) -> None:
         target = tmp_path / "project.c3p"

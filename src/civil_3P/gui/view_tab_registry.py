@@ -8,10 +8,7 @@ if TYPE_CHECKING:
 
 class ViewTabRegistry:
     def __init__(self, tabs: list[ViewTab]) -> None:
-        self._tabs: dict[str, ViewTab] = {
-            tab.identifier: tab
-            for tab in tabs
-        }
+        self._tabs: dict[str, ViewTab] = {tab.identifier: tab for tab in tabs}
 
     def get(self, identifier: str) -> ViewTab:
         return self._tabs[identifier]

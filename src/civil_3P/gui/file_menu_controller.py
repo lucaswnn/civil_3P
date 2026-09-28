@@ -1,22 +1,21 @@
 from __future__ import annotations
 
+import traceback
 from typing import TYPE_CHECKING
 
-import traceback
-
-from civil_3P.application.model_service import ModelService
-from civil_3P.application.preferences_service import PreferencesService
-from civil_3P.application.task_service import TaskService
+from civil_3P.app.model_service import ModelService
+from civil_3P.app.preferences_service import PreferencesService
+from civil_3P.app.task_service import TaskService
 from civil_3P.gui.event_response import EventResponse, EventStatus
 from civil_3P.gui.scene_widget_controller import SceneWidgetController
-from civil_3P.standard.importer_profiles import ImporterProfiles
 from civil_3P.standard.gui_texts import GuiMessageTexts
+from civil_3P.standard.importer_profiles import ImporterProfiles
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from civil_3P.application.file_loader_service import FileLoaderService
-    from civil_3P.application.importer_service import ImporterService
+    from civil_3P.app.file_loader_service import FileLoaderService
+    from civil_3P.app.importer_service import ImporterService
 
 
 class FileMenuController:

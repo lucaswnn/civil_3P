@@ -4,17 +4,15 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from civil_3P.standard.model_components import ModelComponents as mc
-from civil_3P.standard.task_result_representation import (
-    TaskNodeResultsColumns as task_rpr_node,
-    Task1DResultsColumns as task_rpr_1d,
-    Task2DResultsColumns as task_rpr_2d,
-)
+from civil_3P.standard.task_res_repr import TaskBarResCols as task_rpr_1d
+from civil_3P.standard.task_res_repr import TaskNodeResCols as task_rpr_node
+from civil_3P.standard.task_res_repr import TaskShellResCols as task_rpr_2d
 from civil_3P.utils.pandas_utils import PandasUtils
 
 if TYPE_CHECKING:
     from civil_3P.tasks.task_input_context import TaskInputContext
     from civil_3P.tasks.task_metadata import TaskMetadata
-    from civil_3P.tasks.task_result import TaskResult
+    from civil_3P.tasks.task_res import TaskRes
 
 
 class TaskPlugin(ABC):
@@ -40,10 +38,10 @@ class TaskPlugin(ABC):
     def execute(
         self,
         context: TaskInputContext,
-    ) -> TaskResult:
+    ) -> TaskRes:
         raise NotImplementedError
 
-    def validate_output(self, result: TaskResult) -> None:
+    def validate_output(self, result: TaskRes) -> None:
         if self.supports(mc.NODES):
             PandasUtils.ensure_strict_columns(
                 result.results,
@@ -53,7 +51,7 @@ class TaskPlugin(ABC):
                 },
             )
 
-        elif self.supports(mc.ELEMENTS_1D):
+        elif self.supports(mc.BARS):
             PandasUtils.ensure_strict_columns(
                 result.results,
                 {
@@ -63,7 +61,7 @@ class TaskPlugin(ABC):
                 },
             )
 
-        elif self.supports(mc.ELEMENTS_2D):
+        elif self.supports(mc.SHELLS):
             PandasUtils.ensure_strict_columns(
                 result.results,
                 {
@@ -74,13 +72,12 @@ class TaskPlugin(ABC):
             )
 
         else:
-            raise ValueError(
-                "Unsupported element type for task result validation")
+            raise ValueError("Unsupported element type for task result validation")
 
     def get_task_result(
         self,
         context: TaskInputContext,
-    ) -> TaskResult:
+    ) -> TaskRes:
         result = self.execute(context)
         self.validate_output(result)
         return result

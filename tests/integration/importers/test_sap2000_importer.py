@@ -6,9 +6,7 @@ import pytest
 
 from civil_3P.core.model import Model
 from civil_3P.importers.sap2000_importer import Sap2000Importer
-from civil_3P.standard.model_representation import (
-    REQUIRED_MODEL_SCHEMA
-)
+from civil_3P.standard.model_repr import REQUIRED_MODEL_SCHEMA
 
 FIXTURES_DIR = Path(__file__).resolve().parents[2] / "fixtures" / "sap2000"
 SAMPLE_WORKBOOK = FIXTURES_DIR / "sample_model.xlsx"

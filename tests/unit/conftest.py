@@ -5,20 +5,18 @@ import pandas as pd
 import pytest
 
 from civil_3P.core.model import Model
-from civil_3P.core.selection_context import SelectionContext
-from civil_3P.standard.model_representation import Elements1DColumns as rpr_1d
-from civil_3P.standard.model_representation import Elements2DColumns as rpr_2d
-from civil_3P.standard.model_representation import LoadCasesColumns as rpr_lc
-from civil_3P.standard.model_representation import MaterialsColumns as rpr_mat
-from civil_3P.standard.model_representation import ModelTables as mt
-from civil_3P.standard.model_representation import NodesColumns as rpr_node
-from civil_3P.standard.model_representation import Origin1DResultsColumns as rpr_o1d
-from civil_3P.standard.model_representation import Origin2DResultsColumns as rpr_o2d
-from civil_3P.standard.model_representation import (
-    OriginNodeDisplacementsColumns as rpr_ond,
-)
-from civil_3P.standard.model_representation import OriginNodeReactionsColumns as rpr_onr
-from civil_3P.standard.model_representation import SectionsColumns as rpr_sec
+from civil_3P.core.sel_context import SelContext
+from civil_3P.standard.model_repr import BarCols as rpr_1d
+from civil_3P.standard.model_repr import BarResCols as rpr_o1d
+from civil_3P.standard.model_repr import LoadCaseCols as rpr_lc
+from civil_3P.standard.model_repr import MaterialsCols as rpr_mat
+from civil_3P.standard.model_repr import ModelTables as mt
+from civil_3P.standard.model_repr import NodeCols as rpr_node
+from civil_3P.standard.model_repr import NodeDisplacementsCols as rpr_ond
+from civil_3P.standard.model_repr import NodeReactionsCols as rpr_onr
+from civil_3P.standard.model_repr import SectionsCols as rpr_sec
+from civil_3P.standard.model_repr import ShellCols as rpr_2d
+from civil_3P.standard.model_repr import ShellResCols as rpr_o2d
 from civil_3P.standard.units import DEFAULT_UNITS
 
 
@@ -35,7 +33,7 @@ def build_small_model() -> Model:
             rpr_node.Z: [0.0, 0.0, 0.0, 0.0, 0.0],
         }
     )
-    elements_1d = pd.DataFrame(
+    bars = pd.DataFrame(
         {
             rpr_1d.ELEMENT: ["F1"],
             rpr_1d.NODE_I: ["N1"],
@@ -44,7 +42,7 @@ def build_small_model() -> Model:
             rpr_1d.SECTION: ["S1"],
         }
     )
-    elements_2d = pd.DataFrame(
+    shells = pd.DataFrame(
         {
             rpr_2d.ELEMENT: ["A1", "A2"],
             rpr_2d.NODE_1: ["N1", "N2"],
@@ -72,7 +70,7 @@ def build_small_model() -> Model:
             rpr_sec.INERTIA_33: [0.001],
         }
     )
-    origin_1d_results = pd.DataFrame(
+    bar_results = pd.DataFrame(
         {
             rpr_o1d.ELEMENT: ["F1", "F1"],
             rpr_o1d.STATION: [0.0, 1.0],
@@ -85,7 +83,7 @@ def build_small_model() -> Model:
             rpr_o1d.BENDING_3: [5.0, -5.0],
         }
     )
-    origin_2d_results = pd.DataFrame(
+    shell_results = pd.DataFrame(
         {
             rpr_o2d.ELEMENT: ["A1", "A1", "A1", "A1", "A2", "A2", "A2"],
             rpr_o2d.NODE: ["N1", "N2", "N3", "N4", "N2", "N3", "N5"],
@@ -100,7 +98,7 @@ def build_small_model() -> Model:
             rpr_o2d.SHEAR_23: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
         }
     )
-    origin_node_displacements = pd.DataFrame(
+    node_displacements = pd.DataFrame(
         {
             rpr_ond.NODE: ["N1", "N2", "N3", "N4", "N5"],
             rpr_ond.CASE: ["DEAD", "DEAD", "DEAD", "DEAD", "DEAD"],
@@ -112,7 +110,7 @@ def build_small_model() -> Model:
             rpr_ond.RZ: [0.0, 0.0, 0.0, 0.0, 0.01],
         }
     )
-    origin_node_reactions = pd.DataFrame(
+    node_reactions = pd.DataFrame(
         {
             rpr_onr.NODE: ["N1"],
             rpr_onr.CASE: ["DEAD"],
@@ -133,14 +131,14 @@ def build_small_model() -> Model:
 
     tables = {
         mt.NODES: nodes,
-        mt.ELEMENTS_1D: elements_1d,
-        mt.ELEMENTS_2D: elements_2d,
+        mt.BARS: bars,
+        mt.SHELLS: shells,
         mt.MATERIALS: materials,
         mt.SECTIONS: sections,
-        mt.ORIGIN_1D_RESULTS: origin_1d_results,
-        mt.ORIGIN_2D_RESULTS: origin_2d_results,
-        mt.ORIGIN_NODE_DISPLACEMENTS: origin_node_displacements,
-        mt.ORIGIN_NODE_REACTIONS: origin_node_reactions,
+        mt.BAR_RESULTS: bar_results,
+        mt.SHELL_RESULTS: shell_results,
+        mt.NODE_DISPLACEMENTS: node_displacements,
+        mt.NODE_REACTIONS: node_reactions,
         mt.LOAD_CASES: load_cases,
     }
 
@@ -153,9 +151,9 @@ def small_model() -> Model:
 
 
 @pytest.fixture
-def full_selection() -> SelectionContext:
-    return SelectionContext(
+def full_selection() -> SelContext:
+    return SelContext(
         node_ids={"N1", "N2", "N3", "N4"},
-        element_1d_ids={"F1"},
-        element_2d_ids={"A1"},
+        bar_ids={"F1"},
+        shell_ids={"A1"},
     )

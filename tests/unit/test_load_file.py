@@ -5,8 +5,8 @@ import json
 import pytest
 from conftest import build_small_model
 
-from civil_3P.application.file_service import FileService
-from civil_3P.standard.file_representation import FileRepresentation as fr
+from civil_3P.app.file_service import FileService
+from civil_3P.standard.file_repr import FileRepr as fr
 
 
 def write_json(path, payload) -> None:

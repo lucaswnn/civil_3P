@@ -1,6 +1,6 @@
 import logging
 
-from civil_3P.application.application import Application
+from civil_3P.app.application import Application
 
 
 def main():

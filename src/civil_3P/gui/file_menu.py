@@ -1,20 +1,23 @@
 from __future__ import annotations
 
+import traceback
 from pathlib import Path
+from typing import TYPE_CHECKING
+
 from PySide6.QtWidgets import (
     QFileDialog,
     QPushButton,
     QVBoxLayout,
     QWidget,
 )
-from typing import TYPE_CHECKING
-
-import traceback
 
 from civil_3P.standard.gui_components import GuiMenuComponents
-from civil_3P.standard.gui_texts import FileMenuButtonLabels
+from civil_3P.standard.gui_texts import (
+    FileMenuButtonLabels,
+    GuiFileDialogTexts,
+    GuiMessageTexts,
+)
 from civil_3P.standard.importer_profiles import ImporterProfiles
-from civil_3P.standard.gui_texts import GuiFileDialogTexts, GuiMessageTexts
 from civil_3P.utils.gui_messages import GuiMessages as gm
 
 if TYPE_CHECKING:
@@ -51,13 +54,9 @@ class FileMenu:
         load_button.clicked.connect(self._load_saved_model)
         save_button = QPushButton(FileMenuButtonLabels.SAVE_MODEL)
         save_button.clicked.connect(self._save_model)
-        folder_plugins_button = QPushButton(
-            FileMenuButtonLabels.SET_PLUGINS_FOLDER
-        )
+        folder_plugins_button = QPushButton(FileMenuButtonLabels.SET_PLUGINS_FOLDER)
         folder_plugins_button.clicked.connect(self._set_plugins_folder)
-        add_plugins_button = QPushButton(
-            FileMenuButtonLabels.ADD_PLUGINS
-        )
+        add_plugins_button = QPushButton(FileMenuButtonLabels.ADD_PLUGINS)
         add_plugins_button.clicked.connect(self._add_plugins)
 
         layout.addWidget(import_button)
@@ -87,9 +86,7 @@ class FileMenu:
         except Exception as exc:  # pragma: no cover - runtime feedback only
             gm.display_error(
                 self._panel,
-                message=GuiMessageTexts.LOAD_PLUGINS_FAILED.format(
-                    error=exc
-                ),
+                message=GuiMessageTexts.LOAD_PLUGINS_FAILED.format(error=exc),
                 detailed_message=traceback.format_exc(),
             )
 
@@ -114,9 +111,7 @@ class FileMenu:
         except Exception as exc:  # pragma: no cover - runtime feedback only
             gm.display_error(
                 self._panel,
-                message=GuiMessageTexts.IMPORT_MODEL_FAILED.format(
-                    error=exc
-                ),
+                message=GuiMessageTexts.IMPORT_MODEL_FAILED.format(error=exc),
                 detailed_message=traceback.format_exc(),
             )
 
@@ -138,9 +133,7 @@ class FileMenu:
         except Exception as exc:  # pragma: no cover - runtime feedback only
             gm.display_error(
                 self._panel,
-                message=GuiMessageTexts.LOAD_MODEL_FAILED.format(
-                    error=exc
-                ),
+                message=GuiMessageTexts.LOAD_MODEL_FAILED.format(error=exc),
                 detailed_message=traceback.format_exc(),
             )
 
@@ -167,9 +160,7 @@ class FileMenu:
         except Exception as exc:  # pragma: no cover - runtime feedback only
             gm.display_error(
                 self._panel,
-                message=GuiMessageTexts.SAVE_MODEL_FAILED.format(
-                    error=exc
-                ),
+                message=GuiMessageTexts.SAVE_MODEL_FAILED.format(error=exc),
                 detailed_message=traceback.format_exc(),
             )
 
@@ -184,16 +175,12 @@ class FileMenu:
             if not directory:
                 return
 
-            res = self._controller.set_plugins_base_path(
-                directory
-            )
+            res = self._controller.set_plugins_base_path(directory)
             res.display_message(self._panel)
 
         except Exception as exc:  # pragma: no cover - runtime feedback only
             gm.display_error(
                 self._panel,
-                message=GuiMessageTexts.SET_PLUGINS_FOLDER_FAILED.format(
-                    error=exc
-                ),
+                message=GuiMessageTexts.SET_PLUGINS_FOLDER_FAILED.format(error=exc),
                 detailed_message=traceback.format_exc(),
             )

@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
+from conftest import build_small_model
 
 from civil_3P.core.model import Model
-from civil_3P.core.selection_context import SelectionContext
-from civil_3P.standard.model_representation import ModelTables as mt
+from civil_3P.core.sel_context import SelContext
+from civil_3P.standard.model_repr import ModelTables as mt
 from civil_3P.standard.units import DEFAULT_UNITS
-
-from conftest import build_small_model
 
 
 class TestModel:
@@ -33,8 +32,8 @@ class TestModel:
         )
 
         assert model.tables[mt.NODES].shape[0] == 5
-        assert model.tables[mt.ELEMENTS_1D].shape[0] == 1
-        assert model.tables[mt.ELEMENTS_2D].shape[0] == 2
+        assert model.tables[mt.BARS].shape[0] == 1
+        assert model.tables[mt.SHELLS].shape[0] == 2
 
     def test_from_tables_missing_table_raises(self) -> None:
         incomplete_tables = {
@@ -80,59 +79,59 @@ class TestModel:
         assert copied.tables[mt.NODES].shape[0] == 0
 
     def test_filter_by_selection_keeps_only_selected(self) -> None:
-        selection = SelectionContext(
+        selection = SelContext(
             node_ids={"N1", "N2"},
-            element_1d_ids={"F1"},
-            element_2d_ids=set(),
+            bar_ids={"F1"},
+            shell_ids=set(),
         )
         filtered = self.model.filter_by_selection(selection)
 
-        assert filtered.tables[mt.ELEMENTS_1D].shape[0] == 1
-        assert filtered.tables[mt.ELEMENTS_2D].shape[0] == 0
+        assert filtered.tables[mt.BARS].shape[0] == 1
+        assert filtered.tables[mt.SHELLS].shape[0] == 0
 
     def test_filter_by_selection_reversed_keeps_complement(self) -> None:
-        selection = SelectionContext(
+        selection = SelContext(
             node_ids=set(),
-            element_1d_ids={"F1"},
-            element_2d_ids=set(),
+            bar_ids={"F1"},
+            shell_ids=set(),
         )
         filtered = self.model.filter_by_selection_reversed(selection)
 
-        assert filtered.tables[mt.ELEMENTS_1D].shape[0] == 0
-        assert filtered.tables[mt.ELEMENTS_2D].shape[0] == 2
+        assert filtered.tables[mt.BARS].shape[0] == 0
+        assert filtered.tables[mt.SHELLS].shape[0] == 2
 
     def test_filter_by_selection_with_unknown_ids_is_empty(self) -> None:
-        selection = SelectionContext(
+        selection = SelContext(
             node_ids={"UNKNOWN"},
-            element_1d_ids={"UNKNOWN"},
-            element_2d_ids={"UNKNOWN"},
+            bar_ids={"UNKNOWN"},
+            shell_ids={"UNKNOWN"},
         )
         filtered = self.model.filter_by_selection(selection)
 
-        assert filtered.tables[mt.ELEMENTS_1D].empty
-        assert filtered.tables[mt.ELEMENTS_2D].empty
+        assert filtered.tables[mt.BARS].empty
+        assert filtered.tables[mt.SHELLS].empty
 
     def test_filter_by_load_case(self) -> None:
         filtered = self.model.filter_by_load_case("DEAD")
 
-        assert (filtered.tables[mt.ORIGIN_1D_RESULTS]["case"] == "DEAD").all()
-        assert filtered.tables[mt.ORIGIN_2D_RESULTS].shape[0] == 7
+        assert (filtered.tables[mt.BAR_RESULTS]["case"] == "DEAD").all()
+        assert filtered.tables[mt.SHELL_RESULTS].shape[0] == 7
 
     def test_filter_by_unknown_load_case_is_empty(self) -> None:
         filtered = self.model.filter_by_load_case("UNKNOWN")
 
-        assert filtered.tables[mt.ORIGIN_1D_RESULTS].empty
-        assert filtered.tables[mt.ORIGIN_2D_RESULTS].empty
+        assert filtered.tables[mt.BAR_RESULTS].empty
+        assert filtered.tables[mt.SHELL_RESULTS].empty
 
     def test_remove_elements_drops_orphan_nodes(self) -> None:
-        selection = SelectionContext(
+        selection = SelContext(
             node_ids=set(),
-            element_1d_ids=set(),
-            element_2d_ids={"A2"},
+            bar_ids=set(),
+            shell_ids={"A2"},
         )
         result = self.model.remove_elements(selection)
 
-        assert result.tables[mt.ELEMENTS_2D].shape[0] == 1
-        
+        assert result.tables[mt.SHELLS].shape[0] == 1
+
         remaining_nodes = set(result.tables[mt.NODES]["node"])
         assert remaining_nodes == {"N1", "N2", "N3", "N4"}

@@ -1,154 +1,152 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
-import logging
 import pandas as pd
 
-from civil_3P.standard import model_representation as rpr
-from civil_3P.standard.model_representation import ModelTables as mt
-from civil_3P.utils.pandas_utils import PandasUtils as pdUtils
-from civil_3P.standard import units
-from civil_3P.importers.column_mapping import ColumnMapping
+from civil_3P.importers.col_mapping import ColMapping
 from civil_3P.importers.importer_adapter import ImporterAdapter
 from civil_3P.importers.importer_spec import ImporterSpec
-from civil_3P.importers.intermediate_representation import (
-    IntermediateRepresentation
-)
+from civil_3P.importers.intermediate_repr import IntermediateRepr
+from civil_3P.standard import model_repr as rpr
+from civil_3P.standard import units
+from civil_3P.standard.model_repr import ModelTables as mt
+from civil_3P.utils.pandas_utils import PandasUtils as pdUtils
 
 logger = logging.getLogger(__name__)
 
 SAP2000_SPEC = ImporterSpec(
     tables_mapping={
-        mt.NODES: ColumnMapping(
+        mt.NODES: ColMapping(
             rename={
-                "Joint": rpr.NodesColumns.NODE,
-                "GlobalX": rpr.NodesColumns.X,
-                "GlobalY": rpr.NodesColumns.Y,
-                "GlobalZ": rpr.NodesColumns.Z,
+                "Joint": rpr.NodeCols.NODE,
+                "GlobalX": rpr.NodeCols.X,
+                "GlobalY": rpr.NodeCols.Y,
+                "GlobalZ": rpr.NodeCols.Z,
             },
             defaults={},
         ),
-        mt.ELEMENTS_1D: ColumnMapping(
+        mt.BARS: ColMapping(
             rename={
-                "Frame": rpr.Elements1DColumns.ELEMENT,
-                "JointI": rpr.Elements1DColumns.NODE_I,
-                "JointJ": rpr.Elements1DColumns.NODE_J,
-                "Material": rpr.Elements1DColumns.MATERIAL,
-                "AnalSect": rpr.Elements1DColumns.SECTION,
+                "Frame": rpr.BarCols.ELEMENT,
+                "JointI": rpr.BarCols.NODE_I,
+                "JointJ": rpr.BarCols.NODE_J,
+                "Material": rpr.BarCols.MATERIAL,
+                "AnalSect": rpr.BarCols.SECTION,
             },
             defaults={
-                rpr.Elements1DColumns.MATERIAL: None,
-                rpr.Elements1DColumns.SECTION: None,
+                rpr.BarCols.MATERIAL: None,
+                rpr.BarCols.SECTION: None,
             },
         ),
-        mt.ELEMENTS_2D: ColumnMapping(
+        mt.SHELLS: ColMapping(
             rename={
-                "Area": rpr.Elements2DColumns.ELEMENT,
-                "Joint1": rpr.Elements2DColumns.NODE_1,
-                "Joint2": rpr.Elements2DColumns.NODE_2,
-                "Joint3": rpr.Elements2DColumns.NODE_3,
-                "Joint4": rpr.Elements2DColumns.NODE_4,
-                "Material": rpr.Elements2DColumns.MATERIAL,
-                "Thickness": rpr.Elements2DColumns.THICKNESS,
+                "Area": rpr.ShellCols.ELEMENT,
+                "Joint1": rpr.ShellCols.NODE_1,
+                "Joint2": rpr.ShellCols.NODE_2,
+                "Joint3": rpr.ShellCols.NODE_3,
+                "Joint4": rpr.ShellCols.NODE_4,
+                "Material": rpr.ShellCols.MATERIAL,
+                "Thickness": rpr.ShellCols.THICKNESS,
             },
             defaults={
-                rpr.Elements2DColumns.NODE_4: None,
-                rpr.Elements2DColumns.MATERIAL: None,
-                rpr.Elements2DColumns.THICKNESS: None,
+                rpr.ShellCols.NODE_4: None,
+                rpr.ShellCols.MATERIAL: None,
+                rpr.ShellCols.THICKNESS: None,
             },
         ),
-        mt.MATERIALS: ColumnMapping(
+        mt.MATERIALS: ColMapping(
             rename={
-                "Material": rpr.MaterialsColumns.MATERIAL,
-                "E1": rpr.MaterialsColumns.YOUNG_MODULUS,
-                "G12": rpr.MaterialsColumns.SHEAR_MODULUS,
-                "U12": rpr.MaterialsColumns.POISSON_RATIO,
-                "A1": rpr.MaterialsColumns.THERMAL_COEFF,
+                "Material": rpr.MaterialsCols.MATERIAL,
+                "E1": rpr.MaterialsCols.YOUNG_MODULUS,
+                "G12": rpr.MaterialsCols.SHEAR_MODULUS,
+                "U12": rpr.MaterialsCols.POISSON_RATIO,
+                "A1": rpr.MaterialsCols.THERMAL_COEFF,
             },
             defaults={
-                rpr.MaterialsColumns.YOUNG_MODULUS: 0.0,
-                rpr.MaterialsColumns.SHEAR_MODULUS: 0.0,
-                rpr.MaterialsColumns.POISSON_RATIO: 0.0,
-                rpr.MaterialsColumns.THERMAL_COEFF: 0.0,
+                rpr.MaterialsCols.YOUNG_MODULUS: 0.0,
+                rpr.MaterialsCols.SHEAR_MODULUS: 0.0,
+                rpr.MaterialsCols.POISSON_RATIO: 0.0,
+                rpr.MaterialsCols.THERMAL_COEFF: 0.0,
             },
         ),
-        mt.SECTIONS: ColumnMapping(
+        mt.SECTIONS: ColMapping(
             rename={
-                "SectionName": rpr.SectionsColumns.SECTION,
-                "Area": rpr.SectionsColumns.AREA,
-                "I22": rpr.SectionsColumns.INERTIA_22,
-                "I33": rpr.SectionsColumns.INERTIA_33,
+                "SectionName": rpr.SectionsCols.SECTION,
+                "Area": rpr.SectionsCols.AREA,
+                "I22": rpr.SectionsCols.INERTIA_22,
+                "I33": rpr.SectionsCols.INERTIA_33,
             },
             defaults={
-                rpr.SectionsColumns.AREA: 0.0,
-                rpr.SectionsColumns.INERTIA_22: 0.0,
-                rpr.SectionsColumns.INERTIA_33: 0.0,
+                rpr.SectionsCols.AREA: 0.0,
+                rpr.SectionsCols.INERTIA_22: 0.0,
+                rpr.SectionsCols.INERTIA_33: 0.0,
             },
         ),
-        mt.ORIGIN_1D_RESULTS: ColumnMapping(
+        mt.BAR_RESULTS: ColMapping(
             rename={
-                "OutputCase": rpr.Origin1DResultsColumns.CASE,
-                "Frame": rpr.Origin1DResultsColumns.ELEMENT,
-                "Station": rpr.Origin1DResultsColumns.STATION,
-                "P": rpr.Origin1DResultsColumns.NORMAL,
-                "V2": rpr.Origin1DResultsColumns.SHEAR_2,
-                "V3": rpr.Origin1DResultsColumns.SHEAR_3,
-                "T": rpr.Origin1DResultsColumns.TORSION,
-                "M2": rpr.Origin1DResultsColumns.BENDING_2,
-                "M3": rpr.Origin1DResultsColumns.BENDING_3,
+                "OutputCase": rpr.BarResCols.CASE,
+                "Frame": rpr.BarResCols.ELEMENT,
+                "Station": rpr.BarResCols.STATION,
+                "P": rpr.BarResCols.NORMAL,
+                "V2": rpr.BarResCols.SHEAR_2,
+                "V3": rpr.BarResCols.SHEAR_3,
+                "T": rpr.BarResCols.TORSION,
+                "M2": rpr.BarResCols.BENDING_2,
+                "M3": rpr.BarResCols.BENDING_3,
             },
             defaults={},
         ),
-        mt.ORIGIN_2D_RESULTS: ColumnMapping(
+        mt.SHELL_RESULTS: ColMapping(
             rename={
-                "OutputCase": rpr.Origin2DResultsColumns.CASE,
-                "Area": rpr.Origin2DResultsColumns.ELEMENT,
-                "Joint": rpr.Origin2DResultsColumns.NODE,
-                "F11": rpr.Origin2DResultsColumns.NORMAL_11,
-                "F22": rpr.Origin2DResultsColumns.NORMAL_22,
-                "F12": rpr.Origin2DResultsColumns.NORMAL_12,
-                "M11": rpr.Origin2DResultsColumns.BENDING_11,
-                "M22": rpr.Origin2DResultsColumns.BENDING_22,
-                "M12": rpr.Origin2DResultsColumns.BENDING_12,
-                "V13": rpr.Origin2DResultsColumns.SHEAR_13,
-                "V23": rpr.Origin2DResultsColumns.SHEAR_23,
+                "OutputCase": rpr.ShellResCols.CASE,
+                "Area": rpr.ShellResCols.ELEMENT,
+                "Joint": rpr.ShellResCols.NODE,
+                "F11": rpr.ShellResCols.NORMAL_11,
+                "F22": rpr.ShellResCols.NORMAL_22,
+                "F12": rpr.ShellResCols.NORMAL_12,
+                "M11": rpr.ShellResCols.BENDING_11,
+                "M22": rpr.ShellResCols.BENDING_22,
+                "M12": rpr.ShellResCols.BENDING_12,
+                "V13": rpr.ShellResCols.SHEAR_13,
+                "V23": rpr.ShellResCols.SHEAR_23,
             },
             defaults={},
         ),
-        mt.ORIGIN_NODE_DISPLACEMENTS: ColumnMapping(
+        mt.NODE_DISPLACEMENTS: ColMapping(
             rename={
-                "OutputCase": rpr.OriginNodeDisplacementsColumns.CASE,
-                "Joint": rpr.OriginNodeDisplacementsColumns.NODE,
-                "U1": rpr.OriginNodeDisplacementsColumns.DX,
-                "U2": rpr.OriginNodeDisplacementsColumns.DY,
-                "U3": rpr.OriginNodeDisplacementsColumns.DZ,
-                "R1": rpr.OriginNodeDisplacementsColumns.RX,
-                "R2": rpr.OriginNodeDisplacementsColumns.RY,
-                "R3": rpr.OriginNodeDisplacementsColumns.RZ,
+                "OutputCase": rpr.NodeDisplacementsCols.CASE,
+                "Joint": rpr.NodeDisplacementsCols.NODE,
+                "U1": rpr.NodeDisplacementsCols.DX,
+                "U2": rpr.NodeDisplacementsCols.DY,
+                "U3": rpr.NodeDisplacementsCols.DZ,
+                "R1": rpr.NodeDisplacementsCols.RX,
+                "R2": rpr.NodeDisplacementsCols.RY,
+                "R3": rpr.NodeDisplacementsCols.RZ,
             },
             defaults={},
         ),
-        mt.ORIGIN_NODE_REACTIONS: ColumnMapping(
+        mt.NODE_REACTIONS: ColMapping(
             rename={
-                "OutputCase": rpr.OriginNodeReactionsColumns.CASE,
-                "Joint": rpr.OriginNodeReactionsColumns.NODE,
-                "F1": rpr.OriginNodeReactionsColumns.FX,
-                "F2": rpr.OriginNodeReactionsColumns.FY,
-                "F3": rpr.OriginNodeReactionsColumns.FZ,
-                "M1": rpr.OriginNodeReactionsColumns.MX,
-                "M2": rpr.OriginNodeReactionsColumns.MY,
-                "M3": rpr.OriginNodeReactionsColumns.MZ,
+                "OutputCase": rpr.NodeReactionsCols.CASE,
+                "Joint": rpr.NodeReactionsCols.NODE,
+                "F1": rpr.NodeReactionsCols.FX,
+                "F2": rpr.NodeReactionsCols.FY,
+                "F3": rpr.NodeReactionsCols.FZ,
+                "M1": rpr.NodeReactionsCols.MX,
+                "M2": rpr.NodeReactionsCols.MY,
+                "M3": rpr.NodeReactionsCols.MZ,
             },
             defaults={},
         ),
-        mt.LOAD_CASES: ColumnMapping(
+        mt.LOAD_CASES: ColMapping(
             rename={
-                "Case": rpr.LoadCasesColumns.CASE,
-                "Notes": rpr.LoadCasesColumns.DESCRIPTION,
+                "Case": rpr.LoadCaseCols.CASE,
+                "Notes": rpr.LoadCaseCols.DESCRIPTION,
             },
             defaults={
-                rpr.LoadCasesColumns.DESCRIPTION: "",
+                rpr.LoadCaseCols.DESCRIPTION: "",
             },
         ),
     },
@@ -177,13 +175,13 @@ class Sap2000Importer(ImporterAdapter):
         }
         super().__init__(spec=SAP2000_SPEC, unit_map=unit_map)
 
-        self.intermediate = IntermediateRepresentation.empty()
+        self.intermediate = IntermediateRepr.empty()
         self.original_tables: dict[str, pd.DataFrame] = {}
 
     def read_intermediate(
         self,
         source: str | Path,
-    ) -> IntermediateRepresentation:
+    ) -> IntermediateRepr:
         logger.info("Reading SAP2000 model from workbook")
         source_path = Path(source)
 
@@ -207,11 +205,10 @@ class Sap2000Importer(ImporterAdapter):
         table, table_units = self._get_table(table_name)
 
         if concat_columns_on_first:
-            table[concat_columns_on_first[0]] = (
-                table[concat_columns_on_first[0]] +
-                table[concat_columns_on_first[1]]
-                .fillna('')
-                .apply(lambda x: f" - {x}" if x else '')
+            table[concat_columns_on_first[0]] = table[
+                concat_columns_on_first[0]
+            ] + table[concat_columns_on_first[1]].fillna("").apply(
+                lambda x: f" - {x}" if x else ""
             )
 
         pdUtils.keep_columns(
@@ -269,11 +266,7 @@ class Sap2000Importer(ImporterAdapter):
         )
         pdUtils.ensure_columns(
             main_table,
-            list(
-                self
-                .intermediate
-                .tables[main_model_table].columns
-            ),
+            list(self.intermediate.tables[main_model_table].columns),
         )
 
         self.intermediate.tables[main_model_table] = main_table
@@ -292,11 +285,9 @@ class Sap2000Importer(ImporterAdapter):
 
         def concat_case_names(row):
             if row["ComboType"] == "Envelope":
-                return [
-                    f"{row['ComboName']} - Max", f"{row['ComboName']} - Min"
-                ]
+                return [f"{row['ComboName']} - Max", f"{row['ComboName']} - Min"]
 
-            return [row['ComboName']]
+            return [row["ComboName"]]
 
         combs["Case"] = combs.apply(concat_case_names, axis=1)
 
@@ -315,16 +306,14 @@ class Sap2000Importer(ImporterAdapter):
         ).drop_duplicates(subset=["Case"])
 
         self.process_units(load_case, load_case_units)
-        self.map_dataframe(
-            load_case, self._spec.tables_mapping[mt.LOAD_CASES]
-        )
+        self.map_dataframe(load_case, self._spec.tables_mapping[mt.LOAD_CASES])
         pdUtils.ensure_columns(
             load_case,
             list(self.intermediate.tables[mt.LOAD_CASES].columns),
         )
         self.intermediate.tables[mt.LOAD_CASES] = load_case
 
-    def _build_intermediate(self) -> IntermediateRepresentation:
+    def _build_intermediate(self) -> IntermediateRepr:
         logger.info("Building intermediate representation from SAP2000 tables")
 
         self._build_table(
@@ -374,7 +363,7 @@ class Sap2000Importer(ImporterAdapter):
                 "Material",
                 "AnalSect",
             ],
-            main_model_table=mt.ELEMENTS_1D,
+            main_model_table=mt.BARS,
             rename_other_columns_map={
                 "Frame Props 01 - General": {
                     "SectionName": "AnalSect",
@@ -397,7 +386,7 @@ class Sap2000Importer(ImporterAdapter):
                 "Material",
                 "Thickness",
             ],
-            main_model_table=mt.ELEMENTS_2D,
+            main_model_table=mt.SHELLS,
         )
 
         self._build_table(
@@ -413,8 +402,8 @@ class Sap2000Importer(ImporterAdapter):
                 "M2",
                 "M3",
             ],
-            model_table=mt.ORIGIN_1D_RESULTS,
-            concat_columns_on_first=["OutputCase", "StepType"]
+            model_table=mt.BAR_RESULTS,
+            concat_columns_on_first=["OutputCase", "StepType"],
         )
 
         self._build_table(
@@ -432,7 +421,7 @@ class Sap2000Importer(ImporterAdapter):
                 "V13",
                 "V23",
             ],
-            model_table=mt.ORIGIN_2D_RESULTS,
+            model_table=mt.SHELL_RESULTS,
             concat_columns_on_first=["OutputCase", "StepType"],
         )
 
@@ -448,7 +437,7 @@ class Sap2000Importer(ImporterAdapter):
                 "R2",
                 "R3",
             ],
-            model_table=mt.ORIGIN_NODE_DISPLACEMENTS,
+            model_table=mt.NODE_DISPLACEMENTS,
             concat_columns_on_first=["OutputCase", "StepType"],
         )
 
@@ -464,7 +453,7 @@ class Sap2000Importer(ImporterAdapter):
                 "M2",
                 "M3",
             ],
-            model_table=mt.ORIGIN_NODE_REACTIONS,
+            model_table=mt.NODE_REACTIONS,
             concat_columns_on_first=["OutputCase", "StepType"],
         )
 
@@ -484,9 +473,7 @@ class Sap2000Importer(ImporterAdapter):
                 dtype=object,
                 decimal=",",
             )
-            logger.info(
-                f"Successfully read {len(sheets)} sheets from workbook"
-            )
+            logger.info(f"Successfully read {len(sheets)} sheets from workbook")
             self.original_tables = sheets
 
         except ImportError as exc:
@@ -503,9 +490,7 @@ class Sap2000Importer(ImporterAdapter):
         table = self.original_tables.get(name).copy()
 
         if table is None:
-            raise ValueError(
-                f"Table '{name}' not found in the provided tables."
-            )
+            raise ValueError(f"Table '{name}' not found in the provided tables.")
 
         columns = table.iloc[1].to_list()
         units = table.iloc[2].to_list()

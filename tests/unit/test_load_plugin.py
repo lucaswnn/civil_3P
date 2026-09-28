@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from civil_3P.application.plugin_loader_service import PluginLoaderService
+from civil_3P.app.plugin_loader_service import PluginLoaderService
 
 TASK_EXAMPLES_DIR = Path(__file__).resolve().parents[2] / "task_examples"
 
@@ -16,21 +16,15 @@ class TestPluginLoaderServiceLoadFrom:
         cls.service = PluginLoaderService()
 
     def test_load_from_directory_with_valid_plugins(self, tmp_path) -> None:
-        shutil.copy2(
-            TASK_EXAMPLES_DIR / "example_1d_plugin.py", tmp_path
-        )
-        shutil.copy2(
-            TASK_EXAMPLES_DIR / "example_2d_plugin.py", tmp_path
-        )
+        shutil.copy2(TASK_EXAMPLES_DIR / "example_1d_plugin.py", tmp_path)
+        shutil.copy2(TASK_EXAMPLES_DIR / "example_2d_plugin.py", tmp_path)
 
         plugins = self.service.load_from(tmp_path)
         identifiers = {p.metadata.identifier for p in plugins}
 
         assert identifiers == {"example_1d", "example_2d"}
 
-    def test_load_from_missing_directory_returns_empty_list(
-        self, tmp_path
-    ) -> None:
+    def test_load_from_missing_directory_returns_empty_list(self, tmp_path) -> None:
         missing_dir = tmp_path / "does_not_exist"
 
         plugins = self.service.load_from(missing_dir)
@@ -41,20 +35,16 @@ class TestPluginLoaderServiceLoadFrom:
         (tmp_path / "broken_plugin.py").write_text(
             "this is not valid python (((", encoding="utf-8"
         )
-        shutil.copy2(
-            TASK_EXAMPLES_DIR / "example_1d_plugin.py", tmp_path
-        )
+        shutil.copy2(TASK_EXAMPLES_DIR / "example_1d_plugin.py", tmp_path)
 
         plugins = self.service.load_from(tmp_path)
 
         assert len(plugins) == 1
         assert plugins[0].metadata.identifier == "example_1d"
 
-    def test_load_from_ignores_plugin_with_empty_identifier(
-        self, tmp_path
-    ) -> None:
+    def test_load_from_ignores_plugin_with_empty_identifier(self, tmp_path) -> None:
         (tmp_path / "empty_identifier_plugin.py").write_text(
-            '''
+            """
 from civil_3P.standard.model_components import ModelComponents as mc
 from civil_3P.tasks.task_metadata import TaskMetadata
 from civil_3P.tasks.task_plugin import TaskPlugin
@@ -74,7 +64,7 @@ class EmptyIdentifierPlugin(TaskPlugin):
 
     def execute(self, context):
         raise NotImplementedError
-''',
+""",
             encoding="utf-8",
         )
 
