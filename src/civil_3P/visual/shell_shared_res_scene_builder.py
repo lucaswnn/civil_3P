@@ -82,7 +82,7 @@ class ShellSharedResSceneBuilder(SceneBuilder):
             node2 = getattr(row, rpr_2d.NODE_2)
             node3 = getattr(row, rpr_2d.NODE_3)
             node4 = getattr(row, rpr_2d.NODE_4, None)
-            if node4 is not None:
+            if node4 not in [None, np.nan]: # TODO: rever o nan
                 elements_topology[element_id] = [node1, node2, node3, node4]
             else:
                 elements_topology[element_id] = [node1, node2, node3]
